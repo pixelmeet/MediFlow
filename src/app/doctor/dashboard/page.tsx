@@ -234,29 +234,38 @@ export default function DoctorDashboard() {
               </p>
             </div>
 
-            <Button
-              size="lg"
-              onClick={handleCallNext}
-              disabled={isCallingNext || !snapshot || snapshot.waitingCount === 0}
-              className="w-full md:w-auto font-bold text-sm flex items-center justify-center gap-2 shadow-[var(--shadow-sm)]"
-            >
-              <PhoneCall className="h-4 w-4" />
-              {isCallingNext ? "Calling Patient..." : "Call Next Patient"}
-            </Button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+              {snapshot?.currentToken && (
+                <Link href={`/doctor/consultation/${snapshot.currentToken.tokenId}`}>
+                  <Button
+                    size="lg"
+                    className="w-full font-bold text-sm flex items-center justify-center gap-2 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.9)] text-white shadow-[var(--shadow-sm)]"
+                  >
+                    <Stethoscope className="h-4 w-4" />
+                    Open Consultation Room
+                  </Button>
+                </Link>
+              )}
+              <Button
+                size="lg"
+                onClick={handleCallNext}
+                disabled={isCallingNext || !snapshot || snapshot.waitingCount === 0}
+                className="w-full font-bold text-sm flex items-center justify-center gap-2 shadow-[var(--shadow-sm)]"
+              >
+                <PhoneCall className="h-4 w-4" />
+                {isCallingNext ? "Calling Patient..." : "Call Next Patient"}
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Today's Queue Timeline Table */}
         <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)]">
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
-                Today&apos;s Queue Timeline
-              </h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                Ordered sequentially by token number and appointment slot
-              </p>
-            </div>
+          <div className="flex items-center justify-between pb-4 border-b border-[hsl(var(--border))]">
+            <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
+              <Clock className="h-4 w-4 text-[hsl(var(--primary))]" />
+              Today&apos;s Patient Queue &amp; Consultations
+            </h2>
             <span className="text-xs font-bold text-[hsl(var(--muted-foreground))] uppercase">
               {snapshot?.queue.length || 0} Total Entries
             </span>
@@ -301,9 +310,16 @@ export default function DoctorDashboard() {
                           <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" /> Consulted
                         </span>
                       ) : isCurrent ? (
-                        <span className="bg-[hsl(var(--primary))] text-white px-3 py-1 rounded-[var(--radius-full)] font-bold animate-pulse">
-                          In Cabin
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-[hsl(var(--primary))] text-white px-3 py-1 rounded-[var(--radius-full)] font-bold animate-pulse">
+                            In Cabin
+                          </span>
+                          <Link href={`/doctor/consultation/${item.tokenId}`}>
+                            <Button size="sm" className="text-xs font-bold flex items-center gap-1">
+                              <Stethoscope className="h-3.5 w-3.5" /> Consult
+                            </Button>
+                          </Link>
+                        </div>
                       ) : (
                         <span className="text-[hsl(var(--warning))] font-semibold bg-[hsl(var(--warning-light))] px-2.5 py-1 rounded-[var(--radius-full)]">
                           Waiting in Queue
