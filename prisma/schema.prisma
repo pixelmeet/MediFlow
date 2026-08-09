@@ -50,6 +50,7 @@ model User {
   phone         String?  @unique
   passwordHash  String?
   role          Role
+  isVerified    Boolean  @default(false)
   isActive      Boolean  @default(true)
   lockedUntil   DateTime?
   failedLogins  Int      @default(0)
@@ -60,6 +61,18 @@ model User {
   doctor        Doctor?
   admin         Admin?
   notifications Notification[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Patient {
