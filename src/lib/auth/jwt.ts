@@ -1,4 +1,5 @@
-import { SignJWT, jwtVerify, type JWTPayload } from "jose";
+import { SignJWT, jwtVerify } from "jose";
+import crypto from "crypto";
 
 export interface SessionPayload {
   userId: string;
@@ -73,3 +74,11 @@ export async function verifyRefreshToken(token: string): Promise<{ userId: strin
     return null;
   }
 }
+
+/**
+ * Compute SHA-256 hash of a token string for safe DB storage
+ */
+export function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+

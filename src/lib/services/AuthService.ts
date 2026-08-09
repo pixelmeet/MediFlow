@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
+import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { RegisterPatientInput, LoginInput, VerifyOtpInput } from "../validation/auth";
 
 export interface AuthResult {
@@ -20,7 +21,7 @@ export interface AuthResult {
   };
 }
 
-// In-memory demo store for development fallback when DB is unreachable
+// In-memory demo store for development fallback when DB is unreachable (dev mode only)
 const memoryUsers = new Map<string, {
   id: string;
   email: string;
@@ -46,7 +47,7 @@ const memoryOtps = new Map<string, {
 
 // Initialize demo accounts in memory store
 async function ensureDemoAccounts() {
-  if (memoryUsers.size === 0) {
+  if (ALLOW_MEMORY_FALLBACK && memoryUsers.size === 0) {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash("Password@123", salt);
 
@@ -96,7 +97,9 @@ export class AuthService {
    * Register a new patient account and create an OTP verification token
    */
   static async registerPatient(input: RegisterPatientInput): Promise<AuthResult> {
-    await ensureDemoAccounts();
+    if (ALLOW_MEMORY_FALLBACK) {
+      await ensureDemoAccounts();
+    }
 
     try {
       // Try Prisma database first
@@ -182,7 +185,19 @@ export class AuthService {
         },
       };
     } catch (dbError) {
-      console.warn("Database unavailable, falling back to memory store:", (dbError as Error).message);
+      console.error("Database error during registerPatient:", dbError);
+
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "We're having trouble reaching the database. Please try again in a moment.",
+          },
+        };
+      }
+
+      console.warn("Database unavailable, falling back to memory store in dev mode:", (dbError as Error).message);
 
       // Memory Store Fallback
       const existingUser = Array.from(memoryUsers.values()).find(
@@ -250,10 +265,20 @@ export class AuthService {
    * Enforces 5 failed attempts -> 15 min lockout rule and isVerified check
    */
   static async login(input: LoginInput): Promise<AuthResult> {
-    await ensureDemoAccounts();
+    if (ALLOW_MEMORY_FALLBACK) {
+      await ensureDemoAccounts();
+    }
     const isEmail = input.identifier.includes("@");
 
     try {
+      // Opportunistically clean up expired refresh tokens (Phase 1 cheap cleanup)
+      // TODO: Sweep expired tokens periodically via background worker once background jobs exist (Phase 7+)
+      await prisma.refreshToken.deleteMany({
+        where: { expiresAt: { lt: new Date() } },
+      }).catch((err) => {
+        console.warn("Opportunistic expired refresh token cleanup skipped:", (err as Error).message);
+      });
+
       const user = await prisma.user.findFirst({
         where: isEmail
           ? { email: input.identifier.toLowerCase() }
@@ -353,11 +378,34 @@ export class AuthService {
           },
         };
       }
+
+      // User not found in DB
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: {
+            code: "INVALID_CREDENTIALS",
+            message: "Invalid email/phone or password.",
+          },
+        };
+      }
     } catch (e) {
-      console.warn("Database query failed during login, checking memory store...");
+      console.error("Database error during login:", e);
+
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "We're having trouble reaching the database. Please try again in a moment.",
+          },
+        };
+      }
+
+      console.warn("Database query failed during login, checking memory store in dev mode...");
     }
 
-    // Check memory store for demo accounts or memory registered users
+    // Check memory store for demo accounts or memory registered users (dev mode only)
     const memUser = Array.from(memoryUsers.values()).find((u) =>
       isEmail
         ? u.email.toLowerCase() === input.identifier.toLowerCase()
@@ -491,11 +539,33 @@ export class AuthService {
           },
         };
       }
-    } catch {
-      console.warn("Database unavailable for OTP, checking memory store...");
+
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: {
+            code: "NO_OTP_FOUND",
+            message: "No pending verification code found.",
+          },
+        };
+      }
+    } catch (dbError) {
+      console.error("Database error during verifyOtp:", dbError);
+
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "We're having trouble reaching the database. Please try again in a moment.",
+          },
+        };
+      }
+
+      console.warn("Database unavailable for OTP, checking memory store in dev mode...");
     }
 
-    // Memory Store OTP verification
+    // Memory Store OTP verification (dev mode only)
     const memOtp = memoryOtps.get(input.userId);
     if (!memOtp) {
       return {
@@ -539,7 +609,7 @@ export class AuthService {
   /**
    * Resend a new OTP with rate limiting (max 5 requests / 15 min)
    */
-  static async resendOtp(userId: string): Promise<{ success: boolean; error?: string }> {
+  static async resendOtp(userId: string): Promise<{ success: boolean; error?: string; code?: string }> {
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -547,7 +617,18 @@ export class AuthService {
       await prisma.otpVerification.create({
         data: { userId, code: newCode, expiresAt, verified: false },
       });
-    } catch {
+    } catch (dbError) {
+      console.error("Database error during resendOtp:", dbError);
+
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          code: "SERVICE_UNAVAILABLE",
+          error: "We're having trouble reaching the database. Please try again in a moment.",
+        };
+      }
+
+      console.warn("Database unavailable, falling back to memory store in dev mode for resendOtp");
       memoryOtps.set(userId, {
         id: `otp_${Date.now()}`,
         userId,
@@ -595,8 +676,13 @@ export class AuthService {
         },
       });
       if (user) return user;
-    } catch {
-      console.warn("Database unavailable for getUserProfile, falling back to memory store...");
+      if (!ALLOW_MEMORY_FALLBACK) return null;
+    } catch (dbError) {
+      console.error("Database error in getUserProfile:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        throw dbError;
+      }
+      console.warn("Database unavailable for getUserProfile, falling back to memory store in dev mode...");
     }
 
     const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
@@ -616,3 +702,4 @@ export class AuthService {
     };
   }
 }
+

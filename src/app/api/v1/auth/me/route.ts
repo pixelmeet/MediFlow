@@ -36,8 +36,8 @@ export async function GET() {
   } catch (error) {
     console.error("Auth Me API error:", error);
     return NextResponse.json(
-      errorResponse("SERVER_ERROR", "Failed to retrieve session details"),
-      { status: 500 }
+      errorResponse("SERVICE_UNAVAILABLE", "We're having trouble reaching the database. Please try again in a moment."),
+      { status: 503 }
     );
   }
 }

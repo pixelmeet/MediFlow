@@ -26,7 +26,13 @@ export async function POST(request: Request) {
     const result = await AuthService.login(parseResult.data);
 
     if (!result.success || !result.user) {
-      const status = result.error?.code === "ACCOUNT_LOCKED" ? 423 : 401;
+      let status = 401;
+      if (result.error?.code === "SERVICE_UNAVAILABLE") {
+        status = 503;
+      } else if (result.error?.code === "ACCOUNT_LOCKED") {
+        status = 423;
+      }
+
       return NextResponse.json(
         errorResponse(
           result.error?.code || "LOGIN_FAILED",

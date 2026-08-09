@@ -75,7 +75,7 @@ function StatusPill({ status, showDot = true, label, className, ...props }: Stat
 
 // ─── Skeleton ────────────────────────────────────────────
 
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
+type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;
 
 function Skeleton({ className, ...props }: SkeletonProps) {
   return (

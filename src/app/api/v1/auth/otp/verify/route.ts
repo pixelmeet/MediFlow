@@ -26,9 +26,10 @@ export async function POST(request: Request) {
     const result = await AuthService.verifyOtp(parseResult.data);
 
     if (!result.success || !result.user) {
+      const status = result.error?.code === "SERVICE_UNAVAILABLE" ? 503 : 400;
       return NextResponse.json(
         errorResponse(result.error?.code || "OTP_VERIFY_FAILED", result.error?.message || "Invalid OTP"),
-        { status: 400 }
+        { status }
       );
     }
 

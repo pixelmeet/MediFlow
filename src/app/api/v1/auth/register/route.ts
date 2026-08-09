@@ -25,9 +25,10 @@ export async function POST(request: Request) {
     const result = await AuthService.registerPatient(parseResult.data);
 
     if (!result.success || !result.user) {
+      const status = result.error?.code === "SERVICE_UNAVAILABLE" ? 503 : 400;
       return NextResponse.json(
         errorResponse(result.error?.code || "REGISTRATION_FAILED", result.error?.message || "Registration failed"),
-        { status: 400 }
+        { status }
       );
     }
 

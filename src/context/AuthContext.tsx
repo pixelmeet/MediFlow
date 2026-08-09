@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import type { RegisterPatientInput } from "@/lib/validation/auth";
 
 export interface AuthUser {
   id: string;
@@ -17,7 +18,7 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   login: (identifier: string, password: string) => Promise<{ success: boolean; error?: string; lockout?: boolean }>;
-  registerPatient: (data: any) => Promise<{ success: boolean; userId?: string; error?: string }>;
+  registerPatient: (data: RegisterPatientInput) => Promise<{ success: boolean; userId?: string; error?: string }>;
   verifyOtp: (userId: string, code: string) => Promise<{ success: boolean; error?: string }>;
   resendOtp: (userId: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -59,7 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    fetchCurrentUser();
+    const init = async () => {
+      await fetchCurrentUser();
+    };
+    init();
   }, [fetchCurrentUser]);
 
   const login = async (identifier: string, password: string) => {
@@ -105,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerPatient = async (data: any) => {
+  const registerPatient = async (data: RegisterPatientInput) => {
     try {
       const res = await fetch("/api/v1/auth/register", {
         method: "POST",

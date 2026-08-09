@@ -18,9 +18,10 @@ export async function POST(request: Request) {
     const result = await AuthService.resendOtp(parseResult.data.userId);
 
     if (!result.success) {
+      const status = result.code === "SERVICE_UNAVAILABLE" ? 503 : 429;
       return NextResponse.json(
-        errorResponse("RATE_LIMIT_EXCEEDED", result.error || "Too many OTP requests. Please wait."),
-        { status: 429 }
+        errorResponse(result.code || "RATE_LIMIT_EXCEEDED", result.error || "Too many OTP requests. Please wait."),
+        { status }
       );
     }
 

@@ -14,6 +14,8 @@ export const COOKIE_NAMES = {
   refreshToken: "mediflow_refresh_token",
 } as const;
 
+export const ALLOW_MEMORY_FALLBACK = process.env.NODE_ENV !== "production";
+
 export function getJwtSecrets() {
   const accessSecret = process.env.JWT_ACCESS_SECRET;
   const refreshSecret = process.env.JWT_REFRESH_SECRET;

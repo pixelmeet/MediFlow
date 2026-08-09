@@ -4,10 +4,12 @@ import {
   signRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
+  hashToken,
   ACCESS_COOKIE_NAME,
   REFRESH_COOKIE_NAME,
   SessionPayload,
 } from "./jwt";
+import { ALLOW_MEMORY_FALLBACK } from "./config";
 import { prisma } from "../db";
 
 /**
@@ -28,6 +30,25 @@ export async function getSession(): Promise<SessionPayload | null> {
 
   const refreshPayload = await verifyRefreshToken(refreshToken);
   if (!refreshPayload || typeof refreshPayload.userId !== "string") return null;
+
+  // Revocation check: verify matching, non-expired RefreshToken row in DB
+  const tokenHash = hashToken(refreshToken);
+  try {
+    const tokenRecord = await prisma.refreshToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!tokenRecord || tokenRecord.userId !== refreshPayload.userId || tokenRecord.expiresAt < new Date()) {
+      return null;
+    }
+  } catch (dbError) {
+    if (!ALLOW_MEMORY_FALLBACK) {
+      console.error("Database error during refresh token validation:", dbError);
+      return null;
+    } else {
+      console.warn("Database unavailable, skipping DB refresh token revocation check in dev fallback mode");
+    }
+  }
 
   try {
     const user = await prisma.user.findUnique({
@@ -68,7 +89,10 @@ export async function getSession(): Promise<SessionPayload | null> {
       ...newPayload,
       exp: Math.floor(Date.now() / 1000) + 15 * 60,
     };
-  } catch {
+  } catch (error) {
+    if (!ALLOW_MEMORY_FALLBACK) {
+      console.error("Database error retrieving user during session refresh:", error);
+    }
     return null;
   }
 }
@@ -80,6 +104,25 @@ export async function setSessionCookies(payload: SessionPayload) {
   const cookieStore = await cookies();
   const accessToken = await signAccessToken(payload);
   const refreshToken = await signRefreshToken(payload.userId);
+  const tokenHash = hashToken(refreshToken);
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+  try {
+    await prisma.refreshToken.create({
+      data: {
+        userId: payload.userId,
+        tokenHash,
+        expiresAt,
+      },
+    });
+  } catch (error) {
+    if (!ALLOW_MEMORY_FALLBACK) {
+      console.error("Failed to persist refresh token to database:", error);
+      throw error;
+    } else {
+      console.warn("Database unavailable, skipping refresh token persistence in dev fallback mode");
+    }
+  }
 
   cookieStore.set(ACCESS_COOKIE_NAME, accessToken, {
     httpOnly: true,
@@ -106,3 +149,4 @@ export async function clearSessionCookies() {
   cookieStore.delete(ACCESS_COOKIE_NAME);
   cookieStore.delete(REFRESH_COOKIE_NAME);
 }
+

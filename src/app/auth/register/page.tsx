@@ -12,7 +12,15 @@ export default function RegisterPage() {
   const router = useRouter();
   const { registerPatient } = useAuth();
 
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = React.useState<{
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    age: string;
+    gender: "MALE" | "FEMALE" | "OTHER";
+    bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+  }>({
     name: "",
     email: "",
     phone: "",
