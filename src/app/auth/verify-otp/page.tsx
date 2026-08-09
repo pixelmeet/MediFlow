@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Activity, ShieldCheck, RefreshCw, ShieldAlert, KeyRound } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Activity, ShieldCheck, RefreshCw, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -17,19 +17,16 @@ export default function VerifyOtpPage() {
 
 function VerifyOtpContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { verifyOtp, resendOtp } = useAuth();
 
   const userId = searchParams.get("userId") || "";
   const email = searchParams.get("email") || "your registered email/phone";
-  const devOtp = searchParams.get("devOtp") || "";
 
   const [digits, setDigits] = React.useState<string[]>(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isResending, setIsResending] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [timeLeft, setTimeLeft] = React.useState(300); // 5 minutes countdown
-  const [currentDevOtp, setCurrentDevOtp] = React.useState(devOtp);
 
   const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
 
@@ -115,22 +112,12 @@ function VerifyOtpContent() {
       if (res.success) {
         setTimeLeft(300);
         setDigits(["", "", "", "", "", ""]);
-        if (res.otpForTesting) {
-          setCurrentDevOtp(res.otpForTesting);
-        }
         inputRefs.current[0]?.focus();
       } else {
         setErrorMessage(res.error || "Failed to resend OTP.");
       }
     } finally {
       setIsResending(false);
-    }
-  };
-
-  // Auto-fill dev OTP helper
-  const handleAutoFillDevOtp = () => {
-    if (currentDevOtp && currentDevOtp.length === 6) {
-      setDigits(currentDevOtp.split(""));
     }
   };
 
@@ -153,23 +140,6 @@ function VerifyOtpContent() {
           <span className="font-semibold text-[hsl(var(--foreground))]">{email}</span>
         </p>
       </div>
-
-      {/* Dev OTP Helper Banner */}
-      {currentDevOtp && (
-        <div className="mb-4 rounded-[var(--radius-lg)] border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary-light))] p-3 text-xs flex items-center justify-between">
-          <div className="flex items-center gap-1.5 font-medium text-[hsl(var(--primary))]">
-            <KeyRound className="h-4 w-4" />
-            <span>Dev OTP: <strong className="tabular-nums tracking-widest">{currentDevOtp}</strong></span>
-          </div>
-          <button
-            type="button"
-            onClick={handleAutoFillDevOtp}
-            className="rounded-[var(--radius-sm)] bg-[hsl(var(--primary))] text-white px-2 py-1 text-xs font-semibold hover:bg-[hsl(var(--primary-hover))] transition-colors"
-          >
-            Auto-fill
-          </button>
-        </div>
-      )}
 
       <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-md)]">
         {errorMessage && (

@@ -34,7 +34,6 @@ export async function POST(request: Request) {
     return NextResponse.json(
       successResponse(result.user, {
         message: "Registration successful. Please verify the OTP sent to your phone/email.",
-        otpForTesting: result.user.otpCodeForTesting,
       }),
       { status: 201 }
     );

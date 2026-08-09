@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       successResponse(
-        { sent: true, otpForTesting: result.otpCodeForTesting },
+        { sent: true },
         { message: "A new OTP code has been generated and sent." }
       ),
       { status: 200 }

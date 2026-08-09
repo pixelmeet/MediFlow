@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 import { RegisterPatientInput, LoginInput, VerifyOtpInput } from "../validation/auth";
 
@@ -11,7 +12,6 @@ export interface AuthResult {
     role: "PATIENT" | "DOCTOR" | "ADMIN";
     name: string;
     requiresOtp?: boolean;
-    otpCodeForTesting?: string;
   };
   error?: {
     code: string;
@@ -28,6 +28,7 @@ const memoryUsers = new Map<string, {
   passwordHash: string;
   role: "PATIENT" | "DOCTOR" | "ADMIN";
   name: string;
+  isVerified: boolean;
   isActive: boolean;
   failedLogins: number;
   lockedUntil: Date | null;
@@ -56,6 +57,7 @@ async function ensureDemoAccounts() {
       passwordHash: hash,
       role: "ADMIN",
       name: "Priya Sharma (Admin Lead)",
+      isVerified: true,
       isActive: true,
       failedLogins: 0,
       lockedUntil: null,
@@ -68,6 +70,7 @@ async function ensureDemoAccounts() {
       passwordHash: hash,
       role: "DOCTOR",
       name: "Dr. Rajesh Patel (Cardiologist)",
+      isVerified: true,
       isActive: true,
       failedLogins: 0,
       lockedUntil: null,
@@ -80,6 +83,7 @@ async function ensureDemoAccounts() {
       passwordHash: hash,
       role: "PATIENT",
       name: "Meet Vora",
+      isVerified: true,
       isActive: true,
       failedLogins: 0,
       lockedUntil: null,
@@ -129,13 +133,14 @@ export class AuthService {
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-      const newUser = await prisma.$transaction(async (tx) => {
+      const newUser = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const user = await tx.user.create({
           data: {
             email: input.email,
             phone: input.phone,
             passwordHash,
             role: "PATIENT",
+            isVerified: false,
             isActive: true,
             patient: {
               create: {
@@ -161,6 +166,10 @@ export class AuthService {
         return user;
       });
 
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[DEV] OTP for ${newUser.id}: ${otpCode}`);
+      }
+
       return {
         success: true,
         user: {
@@ -170,7 +179,6 @@ export class AuthService {
           role: newUser.role,
           name: newUser.patient?.name || "Patient",
           requiresOtp: true,
-          otpCodeForTesting: otpCode,
         },
       };
     } catch (dbError) {
@@ -203,6 +211,7 @@ export class AuthService {
         passwordHash,
         role: "PATIENT",
         name: input.name,
+        isVerified: false,
         isActive: true,
         failedLogins: 0,
         lockedUntil: null,
@@ -218,6 +227,10 @@ export class AuthService {
         createdAt: new Date(),
       });
 
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[DEV] OTP for ${newId}: ${otpCode}`);
+      }
+
       return {
         success: true,
         user: {
@@ -227,7 +240,6 @@ export class AuthService {
           role: "PATIENT",
           name: input.name,
           requiresOtp: true,
-          otpCodeForTesting: otpCode,
         },
       };
     }
@@ -235,7 +247,7 @@ export class AuthService {
 
   /**
    * Login with email or phone + password
-   * Enforces 5 failed attempts -> 15 min lockout rule
+   * Enforces 5 failed attempts -> 15 min lockout rule and isVerified check
    */
   static async login(input: LoginInput): Promise<AuthResult> {
     await ensureDemoAccounts();
@@ -302,6 +314,17 @@ export class AuthService {
                 ? "Too many failed login attempts. Account locked for 15 minutes."
                 : `Invalid password. ${5 - newFailedCount} attempt(s) remaining.`,
               lockoutRemainingMinutes: willLock ? 15 : undefined,
+            },
+          };
+        }
+
+        // Check if user is verified
+        if (!user.isVerified) {
+          return {
+            success: false,
+            error: {
+              code: "EMAIL_NOT_VERIFIED",
+              message: "Please verify your email/phone before logging in.",
             },
           };
         }
@@ -389,6 +412,17 @@ export class AuthService {
       };
     }
 
+    // Check if memory user is verified
+    if (!memUser.isVerified) {
+      return {
+        success: false,
+        error: {
+          code: "EMAIL_NOT_VERIFIED",
+          message: "Please verify your email/phone before logging in.",
+        },
+      };
+    }
+
     memUser.failedLogins = 0;
     memUser.lockedUntil = null;
 
@@ -440,23 +474,22 @@ export class AuthService {
           data: { verified: true },
         });
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.update({
           where: { id: input.userId },
+          data: { isVerified: true },
           include: { patient: true, doctor: true, admin: true },
         });
 
-        if (user) {
-          return {
-            success: true,
-            user: {
-              id: user.id,
-              email: user.email,
-              phone: user.phone,
-              role: user.role,
-              name: user.patient?.name || "User",
-            },
-          };
-        }
+        return {
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            name: user.patient?.name || "User",
+          },
+        };
       }
     } catch {
       console.warn("Database unavailable for OTP, checking memory store...");
@@ -487,6 +520,9 @@ export class AuthService {
 
     memOtp.verified = true;
     const memUser = Array.from(memoryUsers.values()).find((u) => u.id === input.userId);
+    if (memUser) {
+      memUser.isVerified = true;
+    }
 
     return {
       success: true,
@@ -503,7 +539,7 @@ export class AuthService {
   /**
    * Resend a new OTP with rate limiting (max 5 requests / 15 min)
    */
-  static async resendOtp(userId: string): Promise<{ success: boolean; error?: string; otpCodeForTesting?: string }> {
+  static async resendOtp(userId: string): Promise<{ success: boolean; error?: string }> {
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -523,9 +559,12 @@ export class AuthService {
       });
     }
 
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[DEV] Resent OTP for ${userId}: ${newCode}`);
+    }
+
     return {
       success: true,
-      otpCodeForTesting: newCode,
     };
   }
 
@@ -541,6 +580,7 @@ export class AuthService {
           email: true,
           phone: true,
           role: true,
+          isVerified: true,
           isActive: true,
           createdAt: true,
           patient: true,
@@ -567,6 +607,7 @@ export class AuthService {
       email: memUser.email,
       phone: memUser.phone,
       role: memUser.role,
+      isVerified: memUser.isVerified,
       isActive: memUser.isActive,
       createdAt: new Date(),
       patient: memUser.role === "PATIENT" ? { id: `pat_${memUser.id}`, name: memUser.name, age: 34, gender: "MALE", bloodGroup: "O+" } : null,
