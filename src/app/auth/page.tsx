@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Activity, Lock, Mail, Eye, EyeOff, ShieldAlert, Sparkles } from "lucide-react";
+import { Activity, Eye, EyeOff, ShieldAlert, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

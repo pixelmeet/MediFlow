@@ -4,11 +4,11 @@ import {
   signRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
-  hashToken,
   ACCESS_COOKIE_NAME,
   REFRESH_COOKIE_NAME,
   SessionPayload,
 } from "./jwt";
+import { hashToken } from "./token-hash";
 import { ALLOW_MEMORY_FALLBACK } from "./config";
 import { prisma } from "../db";
 

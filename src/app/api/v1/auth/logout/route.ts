@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { clearSessionCookies } from "@/lib/auth/session";
-import { REFRESH_COOKIE_NAME, hashToken } from "@/lib/auth/jwt";
+import { REFRESH_COOKIE_NAME } from "@/lib/auth/jwt";
+import { hashToken } from "@/lib/auth/token-hash";
 import { ALLOW_MEMORY_FALLBACK } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import { successResponse } from "@/lib/utils";
