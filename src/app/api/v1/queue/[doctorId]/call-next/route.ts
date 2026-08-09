@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { QueueService } from "@/lib/services/QueueService";
+import { prisma } from "@/lib/db";
+import { ALLOW_MEMORY_FALLBACK } from "@/lib/auth/config";
 import { errorResponse, successResponse } from "@/lib/utils";
 
 export async function POST(
@@ -17,6 +19,38 @@ export async function POST(
     }
 
     const params = await props.params;
+
+    if (session.role === "DOCTOR") {
+      try {
+        const doctor = await prisma.doctor.findUnique({
+          where: { id: params.doctorId },
+          select: { userId: true },
+        });
+
+        if (!doctor) {
+          return NextResponse.json(
+            errorResponse("NOT_FOUND", "Doctor not found"),
+            { status: 404 }
+          );
+        }
+
+        if (doctor.userId !== session.userId) {
+          return NextResponse.json(
+            errorResponse("FORBIDDEN", "You can only manage your own patient queue."),
+            { status: 403 }
+          );
+        }
+      } catch (dbError) {
+        console.error("Database error in call-next doctor lookup:", dbError);
+        if (!ALLOW_MEMORY_FALLBACK) {
+          return NextResponse.json(
+            errorResponse("SERVICE_UNAVAILABLE", "Database is unavailable. Please try again."),
+            { status: 503 }
+          );
+        }
+      }
+    }
+
     const result = await QueueService.callNextPatient(params.doctorId);
 
     if (!result.success || !result.calledToken) {

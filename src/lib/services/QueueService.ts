@@ -185,8 +185,34 @@ export class QueueService {
   /**
    * Check in a patient on arrival
    */
-  static async checkInPatient(appointmentId: string): Promise<{ success: boolean; error?: string }> {
+  static async checkInPatient(
+    appointmentId: string,
+    requestingUserId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
+      const [requestingUser, patient, existing] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: requestingUserId },
+          select: { role: true },
+        }),
+        prisma.patient.findFirst({
+          where: { userId: requestingUserId },
+        }),
+        prisma.appointment.findUnique({
+          where: { id: appointmentId },
+        }),
+      ]);
+
+      if (!existing) {
+        return { success: false, error: "Appointment not found." };
+      }
+
+      const isStaff = requestingUser?.role === "DOCTOR" || requestingUser?.role === "ADMIN";
+
+      if (!isStaff && (!patient || existing.patientId !== patient.id)) {
+        return { success: false, error: "You can only check in your own appointment." };
+      }
+
       await prisma.$transaction([
         prisma.appointment.update({
           where: { id: appointmentId },

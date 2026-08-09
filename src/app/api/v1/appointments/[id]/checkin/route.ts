@@ -17,9 +17,23 @@ export async function POST(
     }
 
     const params = await props.params;
-    const result = await QueueService.checkInPatient(params.id);
+    const result = await QueueService.checkInPatient(params.id, session.userId);
 
     if (!result.success) {
+      if (result.error === "You can only check in your own appointment.") {
+        return NextResponse.json(
+          errorResponse("FORBIDDEN", result.error),
+          { status: 403 }
+        );
+      }
+
+      if (result.error === "Appointment not found.") {
+        return NextResponse.json(
+          errorResponse("NOT_FOUND", result.error),
+          { status: 404 }
+        );
+      }
+
       return NextResponse.json(
         errorResponse("CHECKIN_FAILED", result.error || "Failed to check in"),
         { status: 400 }
