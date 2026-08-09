@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Activity, Stethoscope, Users, Calendar, Clock, LogOut, User, CheckCircle2, PhoneCall, RefreshCw, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -165,6 +166,12 @@ export default function DoctorDashboard() {
             </div>
 
             <div className="flex items-center gap-3">
+              <Link href="/doctor/schedule">
+                <Button size="sm" className="text-xs flex items-center gap-1.5 font-bold shadow-[var(--shadow-sm)]">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Schedule & Availability
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
