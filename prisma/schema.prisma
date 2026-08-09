@@ -1,0 +1,362 @@
+// MediFlow — Prisma Schema
+// Full data model from PRD §8
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CHECKED_IN
+  WAITING
+  IN_CONSULTATION
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum QueueStatus {
+  WAITING
+  IN_PROGRESS
+  DONE
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUND_PENDING
+  REFUNDED
+}
+
+// ─── Models ──────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  email         String?  @unique
+  phone         String?  @unique
+  passwordHash  String?
+  role          Role
+  isActive      Boolean  @default(true)
+  lockedUntil   DateTime?
+  failedLogins  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient       Patient?
+  doctor        Doctor?
+  admin         Admin?
+  notifications Notification[]
+}
+
+model Patient {
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id])
+  name           String
+  age            Int?
+  gender         String?
+  bloodGroup     String?
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
+  reviews        Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Hospital {
+  id       String   @id @default(cuid())
+  name     String
+  branches Branch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Branch {
+  id           String       @id @default(cuid())
+  hospitalId   String
+  hospital     Hospital     @relation(fields: [hospitalId], references: [id])
+  name         String
+  address      String?
+  timezone     String       @default("Asia/Kolkata")
+  isActive     Boolean      @default(true)
+  departments  Department[]
+  appointments Appointment[]
+
+  // Configurable settings per branch
+  gracePeriodMin    Int @default(15)
+  earlyCheckinMin   Int @default(60)
+  maxAdvanceBookDays Int @default(30)
+  rescheduleCutoffHrs Int @default(2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id       String   @id @default(cuid())
+  branchId String
+  branch   Branch   @relation(fields: [branchId], references: [id])
+  name     String
+  isActive Boolean  @default(true)
+  doctors  Doctor[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Doctor {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id])
+  departmentId          String
+  department            Department @relation(fields: [departmentId], references: [id])
+  name                  String
+  specialty             String
+  bio                   String?
+  qualifications        String?
+  experience            Int?       // years of experience
+  fee                   Decimal
+  language              String[]
+  photoUrl              String?
+  appointmentDurationMin Int       @default(20)
+  bufferMinutes         Int       @default(0)
+  isActive              Boolean   @default(true)
+
+  availability   DoctorAvailability[]
+  blockedSlots   BlockedSlot[]
+  appointments   Appointment[]
+  consultations  Consultation[]
+  reviews        Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Admin {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  name   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DoctorAvailability {
+  id         String  @id @default(cuid())
+  doctorId   String
+  doctor     Doctor  @relation(fields: [doctorId], references: [id])
+  dayOfWeek  Int     // 0=Sunday, 1=Monday, ... 6=Saturday
+  startTime  String  // "10:00" (HH:mm)
+  endTime    String  // "13:00" (HH:mm)
+  breakStart String? // "12:00"
+  breakEnd   String? // "12:30"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, dayOfWeek])
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  date      DateTime
+  startTime String?  // null = entire day blocked
+  endTime   String?
+  reason    String?
+  isFullDay Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model Appointment {
+  id           String            @id @default(cuid())
+  patientId    String
+  patient      Patient           @relation(fields: [patientId], references: [id])
+  doctorId     String
+  doctor       Doctor            @relation(fields: [doctorId], references: [id])
+  branchId     String
+  branch       Branch            @relation(fields: [branchId], references: [id])
+  date         DateTime
+  startTime    String            // "10:00" (HH:mm)
+  tokenNumber  String            // e.g., "A-27"
+  status       AppointmentStatus @default(CONFIRMED)
+  feeSnapshot  Decimal
+  checkedInAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+  idempotencyKey String?         @unique
+
+  queueToken   QueueToken?
+  consultation Consultation?
+  payment      Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, date, startTime])
+  @@index([patientId])
+  @@index([doctorId, date])
+  @@index([branchId, date])
+}
+
+model QueueToken {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  position      Int
+  calledAt      DateTime?
+  completedAt   DateTime?
+  status        QueueStatus @default(WAITING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model Consultation {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  doctorId      String
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+  diagnosis     String
+  notes         String?
+  followUpDate  DateTime?
+  startedAt     DateTime
+  completedAt   DateTime?
+
+  prescription Prescription?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Prescription {
+  id             String           @id @default(cuid())
+  consultationId String           @unique
+  consultation   Consultation     @relation(fields: [consultationId], references: [id])
+  items          PrescriptionItem[]
+  pdfUrl         String?
+  version        Int              @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PrescriptionItem {
+  id             String       @id @default(cuid())
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id])
+  medicine       String
+  dose           String?      // e.g., "1-0-1"
+  duration       String?      // e.g., "7 days"
+  instructions   String?
+
+  sortOrder Int @default(0)
+}
+
+model MedicalRecord {
+  id        String  @id @default(cuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  type      String  // "lab_report", "imaging", "document"
+  title     String?
+  fileUrl   String?
+
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  appointmentId String        @unique
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id])
+  amount        Decimal
+  status        PaymentStatus @default(PENDING)
+  provider      String?       // "mock", "razorpay", "stripe"
+  transactionId String?
+  refundedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // "booking_confirmed", "reminder_24h", "you_are_next", etc.
+  title     String
+  message   String
+  payload   Json?
+  channel   String   @default("email") // "email", "push", "sms"
+  sentAt    DateTime?
+  readAt    DateTime?
+  cancelledAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, readAt])
+}
+
+model Review {
+  id        String  @id @default(cuid())
+  doctorId  String
+  doctor    Doctor  @relation(fields: [doctorId], references: [id])
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  rating    Int     // 1-5
+  comment   String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([doctorId, patientId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String   // "create", "update", "delete", "override"
+  entity    String   // "appointment", "doctor", "queue", etc.
+  entityId  String
+  reason    String?
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorId])
+}
+
+// OTP verification model
+model OtpVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
