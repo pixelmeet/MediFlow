@@ -18,16 +18,27 @@ export async function GET(
     }
 
     const params = await props.params;
-    const details = await ConsultationService.getConsultationDetails(params.tokenId);
+    const result = await ConsultationService.getConsultationDetails(
+      params.tokenId,
+      session.userId,
+      session.role
+    );
 
-    if (!details) {
+    if (!result.success || !result.data) {
+      if (result.error === "FORBIDDEN") {
+        return NextResponse.json(
+          errorResponse("FORBIDDEN", result.message || "You are not assigned to this patient's consultation."),
+          { status: 403 }
+        );
+      }
+
       return NextResponse.json(
-        errorResponse("NOT_FOUND", "Consultation session not found"),
+        errorResponse("NOT_FOUND", result.message || "Consultation session not found"),
         { status: 404 }
       );
     }
 
-    return NextResponse.json(successResponse(details));
+    return NextResponse.json(successResponse(result.data));
   } catch (error) {
     console.error("Get consultation API error:", error);
     return NextResponse.json(
@@ -51,11 +62,29 @@ export async function POST(
     }
 
     const params = await props.params;
-    const result = await ConsultationService.startConsultation(params.tokenId);
+    const result = await ConsultationService.startConsultation(
+      params.tokenId,
+      session.userId,
+      session.role
+    );
 
     if (!result.success) {
+      if (result.error === "FORBIDDEN") {
+        return NextResponse.json(
+          errorResponse("FORBIDDEN", result.message || "You are not assigned to this patient's consultation."),
+          { status: 403 }
+        );
+      }
+
+      if (result.error === "NOT_FOUND") {
+        return NextResponse.json(
+          errorResponse("NOT_FOUND", result.message || "Appointment not found"),
+          { status: 404 }
+        );
+      }
+
       return NextResponse.json(
-        errorResponse("START_FAILED", result.error || "Failed to start consultation"),
+        errorResponse("START_FAILED", result.message || "Failed to start consultation"),
         { status: 400 }
       );
     }
@@ -102,12 +131,28 @@ export async function PATCH(
 
       const result = await ConsultationService.saveDraft(
         params.tokenId,
-        draftParse.data
+        draftParse.data,
+        session.userId,
+        session.role
       );
 
       if (!result.success) {
+        if (result.error === "FORBIDDEN") {
+          return NextResponse.json(
+            errorResponse("FORBIDDEN", result.message || "You are not assigned to this patient's consultation."),
+            { status: 403 }
+          );
+        }
+
+        if (result.error === "NOT_FOUND") {
+          return NextResponse.json(
+            errorResponse("NOT_FOUND", result.message || "Appointment not found"),
+            { status: 404 }
+          );
+        }
+
         return NextResponse.json(
-          errorResponse("SAVE_DRAFT_FAILED", result.error || "Could not save draft"),
+          errorResponse("SAVE_DRAFT_FAILED", result.message || "Could not save draft"),
           { status: 400 }
         );
       }
@@ -131,12 +176,28 @@ export async function PATCH(
 
     const result = await ConsultationService.completeConsultation(
       params.tokenId,
-      completeParse.data
+      completeParse.data,
+      session.userId,
+      session.role
     );
 
     if (!result.success) {
+      if (result.error === "FORBIDDEN") {
+        return NextResponse.json(
+          errorResponse("FORBIDDEN", result.message || "You are not assigned to this patient's consultation."),
+          { status: 403 }
+        );
+      }
+
+      if (result.error === "NOT_FOUND") {
+        return NextResponse.json(
+          errorResponse("NOT_FOUND", result.message || "Appointment not found"),
+          { status: 404 }
+        );
+      }
+
       return NextResponse.json(
-        errorResponse("COMPLETE_FAILED", result.error || "Failed to complete consultation"),
+        errorResponse("COMPLETE_FAILED", result.message || "Failed to complete consultation"),
         { status: 400 }
       );
     }
