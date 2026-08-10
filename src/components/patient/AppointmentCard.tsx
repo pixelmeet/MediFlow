@@ -73,6 +73,20 @@ export function AppointmentCard({
         </div>
       </div>
 
+      {/* Status banners */}
+      {appointment.status === "NO_SHOW" && (
+        <div className="mb-4 rounded-[var(--radius-md)] bg-[hsl(var(--danger-light))] border border-[hsl(var(--danger)/0.3)] p-3 text-xs text-[hsl(var(--danger))] flex items-center justify-between gap-2">
+          <span>Marked as No-Show. If you have arrived, please report to the front desk reception to be reinstated.</span>
+        </div>
+      )}
+
+      {appointment.checkedInAt && (
+        <div className="mb-4 rounded-[var(--radius-md)] bg-[hsl(var(--success-light))] border border-[hsl(var(--success)/0.3)] p-2.5 text-xs text-[hsl(var(--success))] flex items-center gap-2">
+          <CheckCircle className="h-3.5 w-3.5" />
+          <span>Checked in at {new Date(appointment.checkedInAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} — You are in the active queue.</span>
+        </div>
+      )}
+
       {appointment.cancelReason && (
         <div className="mb-4 rounded-[var(--radius-md)] bg-[hsl(var(--danger-light))] p-3 text-xs text-[hsl(var(--danger))]">
           <span className="font-semibold">Cancellation reason:</span> {appointment.cancelReason}
@@ -82,18 +96,41 @@ export function AppointmentCard({
       {/* Actions footer */}
       {isUpcoming && (
         <div className="pt-4 border-t border-[hsl(var(--border))] flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {canCheckIn && onCheckIn && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onCheckIn(appointment.id)}
-                disabled={isCheckingIn}
-                className="text-xs border-[hsl(var(--success))] text-[hsl(var(--success))] hover:bg-[hsl(var(--success-light))]"
-              >
-                <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                {isCheckingIn ? "Checking In..." : "Check In"}
-              </Button>
+              appointment.eligibility?.status === "TOO_EARLY" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="text-xs text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]"
+                >
+                  <Clock className="h-3.5 w-3.5 mr-1" />
+                  Opens in {appointment.eligibility.minutesUntilOpen}m
+                </Button>
+              ) : appointment.eligibility?.status === "GRACE_PERIOD" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCheckIn(appointment.id)}
+                  disabled={isCheckingIn}
+                  className="text-xs border-[hsl(var(--warning))] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning-light))]"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                  {isCheckingIn ? "Checking In..." : "Check In (Grace Active)"}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCheckIn(appointment.id)}
+                  disabled={isCheckingIn}
+                  className="text-xs border-[hsl(var(--success))] text-[hsl(var(--success))] hover:bg-[hsl(var(--success-light))]"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                  {isCheckingIn ? "Checking In..." : "Check In Now"}
+                </Button>
+              )
             )}
 
             <Link href={`/patient/queue/${appointment.doctorId}`}>
@@ -109,7 +146,7 @@ export function AppointmentCard({
           </div>
 
           <div className="flex items-center gap-2">
-            {onReschedule && (
+            {onReschedule && appointment.status === "CONFIRMED" && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -119,7 +156,7 @@ export function AppointmentCard({
                 Reschedule
               </Button>
             )}
-            {onCancel && (
+            {onCancel && appointment.status === "CONFIRMED" && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -135,3 +172,4 @@ export function AppointmentCard({
     </div>
   );
 }
+

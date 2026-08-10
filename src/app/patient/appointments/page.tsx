@@ -65,9 +65,9 @@ export default function PatientAppointmentsPage() {
       const json = await res.json();
       if (res.ok) {
         addToast({
-          type: "success",
-          title: "Checked In!",
-          description: "You have been added to the doctor's active waiting queue.",
+          type: json.data?.isLate ? "warning" : "success",
+          title: json.data?.isLate ? "Checked In (Grace Period)" : "Checked In!",
+          description: json.meta?.message || "You have been added to the doctor's active waiting queue.",
         });
         setReloadKey((k) => k + 1);
       } else {

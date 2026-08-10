@@ -1,5 +1,6 @@
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
+import { CheckInService } from "./CheckInService";
 
 export interface QueueItemDTO {
   tokenId: string;
@@ -8,6 +9,9 @@ export interface QueueItemDTO {
   patientName: string;
   scheduledTime: string;
   status: "WAITING" | "IN_PROGRESS" | "DONE" | "NO_SHOW";
+  appointmentStatus?: string;
+  isCheckedIn?: boolean;
+  checkedInAt?: string | null;
   calledAt?: string | null;
   position: number;
 }
@@ -37,6 +41,9 @@ const memoryQueueState = new Map<string, QueueItemDTO[]>([
         patientName: "Suresh Gupta",
         scheduledTime: "10:00",
         status: "DONE",
+        appointmentStatus: "COMPLETED",
+        isCheckedIn: true,
+        checkedInAt: "09:50",
         position: 1,
         calledAt: "10:02",
       },
@@ -47,6 +54,9 @@ const memoryQueueState = new Map<string, QueueItemDTO[]>([
         patientName: "Anita Sharma",
         scheduledTime: "10:20",
         status: "IN_PROGRESS",
+        appointmentStatus: "IN_CONSULTATION",
+        isCheckedIn: true,
+        checkedInAt: "10:15",
         position: 2,
         calledAt: "10:25",
       },
@@ -57,6 +67,9 @@ const memoryQueueState = new Map<string, QueueItemDTO[]>([
         patientName: "Meet Vora",
         scheduledTime: "10:40",
         status: "WAITING",
+        appointmentStatus: "CHECKED_IN",
+        isCheckedIn: true,
+        checkedInAt: "10:30",
         position: 3,
       },
       {
@@ -66,6 +79,8 @@ const memoryQueueState = new Map<string, QueueItemDTO[]>([
         patientName: "Rohan Deshmukh",
         scheduledTime: "11:00",
         status: "WAITING",
+        appointmentStatus: "CONFIRMED",
+        isCheckedIn: false,
         position: 4,
       },
     ],
@@ -111,6 +126,8 @@ export class QueueService {
           else if (apt.status === "NO_SHOW" || apt.status === "CANCELLED") qStatus = "NO_SHOW";
           else if (apt.queueToken?.status) qStatus = apt.queueToken.status;
 
+          const isCheckedIn = Boolean(apt.checkedInAt) || apt.status === "CHECKED_IN" || apt.status === "IN_CONSULTATION" || apt.status === "COMPLETED";
+
           return {
             tokenId: apt.queueToken?.id || `tok_${apt.id}`,
             appointmentId: apt.id,
@@ -118,6 +135,9 @@ export class QueueService {
             patientName: apt.patient.name,
             scheduledTime: apt.startTime,
             status: qStatus,
+            appointmentStatus: apt.status,
+            isCheckedIn,
+            checkedInAt: apt.checkedInAt?.toISOString() || null,
             position: apt.queueToken?.position || idx + 1,
             calledAt: apt.queueToken?.calledAt?.toISOString() || null,
           };
@@ -183,60 +203,16 @@ export class QueueService {
   }
 
   /**
-   * Check in a patient on arrival
+   * Check in a patient on arrival (delegated to CheckInService)
    */
   static async checkInPatient(
     appointmentId: string,
-    requestingUserId: string
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const [requestingUser, patient, existing] = await Promise.all([
-        prisma.user.findUnique({
-          where: { id: requestingUserId },
-          select: { role: true },
-        }),
-        prisma.patient.findFirst({
-          where: { userId: requestingUserId },
-        }),
-        prisma.appointment.findUnique({
-          where: { id: appointmentId },
-        }),
-      ]);
-
-      if (!existing) {
-        return { success: false, error: "Appointment not found." };
-      }
-
-      const isStaff = requestingUser?.role === "DOCTOR" || requestingUser?.role === "ADMIN";
-
-      if (!isStaff && (!patient || existing.patientId !== patient.id)) {
-        return { success: false, error: "You can only check in your own appointment." };
-      }
-
-      await prisma.$transaction([
-        prisma.appointment.update({
-          where: { id: appointmentId },
-          data: {
-            status: "CHECKED_IN",
-            checkedInAt: new Date(),
-          },
-        }),
-        prisma.queueToken.updateMany({
-          where: { appointmentId },
-          data: { status: "WAITING" },
-        }),
-      ]);
-
-      return { success: true };
-    } catch (dbError) {
-      console.error("Database error in QueueService.checkInPatient:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "Database error. Could not complete check-in." };
-      }
-
-      return { success: true };
-    }
+    requestingUserId: string,
+    options?: { forceByStaff?: boolean }
+  ): Promise<{ success: boolean; error?: string; isLate?: boolean; checkedInAt?: string }> {
+    return CheckInService.checkInPatient(appointmentId, requestingUserId, options);
   }
+
 
   /**
    * Doctor calls the next patient in queue

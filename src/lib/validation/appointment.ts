@@ -22,3 +22,23 @@ export const CancelAppointmentSchema = z.object({
 });
 
 export type CancelAppointmentInput = z.infer<typeof CancelAppointmentSchema>;
+
+export const CheckInAppointmentSchema = z.object({
+  forceByStaff: z.boolean().optional(),
+});
+
+export type CheckInAppointmentInput = z.infer<typeof CheckInAppointmentSchema>;
+
+export const ReinstateAppointmentSchema = z.object({
+  reason: z.string().min(3, "Please provide a valid clinical/administrative reason for reinstating this patient").max(500),
+});
+
+export type ReinstateAppointmentInput = z.infer<typeof ReinstateAppointmentSchema>;
+
+export const SweepNoShowsSchema = z.object({
+  branchId: z.string().optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional(),
+});
+
+export type SweepNoShowsInput = z.infer<typeof SweepNoShowsSchema>;
+

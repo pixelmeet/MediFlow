@@ -2,6 +2,7 @@ import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { BookAppointmentInput, CancelAppointmentInput, RescheduleAppointmentInput } from "../validation/appointment";
 import { SchedulingService } from "./SchedulingService";
+import { CheckInService, type CheckInEligibility } from "./CheckInService";
 
 export interface AppointmentDTO {
   id: string;
@@ -20,8 +21,11 @@ export interface AppointmentDTO {
   cancelReason?: string | null;
   queueStatus?: "WAITING" | "IN_PROGRESS" | "DONE" | "NO_SHOW" | null;
   queuePosition?: number | null;
+  checkedInAt?: string | null;
+  eligibility?: CheckInEligibility;
   createdAt: string;
 }
+
 
 // In-memory appointments store for dev fallback
 const memoryAppointments: AppointmentDTO[] = [];
@@ -242,8 +246,20 @@ export class AppointmentService {
         const upcoming: AppointmentDTO[] = [];
         const past: AppointmentDTO[] = [];
 
+        const now = new Date();
         appointments.forEach((apt) => {
           const aptDateStr = apt.date.toISOString().slice(0, 10);
+          const eligibility = CheckInService.evaluateEligibility(
+            {
+              date: apt.date,
+              startTime: apt.startTime,
+              status: apt.status,
+              checkedInAt: apt.checkedInAt,
+              branch: apt.doctor.department.branch,
+            },
+            now
+          );
+
           const dto: AppointmentDTO = {
             id: apt.id,
             patientId: apt.patientId,
@@ -259,6 +275,8 @@ export class AppointmentService {
             fee: Number(apt.feeSnapshot),
             queueStatus: apt.queueToken?.status || null,
             queuePosition: apt.queueToken?.position || null,
+            checkedInAt: apt.checkedInAt?.toISOString() || null,
+            eligibility,
             cancelReason: apt.cancelReason,
             createdAt: apt.createdAt.toISOString(),
           };

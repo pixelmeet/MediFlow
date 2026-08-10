@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { QueueService } from "@/lib/services/QueueService";
+import { CheckInService } from "@/lib/services/CheckInService";
+import { CheckInAppointmentSchema } from "@/lib/validation/appointment";
 import { errorResponse, successResponse } from "@/lib/utils";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   props: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -16,11 +17,24 @@ export async function POST(
       );
     }
 
+    let forceByStaff = false;
+    try {
+      const body = await request.json();
+      const parsed = CheckInAppointmentSchema.safeParse(body);
+      if (parsed.success && parsed.data.forceByStaff) {
+        forceByStaff = true;
+      }
+    } catch {
+      // Empty body is valid for simple POST
+    }
+
     const params = await props.params;
-    const result = await QueueService.checkInPatient(params.id, session.userId);
+    const result = await CheckInService.checkInPatient(params.id, session.userId, {
+      forceByStaff,
+    });
 
     if (!result.success) {
-      if (result.error === "You can only check in your own appointment.") {
+      if (result.error === "You can only check in for your own appointment.") {
         return NextResponse.json(
           errorResponse("FORBIDDEN", result.error),
           { status: 403 }
@@ -41,7 +55,18 @@ export async function POST(
     }
 
     return NextResponse.json(
-      successResponse({ checkedIn: true }, { message: "Successfully checked in! You are now in the active queue." })
+      successResponse(
+        {
+          checkedIn: true,
+          checkedInAt: result.checkedInAt,
+          isLate: result.isLate,
+        },
+        {
+          message: result.isLate
+            ? "Checked in during grace period. You have been added to the doctor's waiting queue."
+            : "Successfully checked in! You are now in the active waiting queue.",
+        }
+      )
     );
   } catch (error) {
     console.error("Check-in API error:", error);
@@ -51,3 +76,4 @@ export async function POST(
     );
   }
 }
+

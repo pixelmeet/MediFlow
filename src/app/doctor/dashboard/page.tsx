@@ -295,11 +295,27 @@ export default function DoctorDashboard() {
                         {item.tokenNumber}
                       </span>
                       <div>
-                        <p className="font-bold text-sm text-[hsl(var(--foreground))]">
-                          {item.patientName}
-                        </p>
-                        <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-sm text-[hsl(var(--foreground))]">
+                            {item.patientName}
+                          </p>
+                          {item.isCheckedIn ? (
+                            <span className="text-[10px] font-bold uppercase bg-[hsl(var(--success-light))] text-[hsl(var(--success))] px-2 py-0.5 rounded-[var(--radius-full)]">
+                              Checked In
+                            </span>
+                          ) : item.status === "NO_SHOW" ? (
+                            <span className="text-[10px] font-bold uppercase bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))] px-2 py-0.5 rounded-[var(--radius-full)]">
+                              No-Show
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold uppercase bg-[hsl(var(--muted)/0.4)] text-[hsl(var(--muted-foreground))] px-2 py-0.5 rounded-[var(--radius-full)]">
+                              Awaiting Arrival
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
                           Position #{item.position} • Scheduled {item.scheduledTime}
+                          {item.checkedInAt && ` • Arrived ${item.checkedInAt.slice(11, 16) || item.checkedInAt}`}
                         </p>
                       </div>
                     </div>
@@ -320,9 +336,17 @@ export default function DoctorDashboard() {
                             </Button>
                           </Link>
                         </div>
+                      ) : item.status === "NO_SHOW" ? (
+                        <span className="text-[hsl(var(--danger))] font-semibold bg-[hsl(var(--danger-light))] px-2.5 py-1 rounded-[var(--radius-full)]">
+                          No-Show
+                        </span>
+                      ) : item.isCheckedIn ? (
+                        <span className="text-[hsl(var(--success))] font-semibold bg-[hsl(var(--success-light))] px-2.5 py-1 rounded-[var(--radius-full)]">
+                          Ready in Waiting Room
+                        </span>
                       ) : (
                         <span className="text-[hsl(var(--warning))] font-semibold bg-[hsl(var(--warning-light))] px-2.5 py-1 rounded-[var(--radius-full)]">
-                          Waiting in Queue
+                          Awaiting Check-in
                         </span>
                       )}
                     </div>
