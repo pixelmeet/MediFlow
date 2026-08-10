@@ -3,18 +3,20 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, LayoutDashboard, Stethoscope, Building2, MapPin, Calendar, UserCheck, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Stethoscope, Building2, MapPin, Calendar, UserCheck, Clock, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
 const NAV_LINKS = [
   { href: "/admin/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin/queue", label: "Live Queue", icon: Clock },
   { href: "/admin/checkin", label: "Check-In Desk", icon: UserCheck },
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/admin/departments", label: "Departments", icon: Building2 },
   { href: "/admin/branches", label: "Branches", icon: MapPin },
   { href: "/admin/appointments", label: "Appointments", icon: Calendar },
 ];
+
 
 
 export function AdminNavigation() {

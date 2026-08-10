@@ -2,60 +2,30 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Activity, Stethoscope, Users, Calendar, Clock, LogOut, User, CheckCircle2, PhoneCall, RefreshCw, AlertCircle } from "lucide-react";
+import { Activity, Stethoscope, Users, Calendar, Clock, LogOut, User, CheckCircle2, PhoneCall, RefreshCw, AlertCircle, Coffee, AlertTriangle, Play } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { StatCard } from "@/components/shared";
 import { useToast } from "@/components/ui/toast";
-import type { QueueSnapshotDTO, QueueItemDTO } from "@/lib/services/QueueService";
+import { useQueueSocket } from "@/hooks/useQueueSocket";
+import type { QueueItemDTO, DoctorClinicalStatus } from "@/lib/services/QueueService";
 
 export default function DoctorDashboard() {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading: isAuthLoading } = useAuth();
   const { addToast } = useToast();
 
-  const [snapshot, setSnapshot] = React.useState<QueueSnapshotDTO | null>(null);
-  const [isCallingNext, setIsCallingNext] = React.useState(false);
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  // Use user's doctor ID if doctor, else fallback to demo doctor
   const doctorId = "doc_patel_01";
+  const { snapshot, isConnected, isReconnecting, error, refresh } = useQueueSocket(doctorId);
 
-  const [reloadKey, setReloadKey] = React.useState(0);
+  const [isCallingNext, setIsCallingNext] = React.useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
 
-  React.useEffect(() => {
-    let isMounted = true;
-
-    const pollDoctorQueue = async (isSilent: boolean) => {
-      if (!isSilent) setIsRefreshing(true);
-      try {
-        const res = await fetch(`/api/v1/queue/${doctorId}`);
-        const json = await res.json();
-        if (!isMounted) return;
-        if (res.ok && json.data) {
-          setSnapshot(json.data);
-          setError(null);
-        } else {
-          if (!isSilent) setError(json.error?.message || "Failed to load clinical queue");
-        }
-      } catch {
-        if (isMounted && !isSilent) setError("Network error loading clinical queue");
-      } finally {
-        if (isMounted) setIsRefreshing(false);
-      }
-    };
-
-    pollDoctorQueue(false);
-
-    const interval = setInterval(() => {
-      pollDoctorQueue(true);
-    }, 3000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [doctorId, reloadKey]);
+  // Doctor Status Modal State
+  const [statusModalOpen, setStatusModalOpen] = React.useState(false);
+  const [targetStatus, setTargetStatus] = React.useState<DoctorClinicalStatus>("ON_BREAK");
+  const [delayMinutes, setDelayMinutes] = React.useState(15);
+  const [statusNote, setStatusNote] = React.useState("");
 
   const handleCallNext = async () => {
     setIsCallingNext(true);
@@ -71,7 +41,7 @@ export default function DoctorDashboard() {
           title: "Patient Called!",
           description: `Called ${json.data.patientName} (Token ${json.data.tokenNumber}) into consultation cabin.`,
         });
-        setReloadKey((k) => k + 1);
+        refresh();
       } else {
         addToast({
           type: "warning",
@@ -90,7 +60,41 @@ export default function DoctorDashboard() {
     }
   };
 
-  if (isLoading) {
+  const handleUpdateStatus = async (status: DoctorClinicalStatus, minutes: number = 0, note?: string) => {
+    setIsUpdatingStatus(true);
+    try {
+      const res = await fetch(`/api/v1/queue/${doctorId}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status,
+          delayMinutes: minutes,
+          note: note || undefined,
+        }),
+      });
+      const json = await res.json();
+
+      if (res.ok) {
+        addToast({
+          type: "success",
+          title: "Cabin Status Updated",
+          description: json.meta?.message || `Status set to ${status}`,
+        });
+        setStatusModalOpen(false);
+        refresh();
+      } else {
+        addToast({
+          type: "error",
+          title: "Status Update Failed",
+          description: json.error?.message || "Could not update cabin status.",
+        });
+      }
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
         <div className="text-center">
@@ -100,6 +104,8 @@ export default function DoctorDashboard() {
       </div>
     );
   }
+
+  const currentStatus = snapshot?.doctorStatus?.status || "CONSULTING";
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] pb-12">
@@ -152,39 +158,88 @@ export default function DoctorDashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--success))] animate-ping" />
-                <span className="text-xs font-bold text-[hsl(var(--success))] uppercase tracking-wider">
-                  Clinical Station Online
+                <span className={`h-2.5 w-2.5 rounded-full ${currentStatus === "CONSULTING" ? "bg-[hsl(var(--success))] animate-ping" : "bg-[hsl(var(--warning))]"}`} />
+                <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))]">
+                  Station Status: {currentStatus.replace("_", " ")}
+                </span>
+                <span className="text-[10px] bg-[hsl(var(--muted)/0.3)] text-[hsl(var(--muted-foreground))] px-2 py-0.5 rounded-[var(--radius-full)]">
+                  {isConnected ? "Live Stream Active" : isReconnecting ? "Reconnecting..." : "Polling Fallback"}
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[hsl(var(--foreground))] mt-1">
-                {user?.name || "Dr. Rajesh Patel"}
+                {user?.name || snapshot?.doctorName || "Dr. Rajesh Patel"}
               </h1>
               <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-                Cardiology Department • Central Hospital Clinic Station 4
+                {snapshot?.specialty || "Cardiology"} • {snapshot?.branchName || "Central Hospital Main Clinic"} • Cabin 4
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* Doctor Cabin Status Bar */}
+              {currentStatus !== "CONSULTING" ? (
+                <Button
+                  size="sm"
+                  onClick={() => handleUpdateStatus("CONSULTING", 0, "Resumed consultations")}
+                  disabled={isUpdatingStatus}
+                  className="text-xs flex items-center gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.9)] text-white font-bold"
+                >
+                  <Play className="h-3.5 w-3.5" />
+                  Resume Consulting
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTargetStatus("ON_BREAK");
+                      setDelayMinutes(15);
+                      setStatusNote("Brief clinical break");
+                      setStatusModalOpen(true);
+                    }}
+                    className="text-xs flex items-center gap-1.5 border-[hsl(var(--warning))] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning-light))]"
+                  >
+                    <Coffee className="h-3.5 w-3.5" />
+                    Take a Break
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTargetStatus("DELAYED");
+                      setDelayMinutes(20);
+                      setStatusNote("Emergency patient consultation in progress");
+                      setStatusModalOpen(true);
+                    }}
+                    className="text-xs flex items-center gap-1.5 border-[hsl(var(--info))] text-[hsl(var(--info))] hover:bg-[hsl(var(--info-light))]"
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Report Delay
+                  </Button>
+                </>
+              )}
+
               <Link href="/doctor/schedule">
-                <Button size="sm" className="text-xs flex items-center gap-1.5 font-bold shadow-[var(--shadow-sm)]">
+                <Button variant="outline" size="sm" className="text-xs flex items-center gap-1.5 font-bold">
                   <Calendar className="h-3.5 w-3.5" />
-                  Schedule & Availability
+                  Schedule
                 </Button>
               </Link>
+
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setReloadKey((k) => k + 1)}
-                disabled={isRefreshing}
+                onClick={refresh}
                 className="text-xs flex items-center gap-1.5"
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+                <RefreshCw className="h-3.5 w-3.5" />
                 Sync
               </Button>
             </div>
           </div>
         </div>
+
 
         {/* Real-time KPI Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -357,6 +412,69 @@ export default function DoctorDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Doctor Status Update Modal */}
+      <Modal
+        open={statusModalOpen}
+        onClose={() => setStatusModalOpen(false)}
+        title={targetStatus === "ON_BREAK" ? "Take a Clinical Break" : "Report Emergency / Consultation Delay"}
+        description={
+          targetStatus === "ON_BREAK"
+            ? "Broadcast a temporary break notice to all waiting patients. Queue ETAs will adjust dynamically."
+            : "Notify patients of expected consultation delays and adjust live estimated wait times."
+        }
+      >
+        <div className="space-y-4 pt-2 text-xs">
+          <div>
+            <label className="font-semibold block mb-1">Duration (Minutes)</label>
+            <div className="flex items-center gap-2">
+              {[5, 10, 15, 20, 30].map((mins) => (
+                <button
+                  key={mins}
+                  type="button"
+                  onClick={() => setDelayMinutes(mins)}
+                  className={`px-3 py-2 rounded-[var(--radius-md)] border font-mono font-bold text-xs transition-all ${
+                    delayMinutes === mins
+                      ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]"
+                      : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary)/0.5)]"
+                  }`}
+                >
+                  {mins}m
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="font-semibold block mb-1">Patient Notice / Reason Note</label>
+            <input
+              type="text"
+              value={statusNote}
+              onChange={(e) => setStatusNote(e.target.value)}
+              placeholder={
+                targetStatus === "ON_BREAK"
+                  ? "e.g., Short lunch / tea break"
+                  : "e.g., Emergency inpatient review in progress"
+              }
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-[hsl(var(--border))]">
+            <Button variant="outline" size="sm" onClick={() => setStatusModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handleUpdateStatus(targetStatus, delayMinutes, statusNote)}
+              disabled={isUpdatingStatus}
+            >
+              {isUpdatingStatus ? "Broadcasting..." : "Broadcast Status"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
+
