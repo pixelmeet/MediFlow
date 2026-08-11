@@ -58,7 +58,12 @@ export async function POST(request: Request) {
     );
 
     if (!result.success || !result.appointment) {
-      const status = result.error?.code === "SLOT_UNAVAILABLE" ? 409 : 400;
+      const status =
+        result.error?.code === "SLOT_UNAVAILABLE"
+          ? 409
+          : result.error?.code === "SERVICE_UNAVAILABLE"
+          ? 503
+          : 400;
       return NextResponse.json(
         errorResponse(
           result.error?.code || "BOOKING_FAILED",

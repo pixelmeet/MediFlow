@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { BookAppointmentInput, CancelAppointmentInput, RescheduleAppointmentInput } from "../validation/appointment";
@@ -63,7 +64,7 @@ export class AppointmentService {
 
     try {
       // 2. Fetch patient record and doctor fee
-      const [patient, doctor, existingCount] = await Promise.all([
+      const [patient, doctor] = await Promise.all([
         prisma.patient.findFirst({
           where: { userId: patientUserId },
         }),
@@ -72,15 +73,6 @@ export class AppointmentService {
           include: {
             department: {
               include: { branch: true },
-            },
-          },
-        }),
-        prisma.appointment.count({
-          where: {
-            doctorId: input.doctorId,
-            date: {
-              gte: new Date(input.date + "T00:00:00.000Z"),
-              lte: new Date(input.date + "T23:59:59.999Z"),
             },
           },
         }),
@@ -106,12 +98,20 @@ export class AppointmentService {
         };
       }
 
-      // 3. Monotonic token format: A-01, A-02, ...
-      const tokenSeq = existingCount + 1;
-      const tokenNumber = `A-${tokenSeq.toString().padStart(2, "0")}`;
+      // 3. Create appointment and initial queue token inside transaction with atomic token generation
+      const { appointment: newApt, tokenSeq } = await prisma.$transaction(async (tx) => {
+        const existingCount = await tx.appointment.count({
+          where: {
+            doctorId: input.doctorId,
+            date: {
+              gte: new Date(input.date + "T00:00:00.000Z"),
+              lte: new Date(input.date + "T23:59:59.999Z"),
+            },
+          },
+        });
+        const tokenSeq = existingCount + 1;
+        const tokenNumber = `A-${tokenSeq.toString().padStart(2, "0")}`;
 
-      // 4. Create appointment and initial queue token inside transaction
-      const newApt = await prisma.$transaction(async (tx) => {
         const appointment = await tx.appointment.create({
           data: {
             patientId: patient.id,
@@ -144,7 +144,7 @@ export class AppointmentService {
           },
         });
 
-        return appointment;
+        return { appointment, tokenSeq };
       });
 
       return {
@@ -169,6 +169,16 @@ export class AppointmentService {
       };
     } catch (dbError) {
       console.error("Database error during createAppointment:", dbError);
+
+      if (dbError instanceof Prisma.PrismaClientKnownRequestError && dbError.code === "P2002") {
+        return {
+          success: false,
+          error: {
+            code: "SLOT_UNAVAILABLE",
+            message: "This slot was just booked by someone else. Please choose another time.",
+          },
+        };
+      }
 
       if (!ALLOW_MEMORY_FALLBACK) {
         return {

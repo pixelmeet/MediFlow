@@ -226,6 +226,7 @@ model Appointment {
   updatedAt DateTime @updatedAt
 
   @@unique([doctorId, date, startTime])
+  @@unique([doctorId, date, tokenNumber])
   @@index([patientId])
   @@index([doctorId, date])
   @@index([branchId, date])
