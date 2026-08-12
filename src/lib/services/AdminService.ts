@@ -74,6 +74,8 @@ export interface AdminAppointmentDTO {
   status: string;
   feeSnapshot: number;
   checkedInAt?: string | null;
+  paymentStatus?: string | null;
+  refundedAt?: string | null;
 }
 
 export class AdminService {
@@ -676,6 +678,7 @@ export class AdminService {
           patient: { include: { user: true } },
           doctor: true,
           branch: true,
+          payment: true,
         },
         orderBy: [{ date: "desc" }, { startTime: "asc" }],
         take: 50,
@@ -696,6 +699,8 @@ export class AdminService {
           status: a.status,
           feeSnapshot: Number(a.feeSnapshot || 500),
           checkedInAt: a.checkedInAt?.toISOString() || null,
+          paymentStatus: a.payment?.status || null,
+          refundedAt: a.payment?.refundedAt?.toISOString() || null,
         }));
       }
 

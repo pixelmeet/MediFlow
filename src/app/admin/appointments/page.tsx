@@ -38,6 +38,11 @@ export default function AdminAppointmentsPage() {
   const [overrideReason, setOverrideReason] = React.useState("");
   const [isSubmittingOverride, setIsSubmittingOverride] = React.useState(false);
 
+  // Refund modal state
+  const [refundAppointment, setRefundAppointment] = React.useState<AdminAppointmentDTO | null>(null);
+  const [refundReason, setRefundReason] = React.useState("Patient cancellation refund requested");
+  const [isSubmittingRefund, setIsSubmittingRefund] = React.useState(false);
+
   React.useEffect(() => {
     let isMounted = true;
 
@@ -53,7 +58,8 @@ export default function AdminAppointmentsPage() {
           fetch("/api/v1/admin/doctors"),
         ]);
 
-        const [aptJson, docsJson] = await Promise.all([aptRes.json(), docsRes.json()]);
+        const aptJson = await aptRes.json();
+        const docsJson = await docsRes.json();
 
         if (isMounted) {
           if (aptRes.ok && aptJson.data) setAppointments(aptJson.data);
@@ -116,6 +122,48 @@ export default function AdminAppointmentsPage() {
     }
   };
 
+  const handleProcessRefund = async () => {
+    if (!refundAppointment || !refundReason) return;
+    setIsSubmittingRefund(true);
+
+    try {
+      const res = await fetch("/api/v1/payments/refund", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appointmentId: refundAppointment.id,
+          reason: refundReason,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (res.ok) {
+        addToast({
+          type: "success",
+          title: "Refund Processed",
+          description: `₹${refundAppointment.feeSnapshot} successfully refunded for Token ${refundAppointment.tokenNumber}.`,
+        });
+        setRefundAppointment(null);
+        setReloadKey((k) => k + 1);
+      } else {
+        addToast({
+          type: "error",
+          title: "Refund Failed",
+          description: json.error?.message || "Could not process refund.",
+        });
+      }
+    } catch {
+      addToast({
+        type: "error",
+        title: "Refund Error",
+        description: "Network error while processing refund.",
+      });
+    } finally {
+      setIsSubmittingRefund(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
       <AdminNavigation />
@@ -127,7 +175,7 @@ export default function AdminAppointmentsPage() {
             Master Appointments &amp; Overrides
           </h1>
           <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-            Hospital-wide appointment directory with live status management and emergency reassignment controls
+            Hospital-wide appointment directory with live status management, refund processing, and physician reassignment controls
           </p>
         </div>
 
@@ -190,7 +238,7 @@ export default function AdminAppointmentsPage() {
                   <th className="p-4">Patient</th>
                   <th className="p-4">Doctor &amp; Specialty</th>
                   <th className="p-4">Status</th>
-                  <th className="p-4">Fee Locked</th>
+                  <th className="p-4">Fee &amp; Payment</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -229,17 +277,47 @@ export default function AdminAppointmentsPage() {
                           {apt.status.replace("_", " ")}
                         </span>
                       </td>
-                      <td className="p-4 font-mono font-bold text-sm text-[hsl(var(--foreground))]">
-                        ₹{apt.feeSnapshot}
+                      <td className="p-4">
+                        <div className="font-mono font-bold text-sm text-[hsl(var(--foreground))]">
+                          ₹{apt.feeSnapshot}
+                        </div>
+                        <div className="mt-1">
+                          {apt.refundedAt ? (
+                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))]">
+                              REFUNDED
+                            </span>
+                          ) : apt.paymentStatus === "PAID" ? (
+                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[hsl(var(--success-light))] text-[hsl(var(--success))]">
+                              PAID
+                            </span>
+                          ) : (
+                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))]">
+                              {apt.paymentStatus || "PENDING"}
+                            </span>
+                          )}
+                        </div>
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-right space-x-2">
+                        {apt.paymentStatus === "PAID" && !apt.refundedAt && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setRefundAppointment(apt);
+                              setRefundReason(`Refund for appointment ${apt.tokenNumber} (${apt.status})`);
+                            }}
+                            className="text-xs font-semibold"
+                          >
+                            Refund
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleOpenOverride(apt)}
                           className="text-xs font-semibold"
                         >
-                          Override / Reassign
+                          Override
                         </Button>
                       </td>
                     </tr>
@@ -314,6 +392,47 @@ export default function AdminAppointmentsPage() {
               disabled={isSubmittingOverride || !overrideReason}
             >
               {isSubmittingOverride ? "Applying..." : "Save Override"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Refund Confirmation Modal */}
+      <Modal
+        open={Boolean(refundAppointment)}
+        onClose={() => setRefundAppointment(null)}
+        title="Process Patient Refund"
+        description={`Issue a full refund of ₹${refundAppointment?.feeSnapshot} for Token ${refundAppointment?.tokenNumber} (${refundAppointment?.patientName}).`}
+      >
+        <div className="space-y-4 pt-2 text-xs">
+          <div className="rounded-[var(--radius-md)] bg-[hsl(var(--warning-light))] border border-[hsl(var(--warning)/0.2)] p-3 text-[hsl(var(--warning))] font-medium">
+            This action will mark the payment as REFUNDED and release the associated transaction.
+          </div>
+
+          <div>
+            <label className="font-semibold block mb-1">
+              Refund Reason <span className="text-[hsl(var(--danger))]">*</span>
+            </label>
+            <textarea
+              rows={2}
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+              placeholder="Reason for refund..."
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-[hsl(var(--border))]">
+            <Button variant="outline" size="sm" onClick={() => setRefundAppointment(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleProcessRefund}
+              disabled={isSubmittingRefund || !refundReason.trim()}
+            >
+              {isSubmittingRefund ? "Processing Refund..." : "Confirm & Process Refund"}
             </Button>
           </div>
         </div>

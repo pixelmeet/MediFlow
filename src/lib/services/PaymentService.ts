@@ -141,6 +141,10 @@ export class PaymentService {
     } catch (err) {
       console.error("PaymentService.processPayment error:", err);
       if (ALLOW_MEMORY_FALLBACK) {
+        const existing = memoryPayments.get(input.appointmentId);
+        if (existing && existing.status === "PAID") {
+          return { success: false, error: "Payment for this appointment has already been completed." };
+        }
         const mock: PaymentDTO = {
           id: `pay_${Date.now()}`,
           appointmentId: input.appointmentId,
