@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/cn";
 import { cva, type VariantProps } from "class-variance-authority";
+import Image from "next/image";
 
 // ─── StatusPill ──────────────────────────────────────────
 
@@ -188,11 +189,21 @@ function Avatar({ src, alt, fallback, size = "md", className }: AvatarProps) {
     xl: "h-16 w-16 text-lg",
   };
 
+  const sizePixels = {
+    sm: 32,
+    md: 40,
+    lg: 48,
+    xl: 64,
+  };
+
   if (src) {
     return (
-      <img
+      <Image
         src={src}
-        alt={alt || fallback}
+        alt={alt || fallback || "Avatar"}
+        width={sizePixels[size]}
+        height={sizePixels[size]}
+        unoptimized={typeof src === "string" && (src.startsWith("data:") || src.startsWith("http"))}
         className={cn(
           "rounded-full object-cover",
           sizeClasses[size],
