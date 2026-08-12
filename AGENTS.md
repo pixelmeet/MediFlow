@@ -233,40 +233,45 @@ Before calling anything done:
 This section is the only part that should change between projects. Fill it in at the start of a new project; leave blank fields as "not yet specified" rather than guessing.
 
 ### B.1 Project Identity
-- **Project name:**
-- **One-line purpose:**
-- **Primary users:**
-- **Stage:** (prototype / MVP / production / legacy maintenance)
+- **Project name:** MediFlow
+- **One-line purpose:** Hospital management and appointment booking platform with role-based portals for Patients, Doctors, and Admins.
+- **Primary users:** Patients, Doctors, Hospital Administrators
+- **Stage:** MVP / Active development
 
 ### B.2 Stack & Conventions
-- **Language(s) / framework(s):**
-- **Package manager:**
-- **Styling / design system:**
-- **State management approach:**
-- **Testing framework(s):**
-- **Linting / formatting config:**
+- **Language(s) / framework(s):** TypeScript 5+, Next.js 16.3.0 (App Router), React 19.2.8
+- **Package manager:** npm
+- **Styling / design system:** Tailwind CSS v4, Lucide React, class-variance-authority, tailwind-merge
+- **State management approach:** @tanstack/react-query v5, React Context (Auth), React Hook Form with Zod schemas
+- **Testing framework(s):** Not yet specified (no test runner in package.json)
+- **Linting / formatting config:** ESLint 9 (`eslint-config-next`)
 
 ### B.3 Architecture
-- **Repo type:** (single app / monorepo / polyrepo)
-- **Folder structure convention:** (link or describe — Part A §12 is the *default* only if this is blank)
-- **API style:** (REST / GraphQL / RPC / other)
-- **Auth provider/strategy:**
+- **Repo type:** Single app
+- **Folder structure convention:** Next.js App Router (`src/app/`, `src/app/api/v1/`, `src/components/`, `src/context/`, `src/hooks/`, `src/lib/`, `prisma/`)
+- **API style:** REST (`/api/v1/*`)
+- **Auth provider/strategy:** Custom JWT authentication using `jose` & `bcryptjs` (access + refresh tokens, role-based authorization)
 
 ### B.4 Data & Infra
-- **Database(s):**
-- **ORM / query layer:**
-- **Hosting / deployment target:**
-- **CI/CD pipeline:**
-- **Environments:** (dev / staging / prod — and how they differ)
+- **Database(s):** PostgreSQL (Neon remote database)
+- **ORM / query layer:** Prisma ORM 7.9.1 (`@prisma/client`, `@prisma/adapter-pg`)
+- **Hosting / deployment target:** Node.js / Vercel compatible
+- **CI/CD pipeline:** Not yet specified
+- **Environments:** Development (`.env`), Production
 
 ### B.5 Project-Specific Constraints
-- **Compliance/regulatory requirements** (if any — e.g. PCI, HIPAA, SOC2):
-- **Performance/SLA requirements:**
-- **Things explicitly off-limits** (files, patterns, dependencies to avoid):
-- **Anything from a tool-generated agent file** (e.g. framework-injected instructions like a Next.js dev-server notice) that must be preserved verbatim rather than edited:
+- **Compliance/regulatory requirements:** Healthcare data integrity & patient privacy (HIPAA awareness for PII / health records)
+- **Performance/SLA requirements:** Responsive queue and appointment status transitions; idempotent booking/payment flows
+- **Things explicitly off-limits:** Untracked schema modifications (`prisma db push` forbidden for schema evolutions; use `prisma migrate dev` per `prisma/MIGRATIONS.md`), hardcoded credentials/secrets, plain/unvalidated API inputs
+- **Anything from a tool-generated agent file:** `next-env.d.ts`, `tsconfig.tsbuildinfo`
 
 ### B.6 Definition of Done (project-specific, layered on top of Part A §16)
-- [ ] (add project-specific completion criteria here)
+- [ ] Schema changes tracked via `npx prisma migrate dev` (never untracked `db push`)
+- [ ] TypeScript type checks pass cleanly (`npx tsc --noEmit`)
+- [ ] Linting passes without errors (`npm run lint`)
+- [ ] Server-side input validation enforced via Zod on all endpoints
+- [ ] RBAC authorization verified across all protected routes and components
+
 
 ---
 

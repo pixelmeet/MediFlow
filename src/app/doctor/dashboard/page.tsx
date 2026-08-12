@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import { StatCard } from "@/components/shared";
 import { useToast } from "@/components/ui/toast";
 import { useQueueSocket } from "@/hooks/useQueueSocket";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import type { QueueItemDTO, DoctorClinicalStatus } from "@/lib/services/QueueService";
 
 export default function DoctorDashboard() {
@@ -126,7 +127,9 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <NotificationBell />
+
             <div className="hidden sm:flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
               <User className="h-4 w-4" />
               <span className="font-medium text-[hsl(var(--foreground))]">{user?.name}</span>

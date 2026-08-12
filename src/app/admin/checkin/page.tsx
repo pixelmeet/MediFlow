@@ -10,7 +10,6 @@ import {
   RotateCcw,
   CheckCircle2,
   Users,
-  Building2,
   ShieldCheck,
 } from "lucide-react";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";

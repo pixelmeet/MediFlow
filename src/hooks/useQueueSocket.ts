@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { QueueSnapshotDTO, DoctorCabinStatusDTO } from "@/lib/services/QueueService";
+import type { QueueSnapshotDTO } from "@/lib/services/QueueService";
 
 interface UseQueueSocketOptions {
   pollingFallbackIntervalMs?: number;
@@ -35,9 +35,6 @@ export function useQueueSocket(doctorId: string, options?: UseQueueSocketOptions
     let reconnectTimeout: NodeJS.Timeout | null = null;
     let retryDelay = 1000;
 
-    // Fetch initial REST snapshot immediately
-    fetchAuthoritativeSnapshot();
-
     const connectSSE = () => {
       if (!isMounted) return;
 
@@ -63,38 +60,34 @@ export function useQueueSocket(doctorId: string, options?: UseQueueSocketOptions
         });
 
         // Live diffs and token call events
-        const handleDiff = () => {
-          if (!isMounted) return;
-          fetchAuthoritativeSnapshot();
-        };
-
-        eventSource.addEventListener("queue_diff", handleDiff);
-        eventSource.addEventListener("call_next", handleDiff);
-        eventSource.addEventListener("queue_update", handleDiff);
-
-        // Real-time doctor status updates (On Break / Delayed / Consulting)
-        eventSource.addEventListener("doctor_status", (e: MessageEvent) => {
+        eventSource.addEventListener("diff", (e: MessageEvent) => {
           if (!isMounted) return;
           try {
-            const doctorStatus: DoctorCabinStatusDTO = JSON.parse(e.data);
-            setSnapshot((prev) => {
-              if (!prev) return prev;
-              const extraOffset =
-                doctorStatus.status === "ON_BREAK" || doctorStatus.status === "DELAYED"
-                  ? doctorStatus.delayMinutes
-                  : 0;
-              const estimatedWaitMinutes = Math.max(
-                0,
-                prev.waitingCount * prev.avgDurationMinutes + extraOffset
-              );
-
-              return {
-                ...prev,
-                doctorStatus,
-                estimatedWaitMinutes,
-              };
-            });
+            const data = JSON.parse(e.data);
+            setSnapshot(data);
             setLastUpdatedAt(new Date());
+          } catch {}
+        });
+
+        eventSource.addEventListener("called", (e: MessageEvent) => {
+          if (!isMounted) return;
+          try {
+            const data = JSON.parse(e.data);
+            if (data.snapshot) {
+              setSnapshot(data.snapshot);
+              setLastUpdatedAt(new Date());
+            }
+          } catch {}
+        });
+
+        eventSource.addEventListener("status_change", (e: MessageEvent) => {
+          if (!isMounted) return;
+          try {
+            const data = JSON.parse(e.data);
+            if (data.snapshot) {
+              setSnapshot(data.snapshot);
+              setLastUpdatedAt(new Date());
+            }
           } catch {}
         });
 
@@ -110,7 +103,7 @@ export function useQueueSocket(doctorId: string, options?: UseQueueSocketOptions
             connectSSE();
           }, retryDelay);
         };
-      } catch (err) {
+      } catch {
         setIsConnected(false);
         setIsReconnecting(true);
       }

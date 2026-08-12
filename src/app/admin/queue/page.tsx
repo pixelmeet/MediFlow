@@ -9,7 +9,6 @@ import {
   RefreshCw,
   PhoneCall,
   ArrowUpDown,
-  Building2,
   CheckCircle2,
   Coffee,
   AlertTriangle,
@@ -122,7 +121,7 @@ export default function AdminQueueMonitorPage() {
       const json = await res.json();
       if (res.ok && json.data) {
         setDoctorQueueDetails(json.data);
-        const firstWaiting = json.data.queue.find((q: any) => q.status === "WAITING");
+        const firstWaiting = json.data.queue.find((q: { status: string; appointmentId: string }) => q.status === "WAITING");
         if (firstWaiting) {
           setSelectedAppointmentId(firstWaiting.appointmentId);
           setTargetPosition(1);

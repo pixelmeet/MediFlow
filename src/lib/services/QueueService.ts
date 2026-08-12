@@ -65,7 +65,7 @@ class QueueEventBus extends EventEmitter {
     this.setMaxListeners(200); // Support high concurrent client SSE streams
   }
 
-  broadcast(doctorId: string, type: string, data: any) {
+  broadcast(doctorId: string, type: string, data: unknown) {
     this.emit(`queue:${doctorId}`, { type, data, timestamp: new Date().toISOString() });
     this.emit("queue:all", { doctorId, type, data, timestamp: new Date().toISOString() });
   }

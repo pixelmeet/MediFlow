@@ -2,14 +2,30 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Activity, Calendar, Clock, LogOut, User, Search, Stethoscope, ChevronRight, Ticket, ArrowRight } from "lucide-react";
+import {
+  Activity,
+  Calendar,
+  Clock,
+  LogOut,
+  User,
+  Search,
+  ChevronRight,
+  Ticket,
+  ArrowRight,
+  FileText,
+  Bot,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/shared/NotificationBell";
+import { SymptomAssistantModal } from "@/components/patient/SymptomAssistantModal";
 import type { AppointmentDTO } from "@/lib/services/AppointmentService";
 
 export default function PatientDashboard() {
   const { user, logout, isLoading } = useAuth();
   const [upcomingApts, setUpcomingApts] = React.useState<AppointmentDTO[]>([]);
+  const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchApts() {
@@ -40,7 +56,7 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-12">
+    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
       {/* ─── Top Navigation ─────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -58,11 +74,14 @@ export default function PatientDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+
             <div className="hidden sm:flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
               <User className="h-4 w-4" />
               <span className="font-medium text-[hsl(var(--foreground))]">{user?.name}</span>
             </div>
+
             <Button
               variant="outline"
               size="sm"
@@ -148,12 +167,44 @@ export default function PatientDashboard() {
               <Link href="/patient/search">
                 <Button size="lg" className="flex items-center gap-2">
                   <Search className="h-4 w-4" />
-                  Find Doctors & Book
+                  Find Doctors &amp; Book
                 </Button>
               </Link>
             </div>
           </div>
         )}
+
+        {/* ─── AI Symptom Triage Banner ─────────────────────── */}
+        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--primary)/0.3)] bg-gradient-to-r from-[hsl(var(--primary-light))] to-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-xl)] bg-[hsl(var(--primary))] text-white shadow-md">
+              <Bot className="h-6 w-6" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase bg-[hsl(var(--primary))] text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Sparkles className="h-2.5 w-2.5" /> AI Health Assistant
+                </span>
+                <span className="text-xs text-[hsl(var(--muted-foreground))] font-semibold">Triage &amp; Specialty Recommender</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+                Unsure which specialist you need to see?
+              </h3>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] max-w-2xl leading-relaxed">
+                Describe your symptoms in plain English to receive instant hospital department recommendations and emergency screening.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setIsAiModalOpen(true)}
+            size="lg"
+            className="w-full sm:w-auto font-bold text-xs flex items-center justify-center gap-2 shadow-[var(--shadow-sm)] shrink-0"
+          >
+            <Sparkles className="h-4 w-4" />
+            Ask AI Assistant
+          </Button>
+        </div>
 
         {/* Quick Action Tiles */}
         <div>
@@ -191,9 +242,24 @@ export default function PatientDashboard() {
               </div>
             </Link>
 
-            <Link href={nextAppointment ? `/patient/queue/${nextAppointment.doctorId}` : "/patient/queue/doc_patel_01"} className="block group">
+            <Link href="/patient/prescriptions" className="block group">
               <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all group-hover:border-[hsl(var(--primary))] group-hover:shadow-[var(--shadow)]">
                 <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--success-light))] text-[hsl(var(--success))] mb-3">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <h3 className="font-semibold text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors flex items-center justify-between">
+                  Digital Prescriptions
+                  <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </h3>
+                <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
+                  View, print, and download doctor prescriptions &amp; clinical notes.
+                </p>
+              </div>
+            </Link>
+
+            <Link href={nextAppointment ? `/patient/queue/${nextAppointment.doctorId}` : "/patient/queue/doc_patel_01"} className="block group">
+              <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all group-hover:border-[hsl(var(--primary))] group-hover:shadow-[var(--shadow)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] mb-3">
                   <Ticket className="h-5 w-5" />
                 </div>
                 <h3 className="font-semibold text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors flex items-center justify-between">
@@ -201,46 +267,19 @@ export default function PatientDashboard() {
                   <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </h3>
                 <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-                  Track token position & live estimated wait time.
-                </p>
-              </div>
-            </Link>
-
-            <Link href="/patient/search" className="block group">
-              <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all group-hover:border-[hsl(var(--primary))] group-hover:shadow-[var(--shadow)]">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] mb-3">
-                  <Stethoscope className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors flex items-center justify-between">
-                  Specialist Directory
-                  <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-                  Filter by cardiology, pediatrics, fee, and branch.
+                  Track token position &amp; live estimated wait time.
                 </p>
               </div>
             </Link>
           </div>
         </div>
 
-        {/* Phase 2 Feature Banner */}
-        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--primary-light))] p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-white text-sm font-bold">
-              ✓
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-[hsl(var(--foreground))]">
-                Phase 2: Doctor Discovery, Smart Scheduling & Live Queue is Active
-              </h3>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
-                Full deterministic slot engine, booking tokens, and live queue tracking are operational.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* AI Symptom Assistant Modal */}
+        <SymptomAssistantModal
+          isOpen={isAiModalOpen}
+          onClose={() => setIsAiModalOpen(false)}
+        />
       </main>
     </div>
   );
 }
-

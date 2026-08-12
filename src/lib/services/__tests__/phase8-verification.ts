@@ -19,9 +19,9 @@ async function runPhase8Tests() {
 
   // ─── Test 1: Real-Time Event Bus Subscription ──────────
   console.log("--- 1. Testing Queue Event Bus ---");
-  let receivedEvent: any = null;
-  const unsubscribeTest = (data: any) => {
-    receivedEvent = data;
+  let receivedEvent: { type?: string; data?: unknown } | null = null;
+  const unsubscribeTest = (data: unknown) => {
+    receivedEvent = data as { type?: string; data?: unknown };
   };
   queueEventBus.on(`queue:${doctorId}`, unsubscribeTest);
 
@@ -39,7 +39,7 @@ async function runPhase8Tests() {
   const breakStatus = QueueService.setDoctorStatus(doctorId, "ON_BREAK", 15, "Lunch break");
   assert(breakStatus.status === "ON_BREAK", "Doctor status updated to ON_BREAK");
   assert(breakStatus.delayMinutes === 15, "Break duration set to 15m");
-  assert(receivedEvent !== null && receivedEvent.type === "doctor_status", "Event bus broadcasted doctor_status event");
+  assert((receivedEvent as { type?: string } | null)?.type === "doctor_status", "Event bus broadcasted doctor_status event");
 
   const breakSnap = await QueueService.getQueueSnapshot(doctorId, todayStr);
   assert(breakSnap.doctorStatus.status === "ON_BREAK", "Snapshot reflects ON_BREAK status");

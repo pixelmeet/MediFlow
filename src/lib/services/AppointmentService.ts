@@ -4,6 +4,7 @@ import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { BookAppointmentInput, CancelAppointmentInput, RescheduleAppointmentInput } from "../validation/appointment";
 import { SchedulingService } from "./SchedulingService";
 import { CheckInService, type CheckInEligibility } from "./CheckInService";
+import { NotificationService } from "./NotificationService";
 
 export interface AppointmentDTO {
   id: string;
@@ -146,6 +147,15 @@ export class AppointmentService {
 
         return { appointment, tokenSeq };
       });
+
+      // Dispatch booking confirmation notification asynchronously
+      NotificationService.createNotification({
+        userId: patientUserId,
+        type: "booking_confirmed",
+        title: "Appointment Confirmed",
+        message: `Your appointment with ${newApt.doctor.name} (${newApt.doctor.specialty}) is confirmed for ${input.date} at ${newApt.startTime}. Token: ${newApt.tokenNumber}`,
+        payload: { appointmentId: newApt.id, tokenNumber: newApt.tokenNumber, doctorId: newApt.doctorId },
+      }).catch((err) => console.error("Notification trigger error:", err));
 
       return {
         success: true,

@@ -3,7 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, Clock, Ticket, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  CreditCard,
+  Building2,
+  Lock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import type { DoctorDTO } from "@/lib/services/DoctorService";
@@ -23,6 +33,8 @@ export default function BookAppointmentPage() {
   const [doctor, setDoctor] = React.useState<DoctorDTO | null>(null);
   const [isLoadingDoc, setIsLoadingDoc] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [paymentChoice, setPaymentChoice] = React.useState<"online" | "clinic">("online");
+  const [paymentMethod, setPaymentMethod] = React.useState<"upi" | "card">("upi");
   const [bookedAppointment, setBookedAppointment] = React.useState<AppointmentDTO | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
@@ -69,7 +81,33 @@ export default function BookAppointmentPage() {
         return;
       }
 
-      setBookedAppointment(json.data);
+      const appointment: AppointmentDTO = json.data;
+
+      // If online payment chosen, process mock payment
+      if (paymentChoice === "online") {
+        await fetch("/api/v1/payments/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appointmentId: appointment.id,
+            amount: Number(doctor?.fee || 800),
+            provider: "mock",
+            method: paymentMethod,
+          }),
+        });
+      } else {
+        await fetch("/api/v1/payments/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appointmentId: appointment.id,
+            amount: Number(doctor?.fee || 800),
+            provider: "clinic",
+          }),
+        });
+      }
+
+      setBookedAppointment(appointment);
     } catch {
       setErrorMessage("Network error while booking appointment. Please try again.");
     } finally {
@@ -99,45 +137,45 @@ export default function BookAppointmentPage() {
             <span className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))]">
               Queue Token Number
             </span>
-            <div className="text-4xl font-extrabold text-[hsl(var(--primary))] font-mono my-1">
+            <div className="text-4xl font-extrabold font-mono text-[hsl(var(--primary))] my-2">
               {bookedAppointment.tokenNumber}
             </div>
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">
-              Doctor: {bookedAppointment.doctorName} ({bookedAppointment.doctorSpecialty})
+            <p className="text-[11px] text-[hsl(var(--primary-dark))]">
+              Show this token at the reception desk on arrival
             </p>
           </div>
 
-          {/* Appointment details summary */}
-          <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] p-4 text-xs space-y-2 text-left text-[hsl(var(--muted-foreground))]">
+          {/* Summary Box */}
+          <div className="rounded-[var(--radius-lg)] bg-[hsl(var(--muted)/0.3)] p-4 text-xs space-y-2 text-left">
             <div className="flex justify-between">
-              <span>Date:</span>
-              <strong className="text-[hsl(var(--foreground))]">{bookedAppointment.date}</strong>
+              <span className="text-[hsl(var(--muted-foreground))]">Doctor:</span>
+              <strong className="text-[hsl(var(--foreground))]">{bookedAppointment.doctorName}</strong>
             </div>
             <div className="flex justify-between">
-              <span>Slot Time:</span>
-              <strong className="text-[hsl(var(--foreground))]">{bookedAppointment.startTime}</strong>
+              <span className="text-[hsl(var(--muted-foreground))]">Date &amp; Time:</span>
+              <strong className="text-[hsl(var(--foreground))]">{bookedAppointment.date} at {bookedAppointment.startTime}</strong>
             </div>
             <div className="flex justify-between">
-              <span>Hospital Branch:</span>
-              <strong className="text-[hsl(var(--foreground))] truncate max-w-[200px]">{bookedAppointment.branchName}</strong>
-            </div>
-            <div className="flex justify-between">
-              <span>Payment Mode:</span>
-              <strong className="text-[hsl(var(--success))]">Pay at Clinic (₹{bookedAppointment.fee})</strong>
+              <span className="text-[hsl(var(--muted-foreground))]">Payment Status:</span>
+              <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                paymentChoice === "online"
+                  ? "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
+                  : "bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))]"
+              }`}>
+                {paymentChoice === "online" ? "PAID ONLINE (MOCK)" : "PAY AT CLINIC"}
+              </span>
             </div>
           </div>
 
-          {/* Action links */}
-          <div className="space-y-2.5 pt-2">
-            <Link href={`/patient/queue/${doctorId}`} className="w-full block">
-              <Button size="lg" className="w-full flex items-center justify-center gap-2">
-                <Ticket className="h-4 w-4" />
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Link href={`/patient/queue/${doctorId}`} className="w-full">
+              <Button size="lg" className="w-full font-bold shadow-[var(--shadow-sm)]">
                 Track Live Queue
               </Button>
             </Link>
-            <Link href="/patient/appointments" className="w-full block">
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                View My Appointments
+            <Link href="/patient/appointments" className="w-full">
+              <Button variant="outline" size="lg" className="w-full text-xs">
+                My Appointments
               </Button>
             </Link>
           </div>
@@ -171,7 +209,7 @@ export default function BookAppointmentPage() {
             Confirm Your Appointment
           </h1>
           <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-            Please review the details before confirming your booking.
+            Please review the details and choose your preferred payment method.
           </p>
         </div>
 
@@ -240,27 +278,103 @@ export default function BookAppointmentPage() {
           {/* Payment Mode Selection */}
           <div className="pt-4 border-t border-[hsl(var(--border))] space-y-3">
             <h3 className="font-semibold text-sm text-[hsl(var(--foreground))]">
-              Payment Method
+              Select Payment Option
             </h3>
-            <div className="rounded-[var(--radius-lg)] border-2 border-[hsl(var(--primary))] bg-[hsl(var(--primary-light))] p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-4 w-4 rounded-full border-4 border-[hsl(var(--primary))] bg-white" />
-                <div>
-                  <p className="font-bold text-xs text-[hsl(var(--foreground))]">Pay at Hospital Clinic</p>
-                  <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Pay at reception desk upon arrival</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Option 1: Pay Online */}
+              <div
+                onClick={() => setPaymentChoice("online")}
+                className={`cursor-pointer rounded-[var(--radius-xl)] border-2 p-4 transition-all ${
+                  paymentChoice === "online"
+                    ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary-light))]"
+                    : "border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[hsl(var(--border-hover))]"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-4 w-4 rounded-full border-2 border-[hsl(var(--primary))] flex items-center justify-center">
+                      {paymentChoice === "online" && <div className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />}
+                    </div>
+                    <div>
+                      <p className="font-bold text-xs text-[hsl(var(--foreground))] flex items-center gap-1.5">
+                        <CreditCard className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+                        Pay Online (Instant)
+                      </p>
+                      <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">UPI, Cards, Netbanking</p>
+                    </div>
+                  </div>
+                  <span className="font-extrabold text-sm text-[hsl(var(--primary))]">
+                    ₹{doctor?.fee || 800}
+                  </span>
                 </div>
               </div>
-              <span className="font-extrabold text-sm text-[hsl(var(--primary))]">
-                ₹{doctor?.fee || 800}
-              </span>
+
+              {/* Option 2: Pay at Clinic */}
+              <div
+                onClick={() => setPaymentChoice("clinic")}
+                className={`cursor-pointer rounded-[var(--radius-xl)] border-2 p-4 transition-all ${
+                  paymentChoice === "clinic"
+                    ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary-light))]"
+                    : "border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[hsl(var(--border-hover))]"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-4 w-4 rounded-full border-2 border-[hsl(var(--primary))] flex items-center justify-center">
+                      {paymentChoice === "clinic" && <div className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />}
+                    </div>
+                    <div>
+                      <p className="font-bold text-xs text-[hsl(var(--foreground))] flex items-center gap-1.5">
+                        <Building2 className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+                        Pay at Clinic Desk
+                      </p>
+                      <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">Pay on check-in</p>
+                    </div>
+                  </div>
+                  <span className="font-extrabold text-sm text-[hsl(var(--muted-foreground))]">
+                    ₹{doctor?.fee || 800}
+                  </span>
+                </div>
+              </div>
             </div>
+
+            {/* If Online Payment, show payment sub-method */}
+            {paymentChoice === "online" && (
+              <div className="p-3 rounded-[var(--radius-lg)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] flex items-center justify-between text-xs">
+                <span className="font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1">
+                  <Lock className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+                  Mock Gateway Sandbox (Instant Confirmation)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("upi")}
+                    className={`px-2 py-1 rounded text-[11px] font-bold ${
+                      paymentMethod === "upi" ? "bg-[hsl(var(--primary))] text-white" : "bg-[hsl(var(--card))] text-[hsl(var(--foreground))]"
+                    }`}
+                  >
+                    UPI / QR
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("card")}
+                    className={`px-2 py-1 rounded text-[11px] font-bold ${
+                      paymentMethod === "card" ? "bg-[hsl(var(--primary))] text-white" : "bg-[hsl(var(--card))] text-[hsl(var(--foreground))]"
+                    }`}
+                  >
+                    Card
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Policy notes */}
           <div className="rounded-[var(--radius-md)] bg-[hsl(var(--info-light))] p-3 flex items-start gap-2 text-[11px] text-[hsl(var(--info))]">
             <ShieldCheck className="h-4 w-4 shrink-0 mt-0.5" />
             <span>
-              Free rescheduling is allowed up to 2 hours before the appointment slot. You will receive live queue updates.
+              Free rescheduling &amp; full refund is available up to 2 hours before the slot time. Live queue updates are sent automatically.
             </span>
           </div>
 
@@ -269,9 +383,13 @@ export default function BookAppointmentPage() {
             size="lg"
             onClick={handleConfirmBooking}
             disabled={isSubmitting || isLoadingDoc}
-            className="w-full flex items-center justify-center gap-2 font-semibold"
+            className="w-full flex items-center justify-center gap-2 font-semibold shadow-[var(--shadow-sm)]"
           >
-            {isSubmitting ? "Confirming Booking..." : `Confirm Booking & Reserve Token (₹${doctor?.fee || 800})`}
+            {isSubmitting
+              ? "Securing Booking & Slot..."
+              : paymentChoice === "online"
+              ? `Pay ₹${doctor?.fee || 800} & Confirm Booking`
+              : `Confirm Booking (Pay at Clinic: ₹${doctor?.fee || 800})`}
           </Button>
         </div>
       </main>

@@ -3,12 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, LayoutDashboard, Stethoscope, Building2, MapPin, Calendar, UserCheck, Clock, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Stethoscope, Building2, MapPin, Calendar, UserCheck, Clock, LogOut, BarChart3 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 
 const NAV_LINKS = [
   { href: "/admin/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/queue", label: "Live Queue", icon: Clock },
   { href: "/admin/checkin", label: "Check-In Desk", icon: UserCheck },
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
@@ -66,8 +68,10 @@ export function AdminNavigation() {
           })}
         </nav>
 
-        {/* User Profile & Sign Out */}
+        {/* User Profile, Notifications & Sign Out */}
         <div className="flex items-center gap-3">
+          <NotificationBell />
+
           <div className="hidden sm:block text-right text-xs">
             <p className="font-bold text-[hsl(var(--foreground))]">{user?.name || "Hospital Administrator"}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Central Hospital HQ</p>

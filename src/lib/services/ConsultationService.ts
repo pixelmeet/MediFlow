@@ -1,6 +1,7 @@
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { CompleteConsultationInput, PrescriptionItemInput, SaveConsultationDraftInput } from "../validation/consultation";
+import { NotificationService } from "./NotificationService";
 
 export interface ConsultationDetailsDTO {
   id: string;
@@ -499,7 +500,7 @@ export class ConsultationService {
           ],
         },
         include: {
-          doctor: { select: { id: true, userId: true } },
+          doctor: { select: { id: true, userId: true, name: true } },
           queueToken: true,
         },
       });
@@ -591,6 +592,22 @@ export class ConsultationService {
             });
           }
         });
+
+        // Dispatch consultation completed and prescription notifications
+        const patientRecord = await prisma.patient.findUnique({
+          where: { id: appointment.patientId },
+          select: { userId: true },
+        });
+
+        if (patientRecord?.userId) {
+          NotificationService.createNotification({
+            userId: patientRecord.userId,
+            type: "prescription_issued",
+            title: "Prescription Available",
+            message: `Your digital prescription (${prescriptionNumber}) and clinical instructions from ${appointment.doctor?.name || "your doctor"} are now ready to view.`,
+            payload: { appointmentId: appointment.id, prescriptionNumber },
+          }).catch((err) => console.error("Prescription notification error:", err));
+        }
 
         return { success: true, prescriptionNumber };
       }

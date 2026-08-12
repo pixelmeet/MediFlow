@@ -23,7 +23,7 @@ export async function GET(
       }
 
       // 2. Subscribe to live queue events for this doctor
-      const onQueueEvent = (payload: any) => {
+      const onQueueEvent = (payload: { type?: string; data?: unknown }) => {
         try {
           controller.enqueue(
             encoder.encode(`event: ${payload.type || "queue_diff"}\ndata: ${JSON.stringify(payload.data || payload)}\n\n`)

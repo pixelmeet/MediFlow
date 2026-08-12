@@ -1,3 +1,4 @@
+import { AppointmentStatus } from "@prisma/client";
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 
@@ -89,8 +90,6 @@ export class CheckInService {
         : String(appointment.date).slice(0, 10);
 
     const [hoursStr, minsStr] = appointment.startTime.split(":");
-    const hours = parseInt(hoursStr, 10);
-    const mins = parseInt(minsStr, 10);
 
     // Construct slot time in UTC consistent space
     const slotTime = new Date(`${dateStr}T${hoursStr.padStart(2, "0")}:${minsStr.padStart(2, "0")}:00.000Z`);
@@ -448,7 +447,7 @@ export class CheckInService {
         where: {
           date: { gte: dateStart, lte: dateEnd },
           ...(params?.branchId ? { branchId: params.branchId } : {}),
-          ...(params?.status ? { status: params.status as any } : {}),
+          ...(params?.status ? { status: params.status as AppointmentStatus } : {}),
           ...(params?.search
             ? {
                 OR: [
