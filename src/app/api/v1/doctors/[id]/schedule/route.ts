@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { SchedulingService } from "@/lib/services/SchedulingService";
 import { UpdateScheduleSchema } from "@/lib/validation/schedule";
 import { prisma } from "@/lib/db";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function GET(
   _request: Request,
@@ -59,7 +59,13 @@ export async function PUT(
       }
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = UpdateScheduleSchema.safeParse(body);
 
     if (!parseResult.success) {

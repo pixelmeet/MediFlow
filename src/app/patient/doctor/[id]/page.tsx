@@ -9,6 +9,14 @@ import { Button } from "@/components/ui/button";
 import type { DoctorDTO } from "@/lib/services/DoctorService";
 import type { TimeSlot } from "@/lib/services/SchedulingService";
 
+interface DoctorReview {
+  id: string;
+  patientName: string;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+}
+
 export default function DoctorProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -23,6 +31,15 @@ export default function DoctorProfilePage() {
   const [isLoadingDoc, setIsLoadingDoc] = React.useState(true);
   const [isLoadingSlots, setIsLoadingSlots] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+
+  // Reviews state
+  const [reviews, setReviews] = React.useState<DoctorReview[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = React.useState(true);
+  const [showReviewForm, setShowReviewForm] = React.useState(false);
+  const [newRating, setNewRating] = React.useState(5);
+  const [newComment, setNewComment] = React.useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = React.useState(false);
+  const [reviewMessage, setReviewMessage] = React.useState<string | null>(null);
 
   // Generate next 7 days for easy date selection tabs
   const availableDates = React.useMemo(() => {
@@ -81,11 +98,59 @@ export default function DoctorProfilePage() {
     if (doctorId && selectedDate) fetchSlots();
   }, [doctorId, selectedDate]);
 
+  // Fetch reviews
+  React.useEffect(() => {
+    async function fetchReviews() {
+      setIsLoadingReviews(true);
+      try {
+        const res = await fetch(`/api/v1/doctors/${doctorId}/reviews`);
+        const json = await res.json();
+        if (res.ok && json.data) {
+          setReviews(json.data);
+        }
+      } catch {
+        console.error("Failed to load reviews");
+      } finally {
+        setIsLoadingReviews(false);
+      }
+    }
+    if (doctorId) fetchReviews();
+  }, [doctorId]);
+
   const handleProceedToBook = () => {
     if (!selectedSlot) return;
     router.push(
       `/patient/book/${doctorId}?date=${selectedDate}&startTime=${selectedSlot}&branchId=${doctor?.branch.id || ""}`
     );
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingReview(true);
+    setReviewMessage(null);
+    try {
+      const res = await fetch(`/api/v1/doctors/${doctorId}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating: newRating,
+          comment: newComment.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.data) {
+        setReviews((prev) => [json.data, ...prev.filter((r) => r.id !== json.data.id)]);
+        setShowReviewForm(false);
+        setNewComment("");
+        setReviewMessage("Thank you! Your review has been recorded.");
+      } else {
+        setReviewMessage(json.error?.message || "Failed to submit review. Please sign in as a patient.");
+      }
+    } catch {
+      setReviewMessage("Network error while submitting review.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   if (isLoadingDoc) {
@@ -101,44 +166,47 @@ export default function DoctorProfilePage() {
 
   if (error || !doctor) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--background))] flex items-center justify-center p-4">
-        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center max-w-md">
-          <AlertCircle className="h-8 w-8 text-[hsl(var(--danger))] mx-auto mb-2" />
-          <h2 className="text-base font-bold text-[hsl(var(--foreground))]">{error || "Doctor not found"}</h2>
-          <Link href="/patient/search">
-            <Button size="sm" className="mt-4 text-xs">
-              Back to Doctor Search
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-[hsl(var(--background))] flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-[var(--radius-xl)] border border-[hsl(var(--danger)/0.2)] bg-[hsl(var(--danger-light))] p-6 text-center space-y-4">
+          <AlertCircle className="h-10 w-10 text-[hsl(var(--danger))] mx-auto" />
+          <h2 className="text-lg font-bold text-[hsl(var(--danger))]">Profile Unavailable</h2>
+          <p className="text-xs text-[hsl(var(--muted-foreground))]">{error || "Doctor record was not found."}</p>
+          <Button variant="outline" onClick={() => router.push("/patient/dashboard")}>
+            Back to Dashboard
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-12">
-      {/* ─── Header ───────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link href="/patient/search">
-            <Button variant="ghost" size="sm" className="flex items-center gap-1.5 text-xs">
-              <ArrowLeft className="h-4 w-4" />
-              All Doctors
-            </Button>
+    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
+      {/* Top Navbar Backstrip */}
+      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 sm:px-8 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <Link
+            href="/patient/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Find Doctors
           </Link>
-          <span className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">
-            Step 1 of 2: Select Date & Time
+          <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+            Doctor Profile &amp; Booking
           </span>
         </div>
-      </header>
+      </div>
 
-      {/* ─── Main Content ─────────────────────────────────── */}
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        {/* Doctor Profile Banner Card */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-8 mt-6 space-y-6">
+        {/* Doctor Header Card */}
         <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[var(--radius-2xl)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] font-bold text-2xl border border-[hsl(var(--primary)/0.2)]">
-              {doctor.name.replace("Dr. ", "").slice(0, 2).toUpperCase()}
+          <div className="flex flex-col sm:flex-row gap-6 items-start">
+            <div className="flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center rounded-[var(--radius-2xl)] bg-gradient-to-br from-[hsl(var(--primary)/0.2)] to-[hsl(var(--primary)/0.05)] border border-[hsl(var(--primary)/0.2)] text-[hsl(var(--primary))] text-3xl font-extrabold shadow-inner">
+              {doctor.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -146,7 +214,7 @@ export default function DoctorProfilePage() {
                 <h1 className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))]">
                   {doctor.name}
                 </h1>
-                <div className="flex items-center gap-1 bg-[hsl(var(--warning-light))] px-3 py-1 rounded-[var(--radius-full)] text-xs font-bold text-[hsl(var(--warning))]">
+                <div className="flex items-center gap-1.5 rounded-full bg-[hsl(var(--warning-light))] px-3 py-1 text-xs font-bold text-[hsl(var(--warning))]">
                   <Star className="h-3.5 w-3.5 fill-current" />
                   <span>{doctor.averageRating} ({doctor.totalReviews} reviews)</span>
                 </div>
@@ -188,7 +256,7 @@ export default function DoctorProfilePage() {
           <div className="flex items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
-                Choose Appointment Date & Slot
+                Choose Appointment Date &amp; Slot
               </h2>
               <p className="text-xs text-[hsl(var(--muted-foreground))]">
                 Slots are updated in real-time. Pick an available time below.
@@ -248,6 +316,118 @@ export default function DoctorProfilePage() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+
+        {/* Patient Reviews Section */}
+        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+                Patient Feedback &amp; Reviews
+              </h2>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                Verified reviews from patients who attended consultations with {doctor.name}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowReviewForm(!showReviewForm)}
+            >
+              {showReviewForm ? "Cancel" : "Write a Review"}
+            </Button>
+          </div>
+
+          {reviewMessage && (
+            <div className="rounded-[var(--radius-md)] bg-[hsl(var(--primary-light))] border border-[hsl(var(--primary-border))] p-3 text-xs text-[hsl(var(--primary))] font-medium">
+              {reviewMessage}
+            </div>
+          )}
+
+          {/* Review Submission Form */}
+          {showReviewForm && (
+            <form onSubmit={handleReviewSubmit} className="rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] p-4 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--foreground))]">
+                Rate your consultation experience
+              </h3>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setNewRating(star)}
+                    className="p-1 text-[hsl(var(--warning))] hover:scale-110 transition-transform"
+                    aria-label={`Rate ${star} star`}
+                  >
+                    <Star className={`h-6 w-6 ${star <= newRating ? "fill-current" : "stroke-current fill-none"}`} />
+                  </button>
+                ))}
+                <span className="text-xs font-bold text-[hsl(var(--muted-foreground))] ml-2">
+                  {newRating} / 5 Stars
+                </span>
+              </div>
+
+              <div>
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Share details of your consultation (e.g. communication, punctuality, diagnosis clarity)..."
+                  rows={3}
+                  className="w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-[hsl(var(--card))] p-3 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--input-focus))]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowReviewForm(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" size="sm" disabled={isSubmittingReview}>
+                  Submit Review
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* Reviews List */}
+          {isLoadingReviews ? (
+            <div className="py-6 text-center text-xs text-[hsl(var(--muted-foreground))] animate-pulse">
+              Loading verified reviews...
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="py-8 text-center rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.2)] border border-dashed border-[hsl(var(--border))]">
+              <Star className="h-8 w-8 text-[hsl(var(--muted-foreground))] mx-auto mb-2 opacity-50" />
+              <p className="text-xs font-semibold text-[hsl(var(--foreground))]">No reviews yet</p>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-1">Be the first patient to share feedback for {doctor.name}.</p>
+            </div>
+          ) : (
+            <div className="space-y-4 divide-y divide-[hsl(var(--border))]">
+              {reviews.map((r) => (
+                <div key={r.id} className="pt-4 first:pt-0 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-[hsl(var(--foreground))]">
+                      {r.patientName}
+                    </span>
+                    <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                      {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        className={`h-3.5 w-3.5 ${s <= r.rating ? "text-[hsl(var(--warning))] fill-current" : "text-[hsl(var(--muted))] stroke-current"}`}
+                      />
+                    ))}
+                  </div>
+                  {r.comment && (
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                      {r.comment}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

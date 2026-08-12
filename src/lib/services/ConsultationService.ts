@@ -162,7 +162,7 @@ export class ConsultationService {
                       items: rx.items.map((item) => ({
                         medicineName: item.medicine,
                         dosage: item.dose || "1 tablet",
-                        frequency: item.dose || "1-0-1",
+                        frequency: item.frequency || "1-0-1",
                         duration: item.duration || "5 Days",
                         instructions: item.instructions,
                       })),
@@ -567,7 +567,8 @@ export class ConsultationService {
                 data: {
                   prescriptionId: rx.id,
                   medicine: item.medicineName,
-                  dose: item.frequency || item.dosage,
+                  dose: item.dosage,
+                  frequency: item.frequency,
                   duration: item.duration,
                   instructions: item.instructions || null,
                   sortOrder: i,

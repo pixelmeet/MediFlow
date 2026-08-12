@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { SymptomCheckerSchema } from "@/lib/validation/ai";
 import { AiAssistantService } from "@/lib/services/AiAssistantService";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
@@ -26,7 +26,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = SymptomCheckerSchema.safeParse(body);
 
     if (!parseResult.success) {

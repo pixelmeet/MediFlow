@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK, AUTH_CONFIG } from "../auth/config";
 import { OtpDeliveryService } from "./OtpDeliveryService";
+import { TokenCleanupService } from "./TokenCleanupService";
 import { RegisterPatientInput, LoginInput, VerifyOtpInput } from "../validation/auth";
 
 export interface AuthResult {
@@ -282,12 +283,9 @@ export class AuthService {
     const isEmail = input.identifier.includes("@");
 
     try {
-      // Opportunistically clean up expired refresh tokens (Phase 1 cheap cleanup)
-      // TODO: Sweep expired tokens periodically via background worker once background jobs exist (Phase 7+)
-      await prisma.refreshToken.deleteMany({
-        where: { expiresAt: { lt: new Date() } },
-      }).catch((err) => {
-        console.warn("Opportunistic expired refresh token cleanup skipped:", (err as Error).message);
+      // Trigger background cleanup of expired tokens via TokenCleanupService
+      TokenCleanupService.cleanupExpiredTokens().catch((err) => {
+        console.warn("Background expired token cleanup skipped:", (err as Error).message);
       });
 
       const user = await prisma.user.findFirst({

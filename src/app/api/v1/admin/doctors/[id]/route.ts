@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { AdminService } from "@/lib/services/AdminService";
 import { UpdateDoctorAdminSchema } from "@/lib/validation/admin";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function PUT(
   request: Request,
@@ -18,7 +18,13 @@ export async function PUT(
     }
 
     const params = await props.params;
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = UpdateDoctorAdminSchema.safeParse(body);
 
     if (!parseResult.success) {

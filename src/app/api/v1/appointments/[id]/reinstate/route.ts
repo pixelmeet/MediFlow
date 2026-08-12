@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { CheckInService } from "@/lib/services/CheckInService";
 import { ReinstateAppointmentSchema } from "@/lib/validation/appointment";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function POST(
   request: Request,
@@ -24,7 +24,13 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parsed = ReinstateAppointmentSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(

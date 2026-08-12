@@ -4,9 +4,26 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Activity, ShieldAlert, UserCheck } from "lucide-react";
+import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const RegisterFormSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters").trim(),
+    email: z.string().email("Please enter a valid email address").trim(),
+    phone: z.string().min(7, "Please enter a valid phone number").trim(),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+    age: z.string().optional(),
+    gender: z.enum(["MALE", "FEMALE", "OTHER"] as const),
+    bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match. Please re-enter your password.",
+    path: ["confirmPassword"],
+  });
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +34,7 @@ export default function RegisterPage() {
     email: string;
     phone: string;
     password: string;
+    confirmPassword: string;
     age: string;
     gender: "MALE" | "FEMALE" | "OTHER";
     bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -25,6 +43,7 @@ export default function RegisterPage() {
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     age: "",
     gender: "MALE",
     bloodGroup: "O+",
@@ -42,8 +61,9 @@ export default function RegisterPage() {
     e.preventDefault();
     setErrorMessage(null);
 
-    if (formData.password.length < 8) {
-      setErrorMessage("Password must be at least 8 characters long.");
+    const validation = RegisterFormSchema.safeParse(formData);
+    if (!validation.success) {
+      setErrorMessage(validation.error.issues[0]?.message || "Please check the form for errors.");
       return;
     }
 
@@ -107,19 +127,19 @@ export default function RegisterPage() {
           <Input
             label="Full Name *"
             name="name"
-            placeholder="e.g. Meet Vora"
+            placeholder="e.g. Rahul Verma"
             value={formData.name}
             onChange={handleChange}
             required
             disabled={isLoading}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Email Address *"
               name="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder="rahul@example.com"
               value={formData.email}
               onChange={handleChange}
               required
@@ -138,16 +158,29 @@ export default function RegisterPage() {
             />
           </div>
 
-          <Input
-            label="Password * (min 8 chars, 1 uppercase, 1 number, 1 special)"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Password *"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+
+            <Input
+              label="Confirm Password *"
+              name="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
 
           <div className="grid grid-cols-3 gap-3">
             <Input

@@ -3,10 +3,9 @@ import { getSession } from "@/lib/auth/session";
 import { NotificationService } from "@/lib/services/NotificationService";
 import {
   CreateNotificationSchema,
-  NotificationFilterSchema,
   UpdateNotificationSchema,
 } from "@/lib/validation/notifications";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function GET(request: Request) {
   try {
@@ -19,17 +18,15 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const filter = NotificationFilterSchema.parse({
-      unreadOnly: searchParams.get("unreadOnly") || "false",
-      limit: searchParams.get("limit") || "30",
+    const unreadOnly = searchParams.get("unreadOnly") === "true";
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+
+    const result = await NotificationService.getUserNotifications(session.userId, {
+      unreadOnly,
+      limit,
     });
 
-    const data = await NotificationService.getUserNotifications(session.userId, {
-      unreadOnly: filter.unreadOnly === "true",
-      limit: filter.limit,
-    });
-
-    return NextResponse.json(successResponse(data));
+    return NextResponse.json(successResponse(result));
   } catch (error) {
     console.error("Notifications GET error:", error);
     return NextResponse.json(
@@ -49,7 +46,13 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = UpdateNotificationSchema.safeParse(body);
 
     if (!parseResult.success) {
@@ -63,20 +66,16 @@ export async function PATCH(request: Request) {
 
     if (action === "mark_all_read") {
       await NotificationService.markAllAsRead(session.userId);
-      return NextResponse.json(
-        successResponse({ updated: true }, { message: "All notifications marked as read" })
-      );
+      return NextResponse.json(successResponse({ success: true }));
     }
 
     if (action === "mark_read" && notificationId) {
       await NotificationService.markAsRead(notificationId, session.userId);
-      return NextResponse.json(
-        successResponse({ updated: true }, { message: "Notification marked as read" })
-      );
+      return NextResponse.json(successResponse({ success: true }));
     }
 
     return NextResponse.json(
-      errorResponse("BAD_REQUEST", "Missing notificationId for mark_read"),
+      errorResponse("INVALID_ACTION", "Unrecognized notification update action"),
       { status: 400 }
     );
   } catch (error) {
@@ -105,7 +104,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = CreateNotificationSchema.safeParse(body);
 
     if (!parseResult.success) {

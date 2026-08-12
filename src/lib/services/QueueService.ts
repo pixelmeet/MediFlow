@@ -20,7 +20,7 @@ export interface QueueItemDTO {
   tokenNumber: string;
   patientName: string;
   scheduledTime: string;
-  status: "WAITING" | "IN_PROGRESS" | "DONE" | "NO_SHOW";
+  status: "WAITING" | "IN_PROGRESS" | "DONE" | "NO_SHOW" | "CANCELLED";
   appointmentStatus?: string;
   isCheckedIn?: boolean;
   checkedInAt?: string | null;
@@ -223,7 +223,8 @@ export class QueueService {
           let qStatus: QueueItemDTO["status"] = "WAITING";
           if (apt.status === "COMPLETED") qStatus = "DONE";
           else if (apt.status === "IN_CONSULTATION") qStatus = "IN_PROGRESS";
-          else if (apt.status === "NO_SHOW" || apt.status === "CANCELLED") qStatus = "NO_SHOW";
+          else if (apt.status === "CANCELLED") qStatus = "CANCELLED";
+          else if (apt.status === "NO_SHOW") qStatus = "NO_SHOW";
           else if (apt.queueToken?.status) qStatus = apt.queueToken.status;
 
           const isCheckedIn =

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { ProcessPaymentSchema } from "@/lib/validation/payments";
 import { PaymentService } from "@/lib/services/PaymentService";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
@@ -18,7 +18,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = ProcessPaymentSchema.safeParse(body);
 
     if (!parseResult.success) {

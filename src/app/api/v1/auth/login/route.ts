@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { LoginSchema } from "@/lib/validation/auth";
 import { AuthService } from "@/lib/services/AuthService";
 import { setSessionCookies } from "@/lib/auth/session";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
@@ -10,7 +10,13 @@ export async function POST(request: Request) {
     const rl = rateLimit(request, "auth:login", { limit: 5, windowMs: 60_000 });
     if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = LoginSchema.safeParse(body);
 
     if (!parseResult.success) {

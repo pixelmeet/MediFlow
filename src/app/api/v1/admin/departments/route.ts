@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { AdminService } from "@/lib/services/AdminService";
 import { DepartmentAdminSchema } from "@/lib/validation/admin";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function GET(request: Request) {
   try {
@@ -17,10 +17,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const branchId = searchParams.get("branchId") || undefined;
 
-    const departments = await AdminService.listDepartments(branchId);
-    return NextResponse.json(successResponse(departments));
+    const depts = await AdminService.listDepartments(branchId);
+    return NextResponse.json(successResponse(depts));
   } catch (error) {
-    console.error("Admin list departments API error:", error);
+    console.error("Admin list departments error:", error);
     return NextResponse.json(
       errorResponse("SERVER_ERROR", "Failed to retrieve departments"),
       { status: 500 }
@@ -38,7 +38,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = DepartmentAdminSchema.safeParse(body);
 
     if (!parseResult.success) {

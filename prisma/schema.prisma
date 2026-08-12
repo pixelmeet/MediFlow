@@ -32,6 +32,7 @@ enum QueueStatus {
   IN_PROGRESS
   DONE
   NO_SHOW
+  CANCELLED
 }
 
 enum PaymentStatus {
@@ -282,7 +283,8 @@ model PrescriptionItem {
   prescriptionId String
   prescription   Prescription @relation(fields: [prescriptionId], references: [id])
   medicine       String
-  dose           String?      // e.g., "1-0-1"
+  dose           String?      // e.g., "500mg" or "1 tablet"
+  frequency      String?      // e.g., "1-0-1" or "Twice daily"
   duration       String?      // e.g., "7 days"
   instructions   String?
 

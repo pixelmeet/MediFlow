@@ -123,3 +123,14 @@ export function errorResponse(
 ): ApiResponse<never> {
   return { error: { code, message, details } };
 }
+
+/**
+ * Safely parse JSON request body, returning null if empty or invalid JSON syntax.
+ */
+export async function safeParseJson<T = unknown>(request: Request): Promise<T | null> {
+  try {
+    return await request.json();
+  } catch {
+    return null;
+  }
+}

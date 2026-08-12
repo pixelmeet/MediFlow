@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { ConsultationService } from "@/lib/services/ConsultationService";
 import { CompleteConsultationSchema, SaveConsultationDraftSchema } from "@/lib/validation/consultation";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function GET(
   _request: Request,
@@ -118,7 +118,13 @@ export async function PATCH(
     }
 
     const params = await props.params;
-    const body = await request.json();
+    const body = await safeParseJson<{ action?: string } & Record<string, unknown>>(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
 
     if (body.action === "save_draft") {
       const draftParse = SaveConsultationDraftSchema.safeParse(body);

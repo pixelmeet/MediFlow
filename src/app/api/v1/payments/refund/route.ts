@@ -2,19 +2,25 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { ProcessRefundSchema } from "@/lib/validation/payments";
 import { PaymentService } from "@/lib/services/PaymentService";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    if (!session) {
+    if (!session || session.role !== "ADMIN") {
       return NextResponse.json(
-        errorResponse("UNAUTHENTICATED", "Please sign in to process refund"),
-        { status: 401 }
+        errorResponse("FORBIDDEN", "Only hospital administrators can process refunds"),
+        { status: 403 }
       );
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = ProcessRefundSchema.safeParse(body);
 
     if (!parseResult.success) {

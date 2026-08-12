@@ -5,6 +5,7 @@ export interface PrescriptionItemDTO {
   id: string;
   medicine: string;
   dose?: string | null;
+  frequency?: string | null;
   duration?: string | null;
   instructions?: string | null;
   sortOrder: number;

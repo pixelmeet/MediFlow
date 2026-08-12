@@ -21,7 +21,7 @@ export interface AppointmentDTO {
   fee: number;
   patientName?: string;
   cancelReason?: string | null;
-  queueStatus?: "WAITING" | "IN_PROGRESS" | "DONE" | "NO_SHOW" | null;
+  queueStatus?: "WAITING" | "IN_PROGRESS" | "DONE" | "NO_SHOW" | "CANCELLED" | null;
   queuePosition?: number | null;
   checkedInAt?: string | null;
   eligibility?: CheckInEligibility;
@@ -518,7 +518,7 @@ export class AppointmentService {
         }),
         prisma.queueToken.updateMany({
           where: { appointmentId },
-          data: { status: "NO_SHOW" },
+          data: { status: "CANCELLED" },
         }),
       ]);
 

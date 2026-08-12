@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { RegisterPatientSchema } from "@/lib/validation/auth";
 import { AuthService } from "@/lib/services/AuthService";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
@@ -9,7 +9,13 @@ export async function POST(request: Request) {
     const rl = rateLimit(request, "auth:register", { limit: 3, windowMs: 60_000 });
     if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = RegisterPatientSchema.safeParse(body);
 
     if (!parseResult.success) {

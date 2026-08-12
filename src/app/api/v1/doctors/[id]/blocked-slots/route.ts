@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { SchedulingService } from "@/lib/services/SchedulingService";
 import { CreateBlockedSlotSchema } from "@/lib/validation/schedule";
 import { prisma } from "@/lib/db";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
 export async function POST(
   request: Request,
@@ -11,16 +11,16 @@ export async function POST(
 ) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "DOCTOR" && session.role !== "ADMIN")) {
+    if (!session) {
       return NextResponse.json(
-        errorResponse("FORBIDDEN", "Only doctor or hospital admin can block slots"),
-        { status: 403 }
+        errorResponse("UNAUTHENTICATED", "Please sign in to manage schedule"),
+        { status: 401 }
       );
     }
 
     const params = await props.params;
 
-    if (session.role === "DOCTOR") {
+    if (session.role !== "ADMIN") {
       const doctor = await prisma.doctor.findUnique({
         where: { id: params.id },
         select: { userId: true },
@@ -41,7 +41,13 @@ export async function POST(
       }
     }
 
-    const body = await request.json();
+    const body = await safeParseJson(request);
+    if (!body) {
+      return NextResponse.json(
+        errorResponse("INVALID_JSON", "Malformed or empty JSON request body"),
+        { status: 400 }
+      );
+    }
     const parseResult = CreateBlockedSlotSchema.safeParse(body);
 
     if (!parseResult.success) {
