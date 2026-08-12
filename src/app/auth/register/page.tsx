@@ -65,7 +65,8 @@ export default function RegisterPage() {
         setErrorMessage(res.error || "Registration failed. Please try again.");
       } else if (res.userId) {
         // Redirect to OTP page with userId
-        router.push(`/auth/verify-otp?userId=${res.userId}&email=${encodeURIComponent(formData.email)}`);
+        const devOtpParam = res.devOtp ? `&devOtp=${encodeURIComponent(res.devOtp)}` : "";
+        router.push(`/auth/verify-otp?userId=${res.userId}&email=${encodeURIComponent(formData.email)}${devOtpParam}`);
       }
     } finally {
       setIsLoading(false);

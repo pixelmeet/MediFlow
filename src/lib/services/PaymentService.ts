@@ -47,12 +47,23 @@ export class PaymentService {
 
       if (!appointment) {
         if (ALLOW_MEMORY_FALLBACK && memoryPayments.has(input.appointmentId)) {
-          const p = memoryPayments.get(input.appointmentId)!;
-          p.status = input.provider === "clinic" ? "PENDING" : "PAID";
-          p.transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-          return { success: true, data: p };
+          const existingMem = memoryPayments.get(input.appointmentId)!;
+          if (existingMem.status === "PAID") {
+            return { success: false, error: "Payment for this appointment has already been completed." };
+          }
+          existingMem.status = input.provider === "clinic" ? "PENDING" : "PAID";
+          existingMem.transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+          return { success: true, data: existingMem };
         }
         return { success: false, error: "Appointment not found" };
+      }
+
+      // Idempotency: Reject duplicate payments for an already paid appointment
+      if (appointment.payment && appointment.payment.status === "PAID") {
+        return {
+          success: false,
+          error: "Payment for this appointment has already been completed.",
+        };
       }
 
       // Generate mock transaction ID if paid online

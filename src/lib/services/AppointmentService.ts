@@ -64,6 +64,45 @@ export class AppointmentService {
     const appointmentDate = new Date(input.date + "T00:00:00.000Z");
 
     try {
+      // 0. Idempotency check: if an appointment with this key was already created, return it
+      if (input.idempotencyKey) {
+        const existingApt = await prisma.appointment.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            patient: true,
+            doctor: {
+              include: {
+                department: { include: { branch: true } },
+              },
+            },
+            queueToken: true,
+          },
+        });
+
+        if (existingApt) {
+          return {
+            success: true,
+            appointment: {
+              id: existingApt.id,
+              patientId: existingApt.patientId,
+              doctorId: existingApt.doctorId,
+              doctorName: existingApt.doctor.name,
+              doctorSpecialty: existingApt.doctor.specialty,
+              branchName: existingApt.doctor.department.branch.name,
+              branchAddress: existingApt.doctor.department.branch.address,
+              date: input.date,
+              startTime: existingApt.startTime,
+              tokenNumber: existingApt.tokenNumber,
+              status: existingApt.status,
+              fee: Number(existingApt.feeSnapshot),
+              patientName: existingApt.patient.name,
+              queuePosition: existingApt.queueToken?.position || 1,
+              createdAt: existingApt.createdAt.toISOString(),
+            },
+          };
+        }
+      }
+
       // 2. Fetch patient record and doctor fee
       const [patient, doctor] = await Promise.all([
         prisma.patient.findFirst({

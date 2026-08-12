@@ -3,9 +3,13 @@ import { VerifyOtpSchema } from "@/lib/validation/auth";
 import { AuthService } from "@/lib/services/AuthService";
 import { setSessionCookies } from "@/lib/auth/session";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const rl = rateLimit(request, "auth:otp:verify", { limit: 5, windowMs: 15 * 60_000 });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
+
     const body = await request.json();
     const parseResult = VerifyOtpSchema.safeParse(body);
 

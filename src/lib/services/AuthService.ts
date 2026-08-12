@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
+import { ALLOW_MEMORY_FALLBACK, AUTH_CONFIG } from "../auth/config";
+import { OtpDeliveryService } from "./OtpDeliveryService";
 import { RegisterPatientInput, LoginInput, VerifyOtpInput } from "../validation/auth";
 
 export interface AuthResult {
@@ -13,6 +14,7 @@ export interface AuthResult {
     role: "PATIENT" | "DOCTOR" | "ADMIN";
     name: string;
     requiresOtp?: boolean;
+    devOtp?: string;
   };
   error?: {
     code: string;
@@ -169,9 +171,12 @@ export class AuthService {
         return user;
       });
 
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`[DEV] OTP for ${newUser.id}: ${otpCode}`);
-      }
+      // Deliver OTP — real email in prod (RESEND_API_KEY set), dev console + meta otherwise
+      const delivery = await OtpDeliveryService.deliver(
+        newUser.email || newUser.phone,
+        otpCode,
+        newUser.id
+      );
 
       return {
         success: true,
@@ -182,6 +187,8 @@ export class AuthService {
           role: newUser.role,
           name: newUser.patient?.name || "Patient",
           requiresOtp: true,
+          // devOtp is only set when no real provider is configured (dev mode)
+          ...(delivery.devOtp ? { devOtp: delivery.devOtp } : {}),
         },
       };
     } catch (dbError) {
@@ -242,9 +249,12 @@ export class AuthService {
         createdAt: new Date(),
       });
 
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`[DEV] OTP for ${newId}: ${otpCode}`);
-      }
+      // Deliver OTP via dev fallback (memory store path is always dev-only)
+      const delivery = await OtpDeliveryService.deliver(
+        input.email || input.phone,
+        otpCode,
+        newId
+      );
 
       return {
         success: true,
@@ -255,6 +265,7 @@ export class AuthService {
           role: "PATIENT",
           name: input.name,
           requiresOtp: true,
+          ...(delivery.devOtp ? { devOtp: delivery.devOtp } : {}),
         },
       };
     }
@@ -497,6 +508,18 @@ export class AuthService {
       });
 
       if (latestOtp) {
+        // 1. Check if max attempts reached (5 failed attempts)
+        if (latestOtp.attempts >= AUTH_CONFIG.otpMaxAttempts) {
+          return {
+            success: false,
+            error: {
+              code: "OTP_MAX_ATTEMPTS",
+              message: "Too many failed attempts. This code is invalidated. Please request a new OTP.",
+            },
+          };
+        }
+
+        // 2. Check expiration
         if (new Date() > latestOtp.expiresAt) {
           return {
             success: false,
@@ -507,16 +530,32 @@ export class AuthService {
           };
         }
 
+        // 3. Check code match
         if (latestOtp.code !== input.code) {
+          const newAttempts = latestOtp.attempts + 1;
+          const isMaxedOut = newAttempts >= AUTH_CONFIG.otpMaxAttempts;
+
+          // Increment attempt count, and invalidate if max attempts hit
+          await prisma.otpVerification.update({
+            where: { id: latestOtp.id },
+            data: {
+              attempts: newAttempts,
+              verified: isMaxedOut ? true : false, // Invalidate if limit reached
+            },
+          });
+
           return {
             success: false,
             error: {
-              code: "INVALID_OTP",
-              message: "Invalid verification code. Please check and try again.",
+              code: isMaxedOut ? "OTP_MAX_ATTEMPTS" : "INVALID_OTP",
+              message: isMaxedOut
+                ? "Too many failed attempts (5/5). This code has been invalidated. Please request a new OTP."
+                : `Invalid verification code. ${AUTH_CONFIG.otpMaxAttempts - newAttempts} attempt(s) remaining.`,
             },
           };
         }
 
+        // 4. Code valid -> mark verified and update user
         await prisma.otpVerification.update({
           where: { id: latestOtp.id },
           data: { verified: true },
@@ -567,10 +606,20 @@ export class AuthService {
 
     // Memory Store OTP verification (dev mode only)
     const memOtp = memoryOtps.get(input.userId);
-    if (!memOtp) {
+    if (!memOtp || memOtp.verified) {
       return {
         success: false,
         error: { code: "NO_OTP_FOUND", message: "No pending verification code found." },
+      };
+    }
+
+    if (memOtp.attempts >= AUTH_CONFIG.otpMaxAttempts) {
+      return {
+        success: false,
+        error: {
+          code: "OTP_MAX_ATTEMPTS",
+          message: "Too many failed attempts. This code is invalidated. Please request a new OTP.",
+        },
       };
     }
 
@@ -582,9 +631,19 @@ export class AuthService {
     }
 
     if (memOtp.code !== input.code) {
+      memOtp.attempts = (memOtp.attempts || 0) + 1;
+      const isMaxedOut = memOtp.attempts >= AUTH_CONFIG.otpMaxAttempts;
+      if (isMaxedOut) {
+        memOtp.verified = true;
+      }
       return {
         success: false,
-        error: { code: "INVALID_OTP", message: "Invalid verification code." },
+        error: {
+          code: isMaxedOut ? "OTP_MAX_ATTEMPTS" : "INVALID_OTP",
+          message: isMaxedOut
+            ? "Too many failed attempts (5/5). This code has been invalidated. Please request a new OTP."
+            : `Invalid verification code. ${AUTH_CONFIG.otpMaxAttempts - memOtp.attempts} attempt(s) remaining.`,
+        },
       };
     }
 
@@ -607,13 +666,42 @@ export class AuthService {
   }
 
   /**
-   * Resend a new OTP with rate limiting (max 5 requests / 15 min)
+   * Resend a new OTP with rate limiting (max 5 requests / 15 min window)
    */
-  static async resendOtp(userId: string): Promise<{ success: boolean; error?: string; code?: string }> {
+  static async resendOtp(userId: string): Promise<{ success: boolean; error?: string; code?: string; devOtp?: string }> {
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const windowStart = new Date(Date.now() - AUTH_CONFIG.otpRateLimitWindowMs);
+    let recipient: string | null = null;
 
     try {
+      // 1. Fetch user to verify existence and get real email/phone recipient
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, email: true, phone: true },
+      });
+
+      if (user) {
+        recipient = user.email || user.phone;
+      }
+
+      // 2. Enforce resend rate limit (AUTH_CONFIG.otpRateLimitMax per window)
+      const recentOtpCount = await prisma.otpVerification.count({
+        where: {
+          userId,
+          createdAt: { gte: windowStart },
+        },
+      });
+
+      if (recentOtpCount >= AUTH_CONFIG.otpRateLimitMax) {
+        return {
+          success: false,
+          code: "OTP_RATE_LIMITED",
+          error: `Too many OTP requests. Maximum ${AUTH_CONFIG.otpRateLimitMax} requests allowed per 15 minutes. Please try again later.`,
+        };
+      }
+
+      // 3. Create new OTP record
       await prisma.otpVerification.create({
         data: { userId, code: newCode, expiresAt, verified: false },
       });
@@ -629,6 +717,13 @@ export class AuthService {
       }
 
       console.warn("Database unavailable, falling back to memory store in dev mode for resendOtp");
+
+      // Memory store rate limit check
+      const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
+      if (memUser) {
+        recipient = memUser.email || memUser.phone;
+      }
+
       memoryOtps.set(userId, {
         id: `otp_${Date.now()}`,
         userId,
@@ -640,12 +735,12 @@ export class AuthService {
       });
     }
 
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[DEV] Resent OTP for ${userId}: ${newCode}`);
-    }
+    // Deliver new OTP — provider choice based on env vars (same as registration)
+    const delivery = await OtpDeliveryService.deliver(recipient || userId, newCode, userId);
 
     return {
       success: true,
+      ...(delivery.devOtp ? { devOtp: delivery.devOtp } : {}),
     };
   }
 

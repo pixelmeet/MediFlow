@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import { DoctorSearchSchema } from "@/lib/validation/doctor";
 import { DoctorService } from "@/lib/services/DoctorService";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function GET(request: Request) {
   try {
+    const rl = rateLimit(request, "doctors:search", { limit: 60, windowMs: 60_000 });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
+
     const { searchParams } = new URL(request.url);
     const rawParams = {
       search: searchParams.get("search") || undefined,

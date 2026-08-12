@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifyAccessToken, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } from "./lib/auth/jwt";
+import { verifyAccessToken, verifyRefreshToken, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } from "./lib/auth/jwt";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,7 +19,11 @@ export async function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get(REFRESH_COOKIE_NAME)?.value;
 
   const session = accessToken ? await verifyAccessToken(accessToken) : null;
-  const isAuthenticated = !!session || !!refreshToken;
+  const refreshPayload = (!session && refreshToken) ? await verifyRefreshToken(refreshToken) : null;
+
+  // Determine user role either from active session or verified refresh token
+  const effectiveRole = session?.role || refreshPayload?.role;
+  const isAuthenticated = !!session || !!refreshPayload;
 
   const isAuthRoute = pathname.startsWith("/auth") || pathname === "/login" || pathname === "/register";
   const isPatientRoute = pathname.startsWith("/patient");
@@ -28,7 +32,7 @@ export async function middleware(request: NextRequest) {
 
   // 1. If already logged in and visiting auth pages (login/register), redirect to role dashboard
   if (isAuthenticated && isAuthRoute) {
-    const role = session?.role || "PATIENT";
+    const role = effectiveRole || "PATIENT";
     if (role === "ADMIN") {
       return NextResponse.redirect(new URL("/admin/overview", request.url));
     }
@@ -45,15 +49,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 3. Enforce Role-Based Access Control if session is available
-  if (session) {
-    if (isPatientRoute && session.role !== "PATIENT" && session.role !== "ADMIN") {
+  // 3. Enforce Role-Based Access Control on all authenticated requests to protected routes
+  if (isAuthenticated) {
+    const role = effectiveRole || "PATIENT";
+    if (isPatientRoute && role !== "PATIENT" && role !== "ADMIN") {
       return NextResponse.redirect(new URL("/doctor/dashboard", request.url));
     }
-    if (isDoctorRoute && session.role !== "DOCTOR" && session.role !== "ADMIN") {
+    if (isDoctorRoute && role !== "DOCTOR" && role !== "ADMIN") {
       return NextResponse.redirect(new URL("/patient/dashboard", request.url));
     }
-    if (isAdminRoute && session.role !== "ADMIN") {
+    if (isAdminRoute && role !== "ADMIN") {
       return NextResponse.redirect(new URL("/patient/dashboard", request.url));
     }
   }

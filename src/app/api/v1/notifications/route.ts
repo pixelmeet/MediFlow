@@ -98,6 +98,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (session.role !== "ADMIN") {
+      return NextResponse.json(
+        errorResponse("FORBIDDEN", "Only administrators can dispatch notifications to users"),
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const parseResult = CreateNotificationSchema.safeParse(body);
 

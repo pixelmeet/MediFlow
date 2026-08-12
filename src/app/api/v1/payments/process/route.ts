@@ -3,9 +3,13 @@ import { getSession } from "@/lib/auth/session";
 import { ProcessPaymentSchema } from "@/lib/validation/payments";
 import { PaymentService } from "@/lib/services/PaymentService";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const rl = rateLimit(request, "payments:process", { limit: 5, windowMs: 60_000 });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
+
     const session = await getSession();
     if (!session) {
       return NextResponse.json(

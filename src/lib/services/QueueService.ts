@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { CheckInService } from "./CheckInService";
@@ -360,64 +361,76 @@ export class QueueService {
     const todayEnd = new Date(new Date().toISOString().slice(0, 10) + "T23:59:59.999Z");
 
     try {
-      // Find current in_progress token and mark as COMPLETED/DONE
-      const currentActive = await prisma.appointment.findFirst({
-        where: {
-          doctorId,
-          date: { gte: todayStart, lte: todayEnd },
-          status: "IN_CONSULTATION",
-        },
-      });
+      // Execute entire queue transition inside a single Serializable transaction to prevent race conditions
+      const transitionResult = await prisma.$transaction(
+        async (tx) => {
+          // 1. Find and complete current active consultation
+          const currentActive = await tx.appointment.findFirst({
+            where: {
+              doctorId,
+              date: { gte: todayStart, lte: todayEnd },
+              status: "IN_CONSULTATION",
+            },
+          });
 
-      if (currentActive) {
-        await prisma.$transaction([
-          prisma.appointment.update({
-            where: { id: currentActive.id },
-            data: { status: "COMPLETED" },
-          }),
-          prisma.queueToken.updateMany({
-            where: { appointmentId: currentActive.id },
-            data: { status: "DONE" },
-          }),
-        ]);
-      }
+          if (currentActive) {
+            await tx.appointment.update({
+              where: { id: currentActive.id },
+              data: { status: "COMPLETED" },
+            });
+            await tx.queueToken.updateMany({
+              where: { appointmentId: currentActive.id },
+              data: { status: "DONE", completedAt: new Date() },
+            });
+          }
 
-      // Find next waiting appointment (prefer checked-in patients, else monotonic order)
-      const nextApt = await prisma.appointment.findFirst({
-        where: {
-          doctorId,
-          date: { gte: todayStart, lte: todayEnd },
-          status: { in: ["CHECKED_IN", "WAITING", "CONFIRMED"] },
-        },
-        orderBy: [{ queueToken: { position: "asc" } }, { startTime: "asc" }],
-        include: {
-          patient: { select: { name: true } },
-          queueToken: true,
-        },
-      });
+          // 2. Find next waiting appointment (prefer checked-in patients, monotonic order)
+          const nextApt = await tx.appointment.findFirst({
+            where: {
+              doctorId,
+              date: { gte: todayStart, lte: todayEnd },
+              status: { in: ["CHECKED_IN", "WAITING", "CONFIRMED"] },
+            },
+            orderBy: [{ queueToken: { position: "asc" } }, { startTime: "asc" }],
+            include: {
+              patient: { select: { name: true } },
+              queueToken: true,
+            },
+          });
 
-      if (!nextApt) {
+          if (!nextApt) {
+            return null;
+          }
+
+          // 3. Mark next appointment as IN_CONSULTATION
+          const now = new Date();
+          await tx.appointment.update({
+            where: { id: nextApt.id },
+            data: { status: "IN_CONSULTATION" },
+          });
+          await tx.queueToken.updateMany({
+            where: { appointmentId: nextApt.id },
+            data: {
+              status: "IN_PROGRESS",
+              calledAt: now,
+            },
+          });
+
+          return { nextApt, now };
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        }
+      );
+
+      if (!transitionResult) {
         return {
           success: false,
           error: "No more waiting patients in queue for today.",
         };
       }
 
-      const now = new Date();
-      await prisma.$transaction([
-        prisma.appointment.update({
-          where: { id: nextApt.id },
-          data: { status: "IN_CONSULTATION" },
-        }),
-        prisma.queueToken.updateMany({
-          where: { appointmentId: nextApt.id },
-          data: {
-            status: "IN_PROGRESS",
-            calledAt: now,
-          },
-        }),
-      ]);
-
+      const { nextApt, now } = transitionResult;
       const calledToken: QueueItemDTO = {
         tokenId: nextApt.queueToken?.id || `tok_${nextApt.id}`,
         appointmentId: nextApt.id,

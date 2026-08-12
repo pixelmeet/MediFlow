@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import { ResendOtpSchema } from "@/lib/validation/auth";
 import { AuthService } from "@/lib/services/AuthService";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const rl = rateLimit(request, "auth:otp:resend", { limit: 3, windowMs: 15 * 60_000 });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
+
     const body = await request.json();
     const parseResult = ResendOtpSchema.safeParse(body);
 
@@ -27,7 +31,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       successResponse(
-        { sent: true },
+        { sent: true, devOtp: result.devOtp },
         { message: "A new OTP code has been generated and sent." }
       ),
       { status: 200 }

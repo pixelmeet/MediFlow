@@ -18,9 +18,9 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   login: (identifier: string, password: string) => Promise<{ success: boolean; error?: string; lockout?: boolean }>;
-  registerPatient: (data: RegisterPatientInput) => Promise<{ success: boolean; userId?: string; error?: string }>;
+  registerPatient: (data: RegisterPatientInput) => Promise<{ success: boolean; userId?: string; devOtp?: string; error?: string }>;
   verifyOtp: (userId: string, code: string) => Promise<{ success: boolean; error?: string }>;
-  resendOtp: (userId: string) => Promise<{ success: boolean; error?: string }>;
+  resendOtp: (userId: string) => Promise<{ success: boolean; devOtp?: string; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -135,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return {
         success: true,
         userId: json.data?.id,
+        devOtp: json.data?.devOtp,
       };
     } catch {
       return { success: false, error: "Network error. Please try again." };
@@ -198,6 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return {
         success: true,
+        devOtp: json.data?.devOtp,
       };
     } catch {
       return { success: false, error: "Network error. Please try again." };

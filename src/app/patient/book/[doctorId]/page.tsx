@@ -58,10 +58,11 @@ export default function BookAppointmentPage() {
   }, [doctorId]);
 
   const handleConfirmBooking = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      const idempotencyKey = `book_${doctorId}_${date}_${startTime}_${Date.now()}`;
+      const idempotencyKey = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `book_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
       const res = await fetch("/api/v1/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,28 +84,23 @@ export default function BookAppointmentPage() {
 
       const appointment: AppointmentDTO = json.data;
 
-      // If online payment chosen, process mock payment
-      if (paymentChoice === "online") {
-        await fetch("/api/v1/payments/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            appointmentId: appointment.id,
-            amount: Number(doctor?.fee || 800),
-            provider: "mock",
-            method: paymentMethod,
-          }),
-        });
-      } else {
-        await fetch("/api/v1/payments/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            appointmentId: appointment.id,
-            amount: Number(doctor?.fee || 800),
-            provider: "clinic",
-          }),
-        });
+      // Process payment (online mock or pay-at-clinic)
+      const payRes = await fetch("/api/v1/payments/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appointmentId: appointment.id,
+          amount: Number(doctor?.fee || 800),
+          provider: paymentChoice === "online" ? "mock" : "clinic",
+          method: paymentChoice === "online" ? paymentMethod : undefined,
+          idempotencyKey: `pay_${appointment.id}`,
+        }),
+      });
+
+      const payJson = await payRes.json();
+      if (!payRes.ok) {
+        setErrorMessage(payJson.error?.message || "Payment processing failed. Please try again.");
+        return;
       }
 
       setBookedAppointment(appointment);

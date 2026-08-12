@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import { RegisterPatientSchema } from "@/lib/validation/auth";
 import { AuthService } from "@/lib/services/AuthService";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { rateLimit, rateLimitResponse } from "@/lib/api/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const rl = rateLimit(request, "auth:register", { limit: 3, windowMs: 60_000 });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
+
     const body = await request.json();
     const parseResult = RegisterPatientSchema.safeParse(body);
 

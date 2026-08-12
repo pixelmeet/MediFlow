@@ -22,6 +22,8 @@ function VerifyOtpContent() {
   const userId = searchParams.get("userId") || "";
   const email = searchParams.get("email") || "your registered email/phone";
 
+  const initialDevOtp = searchParams.get("devOtp") || null;
+  const [devOtp, setDevOtp] = React.useState<string | null>(initialDevOtp);
   const [digits, setDigits] = React.useState<string[]>(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isResending, setIsResending] = React.useState(false);
@@ -112,12 +114,21 @@ function VerifyOtpContent() {
       if (res.success) {
         setTimeLeft(300);
         setDigits(["", "", "", "", "", ""]);
+        if (res.devOtp) {
+          setDevOtp(res.devOtp);
+        }
         inputRefs.current[0]?.focus();
       } else {
         setErrorMessage(res.error || "Failed to resend OTP.");
       }
     } finally {
       setIsResending(false);
+    }
+  };
+
+  const fillDevOtp = () => {
+    if (devOtp && devOtp.length === 6) {
+      setDigits(devOtp.split(""));
     }
   };
 
@@ -142,6 +153,21 @@ function VerifyOtpContent() {
       </div>
 
       <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-md)]">
+        {devOtp && (
+          <div className="mb-4 flex items-center justify-between rounded-[var(--radius)] bg-[hsl(var(--primary-light))] border border-[hsl(var(--primary-border))] p-3 text-xs text-[hsl(var(--primary))] font-medium">
+            <span>
+              [DEV MODE] Verification Code: <strong className="tracking-widest font-mono text-sm">{devOtp}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={fillDevOtp}
+              className="underline hover:opacity-80 font-bold ml-2"
+            >
+              Autofill
+            </button>
+          </div>
+        )}
+
         {errorMessage && (
           <div
             className="mb-4 flex items-start gap-2 rounded-[var(--radius)] bg-[hsl(var(--danger-light))] p-3 text-xs font-medium text-[hsl(var(--danger))]"

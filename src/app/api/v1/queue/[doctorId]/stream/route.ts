@@ -1,4 +1,9 @@
+import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
 import { QueueService, queueEventBus } from "@/lib/services/QueueService";
+import { prisma } from "@/lib/db";
+import { ALLOW_MEMORY_FALLBACK } from "@/lib/auth/config";
+import { errorResponse } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +13,56 @@ export async function GET(
 ) {
   const params = await props.params;
   const doctorId = params.doctorId;
+
+  // ── Auth guard — must be done before stream opens ──────────────────
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      errorResponse("UNAUTHENTICATED", "Please sign in to access the queue stream"),
+      { status: 401 }
+    );
+  }
+
+  if (session.role !== "DOCTOR" && session.role !== "ADMIN") {
+    return NextResponse.json(
+      errorResponse("FORBIDDEN", "Only clinical staff can access the queue stream"),
+      { status: 403 }
+    );
+  }
+
+  // DOCTOR role: verify they own this queue
+  if (session.role === "DOCTOR") {
+    try {
+      const doctor = await prisma.doctor.findUnique({
+        where: { id: doctorId },
+        select: { userId: true },
+      });
+
+      if (!doctor) {
+        return NextResponse.json(
+          errorResponse("NOT_FOUND", "Doctor not found"),
+          { status: 404 }
+        );
+      }
+
+      if (doctor.userId !== session.userId) {
+        return NextResponse.json(
+          errorResponse("FORBIDDEN", "You can only stream your own patient queue."),
+          { status: 403 }
+        );
+      }
+    } catch (dbError) {
+      console.error("Database error in stream auth doctor lookup:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return NextResponse.json(
+          errorResponse("SERVICE_UNAVAILABLE", "Database is unavailable. Please try again."),
+          { status: 503 }
+        );
+      }
+    }
+  }
+  // ── End auth guard ─────────────────────────────────────────────────
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -67,3 +122,4 @@ export async function GET(
     },
   });
 }
+
