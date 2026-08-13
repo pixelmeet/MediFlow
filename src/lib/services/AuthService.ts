@@ -822,8 +822,6 @@ export class AuthService {
   static async requestPasswordReset(identifier: string): Promise<{
     success: boolean;
     error?: { code: string; message: string };
-    devResetLink?: string;
-    devToken?: string;
   }> {
     if (ALLOW_MEMORY_FALLBACK) {
       await ensureDemoAccounts();
@@ -844,9 +842,6 @@ export class AuthService {
           : { phone: identifier },
         select: { id: true, email: true, phone: true, isActive: true },
       });
-
-      let devResetLink: string | undefined;
-      let devToken: string | undefined;
 
       if (user && user.isActive) {
         // Enforce rate limit (max 5 requests per 15 mins)
@@ -890,16 +885,10 @@ export class AuthService {
         const recipient = user.email || user.phone || identifier;
 
         console.log(`[DEV PASSWORD RESET] Recipient: ${recipient} | Reset Link: ${resetUrl} | Token: ${rawToken}`);
-
-        if (process.env.NODE_ENV !== "production") {
-          devResetLink = resetUrl;
-          devToken = rawToken;
-        }
       }
 
       return {
         success: true,
-        ...(devResetLink ? { devResetLink, devToken } : {}),
       };
     } catch (dbError) {
       console.error("Database error during requestPasswordReset:", dbError);
@@ -923,9 +912,6 @@ export class AuthService {
         ? u.email.toLowerCase() === identifier.toLowerCase()
         : u.phone === identifier
     );
-
-    let devResetLink: string | undefined;
-    let devToken: string | undefined;
 
     if (memUser && memUser.isActive) {
       const rawToken = crypto.randomBytes(32).toString("hex");
@@ -952,13 +938,10 @@ export class AuthService {
       const recipient = memUser.email || memUser.phone || identifier;
 
       console.log(`[DEV PASSWORD RESET] Recipient: ${recipient} | Reset Link: ${resetUrl} | Token: ${rawToken}`);
-      devResetLink = resetUrl;
-      devToken = rawToken;
     }
 
     return {
       success: true,
-      ...(devResetLink ? { devResetLink, devToken } : {}),
     };
   }
 

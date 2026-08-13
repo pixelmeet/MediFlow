@@ -48,10 +48,7 @@ export async function POST(request: Request) {
     // Always return generic success message to prevent user enumeration
     return NextResponse.json(
       successResponse(
-        {
-          sent: true,
-          ...(result.devResetLink ? { devResetLink: result.devResetLink } : {}),
-        },
+        { sent: true },
         {
           message: "If an account exists with this email or phone number, password reset instructions have been sent.",
         }

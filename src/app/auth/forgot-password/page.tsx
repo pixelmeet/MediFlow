@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Activity, ArrowLeft, CheckCircle2, ShieldAlert, KeyRound, ExternalLink, Copy, Check } from "lucide-react";
+import { Activity, ArrowLeft, CheckCircle2, ShieldAlert } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -11,8 +11,6 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
-  const [devResetLink, setDevResetLink] = React.useState<string | null>(null);
-  const [copied, setCopied] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,21 +38,11 @@ export default function ForgotPasswordPage() {
       }
 
       setIsSuccess(true);
-      if (data.data?.devResetLink) {
-        setDevResetLink(data.data.devResetLink);
-      }
     } catch {
       setErrorMessage("A network error occurred. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCopyLink = () => {
-    if (!devResetLink) return;
-    navigator.clipboard.writeText(devResetLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -98,44 +86,15 @@ export default function ForgotPasswordPage() {
               </p>
             </div>
 
-            {/* Dev Mode Reset Link Assistant */}
-            {devResetLink && (
-              <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary-light))] p-3.5 text-left text-xs">
-                <div className="flex items-center gap-1.5 font-semibold text-[hsl(var(--primary))] mb-1.5">
-                  <KeyRound className="h-3.5 w-3.5" />
-                  <span>Dev Mode Reset Link</span>
-                </div>
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mb-2.5 break-all font-mono">
-                  {devResetLink}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={devResetLink}
-                    className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] bg-[hsl(var(--primary))] px-2.5 py-1 text-xs font-semibold text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] transition-colors shadow-sm"
-                  >
-                    Open Reset Page
-                    <ExternalLink className="h-3 w-3" />
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-1 text-xs font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-colors"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="h-3 w-3 text-[hsl(var(--success))]" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3 w-3" />
-                        Copy Link
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Development Environment Notice */}
+            <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--primary-light))] p-3 text-left text-xs">
+              <p className="font-semibold text-[hsl(var(--primary))] mb-1">
+                Development Note
+              </p>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                In development, the password reset link is logged directly to the server terminal console instead of being emailed.
+              </p>
+            </div>
 
             <div className="space-y-2 pt-2">
               <Link
@@ -146,10 +105,7 @@ export default function ForgotPasswordPage() {
               </Link>
               <button
                 type="button"
-                onClick={() => {
-                  setIsSuccess(false);
-                  setDevResetLink(null);
-                }}
+                onClick={() => setIsSuccess(false)}
                 className="w-full text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors py-1"
               >
                 Didn&apos;t receive it? Try another address
