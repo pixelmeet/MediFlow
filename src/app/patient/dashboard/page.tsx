@@ -78,10 +78,13 @@ export default function PatientDashboard() {
           <div className="flex items-center gap-3">
             <NotificationBell />
 
-            <div className="hidden sm:flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
+            <Link
+              href="/patient/profile"
+              className="hidden sm:flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+            >
               <User className="h-4 w-4" />
-              <span className="font-medium text-[hsl(var(--foreground))]">{user?.name}</span>
-            </div>
+              <span className="font-medium text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))]">{user?.name}</span>
+            </Link>
 
             <Button
               variant="outline"

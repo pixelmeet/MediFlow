@@ -95,3 +95,48 @@ export const ResetPasswordSchema = z.object({
 export const resetPasswordSchema = ResetPasswordSchema;
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+});
+
+export const changePasswordSchema = ChangePasswordSchema;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+
+export const UpdatePatientProfileSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name cannot exceed 100 characters")
+    .trim()
+    .optional(),
+  phone: z
+    .string()
+    .regex(phoneRegex, "Please enter a valid phone number")
+    .trim()
+    .optional(),
+  age: z
+    .number()
+    .int("Age must be an integer")
+    .min(0, "Age must be positive")
+    .max(120, "Please enter a valid age")
+    .optional()
+    .nullable(),
+  gender: z
+    .enum(["MALE", "FEMALE", "OTHER"] as const)
+    .optional()
+    .nullable(),
+  bloodGroup: z
+    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const)
+    .optional()
+    .nullable(),
+});
+
+export const updatePatientProfileSchema = UpdatePatientProfileSchema;
+export type UpdatePatientProfileInput = z.infer<typeof UpdatePatientProfileSchema>;
+

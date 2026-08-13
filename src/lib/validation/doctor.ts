@@ -14,3 +14,14 @@ export const DoctorSearchSchema = z.object({
 });
 
 export type DoctorSearchInput = z.infer<typeof DoctorSearchSchema>;
+
+export const UpdateDoctorProfileSchema = z.object({
+  bio: z.string().max(1000, "Bio cannot exceed 1000 characters").optional().nullable(),
+  qualifications: z.string().max(200, "Qualifications cannot exceed 200 characters").optional().nullable(),
+  experience: z.number().int("Experience must be an integer").min(0, "Experience cannot be negative").max(70, "Please enter a valid experience").optional().nullable(),
+  language: z.array(z.string()).optional(),
+  photoUrl: z.string().url("Please enter a valid photo URL").optional().nullable().or(z.literal("")),
+});
+
+export const updateDoctorProfileSchema = UpdateDoctorProfileSchema;
+export type UpdateDoctorProfileInput = z.infer<typeof UpdateDoctorProfileSchema>;

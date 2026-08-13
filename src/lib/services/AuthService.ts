@@ -808,9 +808,63 @@ export class AuthService {
       isVerified: memUser.isVerified,
       isActive: memUser.isActive,
       createdAt: new Date(),
-      patient: memUser.role === "PATIENT" ? { id: memUser.id === "usr_pat_01" ? "pat_meet_01" : `pat_${memUser.id}`, name: memUser.name, age: 34, gender: "MALE", bloodGroup: "O+" } : null,
-      doctor: memUser.role === "DOCTOR" ? { id: memUser.id === "usr_doc_01" ? "doc_patel_01" : `doc_${memUser.id}`, name: memUser.name, specialty: "Cardiology" } : null,
-      admin: memUser.role === "ADMIN" ? { id: `adm_${memUser.id}`, name: memUser.name } : null,
+      patient: memUser.role === "PATIENT" ? {
+        id: memUser.id === "usr_pat_01" ? "pat_meet_01" : `pat_${memUser.id}`,
+        userId: memUser.id,
+        name: memUser.name,
+        age: 34,
+        gender: "MALE",
+        bloodGroup: "O+",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } : null,
+      doctor: memUser.role === "DOCTOR" ? {
+        id: memUser.id === "usr_doc_01" ? "doc_patel_01" : `doc_${memUser.id}`,
+        name: memUser.name,
+        specialty: "Cardiology",
+        bio: "Consultant Cardiologist with special interest in preventive cardiology.",
+        qualifications: "MBBS, MD (General Medicine), DM (Cardiology)",
+        experience: 12,
+        language: ["English", "Hindi", "Gujarati"],
+        photoUrl: null,
+        fee: new Prisma.Decimal(800),
+        appointmentDurationMin: 20,
+        bufferMinutes: 0,
+        isActive: true,
+        departmentId: "dept_cardio_01",
+        userId: memUser.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        department: {
+          id: "dept_cardio_01",
+          name: "Cardiology",
+          branchId: "branch_central_01",
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          branch: {
+            id: "branch_central_01",
+            hospitalId: "hosp_01",
+            name: "MediFlow Central Hospital",
+            address: "123 Healthcare Ave, Mumbai",
+            timezone: "Asia/Kolkata",
+            isActive: true,
+            gracePeriodMin: 15,
+            earlyCheckinMin: 60,
+            maxAdvanceBookDays: 30,
+            rescheduleCutoffHrs: 2,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      } : null,
+      admin: memUser.role === "ADMIN" ? {
+        id: `adm_${memUser.id}`,
+        userId: memUser.id,
+        name: memUser.name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } : null,
     };
   }
 
@@ -1056,6 +1110,367 @@ export class AuthService {
     memUser.failedLogins = 0;
     memUser.lockedUntil = null;
     memoryPasswordResetTokens.delete(tokenHash);
+
+    return { success: true };
+  }
+
+  /**
+   * Update self-service patient profile.
+   * Updates Patient record fields (name, age, gender, bloodGroup) and User phone (with uniqueness check).
+   */
+  static async updatePatientProfile(
+    userId: string,
+    input: {
+      name?: string;
+      phone?: string;
+      age?: number | null;
+      gender?: string | null;
+      bloodGroup?: string | null;
+    }
+  ): Promise<{
+    success: boolean;
+    data?: {
+      id: string;
+      userId: string;
+      name: string;
+      email?: string | null;
+      phone?: string | null;
+      age?: number | null;
+      gender?: string | null;
+      bloodGroup?: string | null;
+    };
+    error?: { code: string; message: string };
+  }> {
+    try {
+      const patient = await prisma.patient.findUnique({
+        where: { userId },
+        include: { user: true },
+      });
+
+      if (!patient) {
+        if (!ALLOW_MEMORY_FALLBACK) {
+          return {
+            success: false,
+            error: { code: "PATIENT_NOT_FOUND", message: "Patient profile not found." },
+          };
+        }
+      } else {
+        // If phone changed, check uniqueness across User table
+        if (input.phone && input.phone !== patient.user.phone) {
+          const existingPhone = await prisma.user.findFirst({
+            where: {
+              phone: input.phone,
+              NOT: { id: userId },
+            },
+          });
+
+          if (existingPhone) {
+            return {
+              success: false,
+              error: {
+                code: "PHONE_ALREADY_IN_USE",
+                message: "This phone number is already registered by another account.",
+              },
+            };
+          }
+        }
+
+        const updated = await prisma.$transaction(async (tx) => {
+          if (input.phone && input.phone !== patient.user.phone) {
+            await tx.user.update({
+              where: { id: userId },
+              data: { phone: input.phone },
+            });
+          }
+
+          const updatedPatient = await tx.patient.update({
+            where: { userId },
+            data: {
+              ...(input.name !== undefined ? { name: input.name } : {}),
+              ...(input.age !== undefined ? { age: input.age } : {}),
+              ...(input.gender !== undefined ? { gender: input.gender } : {}),
+              ...(input.bloodGroup !== undefined ? { bloodGroup: input.bloodGroup } : {}),
+            },
+            include: { user: true },
+          });
+
+          return updatedPatient;
+        });
+
+        return {
+          success: true,
+          data: {
+            id: updated.id,
+            userId: updated.userId,
+            name: updated.name,
+            email: updated.user.email,
+            phone: updated.user.phone,
+            age: updated.age,
+            gender: updated.gender,
+            bloodGroup: updated.bloodGroup,
+          },
+        };
+      }
+    } catch (dbError) {
+      console.error("Database error during updatePatientProfile:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+        };
+      }
+    }
+
+    // Memory Store Fallback
+    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
+    if (!memUser) {
+      return {
+        success: false,
+        error: { code: "PATIENT_NOT_FOUND", message: "Patient profile not found." },
+      };
+    }
+
+    if (input.phone && input.phone !== memUser.phone) {
+      const existingPhone = Array.from(memoryUsers.values()).find(
+        (u) => u.phone === input.phone && u.id !== userId
+      );
+      if (existingPhone) {
+        return {
+          success: false,
+          error: {
+            code: "PHONE_ALREADY_IN_USE",
+            message: "This phone number is already registered by another account.",
+          },
+        };
+      }
+      memUser.phone = input.phone;
+    }
+
+    if (input.name) {
+      memUser.name = input.name;
+    }
+
+    return {
+      success: true,
+      data: {
+        id: `pat_${userId}`,
+        userId,
+        name: memUser.name,
+        email: memUser.email,
+        phone: memUser.phone,
+        age: input.age !== undefined ? input.age : 34,
+        gender: input.gender !== undefined ? input.gender : "MALE",
+        bloodGroup: input.bloodGroup !== undefined ? input.bloodGroup : "O+",
+      },
+    };
+  }
+
+  /**
+   * Update self-service doctor profile.
+   * Deliberately excludes fee, specialty, departmentId, appointmentDurationMin (admin-only).
+   */
+  static async updateDoctorProfile(
+    userId: string,
+    input: {
+      bio?: string | null;
+      qualifications?: string | null;
+      experience?: number | null;
+      language?: string[];
+      photoUrl?: string | null;
+    }
+  ): Promise<{
+    success: boolean;
+    data?: {
+      id: string;
+      userId: string;
+      name: string;
+      specialty: string;
+      bio?: string | null;
+      qualifications?: string | null;
+      experience?: number | null;
+      language: string[];
+      photoUrl?: string | null;
+      fee: number;
+      departmentName?: string;
+      branchName?: string;
+    };
+    error?: { code: string; message: string };
+  }> {
+    try {
+      const doctor = await prisma.doctor.findUnique({
+        where: { userId },
+        include: {
+          user: true,
+          department: { include: { branch: true } },
+        },
+      });
+
+      if (!doctor) {
+        if (!ALLOW_MEMORY_FALLBACK) {
+          return {
+            success: false,
+            error: { code: "DOCTOR_NOT_FOUND", message: "Doctor profile not found." },
+          };
+        }
+      } else {
+        const updated = await prisma.doctor.update({
+          where: { userId },
+          data: {
+            ...(input.bio !== undefined ? { bio: input.bio } : {}),
+            ...(input.qualifications !== undefined ? { qualifications: input.qualifications } : {}),
+            ...(input.experience !== undefined ? { experience: input.experience } : {}),
+            ...(input.language !== undefined ? { language: input.language } : {}),
+            ...(input.photoUrl !== undefined ? { photoUrl: input.photoUrl || null } : {}),
+          },
+          include: {
+            department: { include: { branch: true } },
+          },
+        });
+
+        return {
+          success: true,
+          data: {
+            id: updated.id,
+            userId: updated.userId,
+            name: updated.name,
+            specialty: updated.specialty,
+            bio: updated.bio,
+            qualifications: updated.qualifications,
+            experience: updated.experience,
+            language: updated.language,
+            photoUrl: updated.photoUrl,
+            fee: Number(updated.fee),
+            departmentName: updated.department?.name,
+            branchName: updated.department?.branch?.name,
+          },
+        };
+      }
+    } catch (dbError) {
+      console.error("Database error during updateDoctorProfile:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+        };
+      }
+    }
+
+    // Memory Store Fallback
+    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
+    return {
+      success: true,
+      data: {
+        id: `doc_${userId}`,
+        userId,
+        name: memUser?.name || "Dr. Rajesh Patel",
+        specialty: "Cardiology",
+        bio: input.bio !== undefined ? input.bio : "Consultant Cardiologist with special interest in preventive cardiology.",
+        qualifications: input.qualifications !== undefined ? input.qualifications : "MBBS, MD (General Medicine), DM (Cardiology)",
+        experience: input.experience !== undefined ? input.experience : 12,
+        language: input.language || ["English", "Hindi", "Gujarati"],
+        photoUrl: input.photoUrl || null,
+        fee: 800,
+        departmentName: "Cardiology",
+        branchName: "MediFlow Central Hospital",
+      },
+    };
+  }
+
+  /**
+   * Change user password.
+   * Verifies current password before change. Hashes new password and revokes existing refresh tokens.
+   */
+  static async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    currentRefreshTokenHash?: string
+  ): Promise<{ success: boolean; error?: { code: string; message: string } }> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        if (!ALLOW_MEMORY_FALLBACK) {
+          return {
+            success: false,
+            error: { code: "USER_NOT_FOUND", message: "User account not found." },
+          };
+        }
+      } else {
+        const isMatch = user.passwordHash
+          ? await bcrypt.compare(currentPassword, user.passwordHash)
+          : false;
+
+        if (!isMatch) {
+          return {
+            success: false,
+            error: {
+              code: "INCORRECT_PASSWORD",
+              message: "The current password you entered is incorrect.",
+            },
+          };
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const newHash = await bcrypt.hash(newPassword, salt);
+
+        await prisma.$transaction(async (tx) => {
+          await tx.user.update({
+            where: { id: userId },
+            data: {
+              passwordHash: newHash,
+              failedLogins: 0,
+              lockedUntil: null,
+            },
+          });
+
+          // Invalidate all refresh tokens for this user EXCEPT current session token if provided
+          await tx.refreshToken.deleteMany({
+            where: {
+              userId,
+              ...(currentRefreshTokenHash ? { NOT: { tokenHash: currentRefreshTokenHash } } : {}),
+            },
+          });
+        });
+
+        return { success: true };
+      }
+    } catch (dbError) {
+      console.error("Database error in changePassword:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+        };
+      }
+    }
+
+    // Memory Store Fallback
+    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
+    if (!memUser) {
+      return {
+        success: false,
+        error: { code: "USER_NOT_FOUND", message: "User account not found." },
+      };
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, memUser.passwordHash);
+    if (!isMatch) {
+      return {
+        success: false,
+        error: {
+          code: "INCORRECT_PASSWORD",
+          message: "The current password you entered is incorrect.",
+        },
+      };
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    memUser.passwordHash = await bcrypt.hash(newPassword, salt);
+    memUser.failedLogins = 0;
+    memUser.lockedUntil = null;
 
     return { success: true };
   }

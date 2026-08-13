@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Stethoscope, LayoutDashboard, Calendar, LogOut } from "lucide-react";
+import { Stethoscope, LayoutDashboard, Calendar, User, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/shared/NotificationBell";
@@ -11,6 +11,7 @@ import { NotificationBell } from "@/components/shared/NotificationBell";
 const NAV_LINKS = [
   { href: "/doctor/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/doctor/schedule", label: "Schedule", icon: Calendar },
+  { href: "/doctor/profile", label: "Profile", icon: User },
 ];
 
 export function DoctorNavigation() {
@@ -64,10 +65,10 @@ export function DoctorNavigation() {
         <div className="flex items-center gap-3">
           <NotificationBell />
 
-          <div className="hidden sm:block text-right text-xs">
+          <Link href="/doctor/profile" className="hidden sm:block text-right text-xs hover:opacity-80 transition-opacity">
             <p className="font-bold text-[hsl(var(--foreground))]">{user?.name || "Doctor"}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Clinical Station</p>
-          </div>
+          </Link>
 
           <Button
             variant="outline"
