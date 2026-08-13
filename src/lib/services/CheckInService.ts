@@ -1,6 +1,8 @@
 import { AppointmentStatus } from "@prisma/client";
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
+import { NotificationService } from "./NotificationService";
+
 
 export interface CheckInEligibility {
   eligible: boolean;
@@ -559,4 +561,144 @@ export class CheckInService {
       ];
     }
   }
+
+  /**
+   * Dispatch automated checkin reminders (24h and 1h windows) for upcoming appointments
+   */
+  static async sendDueReminders(): Promise<{ sent24h: number; sent1h: number }> {
+    const now = new Date();
+    // Query appointments within relevant upcoming window (next 36 hours)
+    const searchStart = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    const searchEnd = new Date(now.getTime() + 36 * 60 * 60 * 1000);
+
+    const startDateStr = searchStart.toISOString().slice(0, 10);
+    const endDateStr = searchEnd.toISOString().slice(0, 10);
+
+    const dateGte = new Date(`${startDateStr}T00:00:00.000Z`);
+    const dateLte = new Date(`${endDateStr}T23:59:59.999Z`);
+
+    try {
+      const appointments = await prisma.appointment.findMany({
+        where: {
+          date: { gte: dateGte, lte: dateLte },
+          status: { in: ["CONFIRMED", "CHECKED_IN"] },
+        },
+        include: {
+          patient: true,
+          doctor: true,
+          branch: true,
+        },
+      });
+
+      if (appointments.length === 0) {
+        return { sent24h: 0, sent1h: 0 };
+      }
+
+      const userIds = Array.from(new Set(appointments.map((a) => a.patient.userId)));
+
+      const existingNotifications = await prisma.notification.findMany({
+        where: {
+          userId: { in: userIds },
+          type: "checkin_reminder",
+        },
+        select: {
+          userId: true,
+          payload: true,
+        },
+      });
+
+      const sentReminderKeys = new Set<string>();
+
+      for (const notif of existingNotifications) {
+        if (!notif.payload) continue;
+        let parsed: Record<string, unknown> | null = null;
+        if (typeof notif.payload === "object") {
+          parsed = notif.payload as Record<string, unknown>;
+        } else if (typeof notif.payload === "string") {
+          try {
+            parsed = JSON.parse(notif.payload);
+          } catch {
+            parsed = null;
+          }
+        }
+
+        if (parsed && typeof parsed.appointmentId === "string" && typeof parsed.reminderWindow === "string") {
+          sentReminderKeys.add(`${parsed.appointmentId}_${parsed.reminderWindow}`);
+        }
+      }
+
+      let sent24h = 0;
+      let sent1h = 0;
+
+      for (const apt of appointments) {
+        const dateStr =
+          apt.date instanceof Date
+            ? apt.date.toISOString().slice(0, 10)
+            : String(apt.date).slice(0, 10);
+
+        const [hoursStr, minsStr] = apt.startTime.split(":");
+        const slotTime = new Date(`${dateStr}T${hoursStr.padStart(2, "0")}:${minsStr.padStart(2, "0")}:00.000Z`);
+
+        const diffMs = slotTime.getTime() - now.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        // 24-hour reminder window (23.5 - 24.5 hours away)
+        if (diffHours >= 23.5 && diffHours <= 24.5) {
+          const key = `${apt.id}_24h`;
+          if (!sentReminderKeys.has(key)) {
+            await NotificationService.createNotification({
+              userId: apt.patient.userId,
+              type: "checkin_reminder",
+              title: "Appointment Reminder (Tomorrow)",
+              message: `Reminder: You have an appointment with ${apt.doctor.name} scheduled for ${dateStr} at ${apt.startTime}.`,
+              channel: "push",
+              payload: {
+                appointmentId: apt.id,
+                reminderWindow: "24h",
+                doctorId: apt.doctorId,
+                doctorName: apt.doctor.name,
+                date: dateStr,
+                startTime: apt.startTime,
+              },
+            });
+            sentReminderKeys.add(key);
+            sent24h++;
+          }
+        }
+
+        // 1-hour reminder window (0.5 - 1.5 hours away)
+        if (diffHours >= 0.5 && diffHours <= 1.5) {
+          const key = `${apt.id}_1h`;
+          if (!sentReminderKeys.has(key)) {
+            await NotificationService.createNotification({
+              userId: apt.patient.userId,
+              type: "checkin_reminder",
+              title: "Appointment Reminder (in 1 Hour)",
+              message: `Reminder: Your appointment with ${apt.doctor.name} is in 1 hour at ${apt.startTime}. Please proceed with check-in.`,
+              channel: "push",
+              payload: {
+                appointmentId: apt.id,
+                reminderWindow: "1h",
+                doctorId: apt.doctorId,
+                doctorName: apt.doctor.name,
+                date: dateStr,
+                startTime: apt.startTime,
+              },
+            });
+            sentReminderKeys.add(key);
+            sent1h++;
+          }
+        }
+      }
+
+      return { sent24h, sent1h };
+    } catch (dbError) {
+      console.error("Database error in CheckInService.sendDueReminders:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        throw dbError;
+      }
+      return { sent24h: 0, sent1h: 0 };
+    }
+  }
 }
+
