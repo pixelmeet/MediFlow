@@ -257,20 +257,36 @@ export default function PatientDashboard() {
               </div>
             </Link>
 
-            <Link href={nextAppointment ? `/patient/queue/${nextAppointment.doctorId}` : "/patient/queue/doc_patel_01"} className="block group">
-              <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all group-hover:border-[hsl(var(--primary))] group-hover:shadow-[var(--shadow)]">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] mb-3">
-                  <Ticket className="h-5 w-5" />
+            {nextAppointment ? (
+              <Link href={`/patient/queue/${nextAppointment.doctorId}`} className="block group">
+                <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all group-hover:border-[hsl(var(--primary))] group-hover:shadow-[var(--shadow)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] mb-3">
+                    <Ticket className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors flex items-center justify-between">
+                    Live Queue Tracker
+                    <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </h3>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
+                    Track token position &amp; live estimated wait time.
+                  </p>
                 </div>
-                <h3 className="font-semibold text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors flex items-center justify-between">
-                  Live Queue Tracker
-                  <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-                  Track token position &amp; live estimated wait time.
-                </p>
+              </Link>
+            ) : (
+              <div className="block opacity-50 cursor-not-allowed">
+                <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] mb-3">
+                    <Ticket className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-[hsl(var(--foreground))] flex items-center justify-between">
+                    Live Queue Tracker
+                  </h3>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
+                    No upcoming appointment to track.
+                  </p>
+                </div>
               </div>
-            </Link>
+            )}
           </div>
         </div>
 
