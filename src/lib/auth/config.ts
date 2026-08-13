@@ -5,6 +5,9 @@ export const AUTH_CONFIG = {
   otpMaxAttempts: 5,
   otpRateLimitMax: 5,
   otpRateLimitWindowMs: 15 * 60 * 1000,
+  passwordResetExpiryMinutes: 30,
+  passwordResetRateLimitMax: 5,
+  passwordResetRateLimitWindowMs: 15 * 60 * 1000,
   maxFailedLogins: 5,
   lockoutDurationMs: 15 * 60 * 1000,
 } as const;
@@ -49,6 +52,6 @@ export function getRoleDashboard(role: string): string {
     case "ADMIN":
       return "/admin/overview";
     default:
-      return "/login";
+      return "/auth/login";
   }
 }

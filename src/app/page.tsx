@@ -26,13 +26,13 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href="/login"
+              href="/auth/login"
               className="rounded-[var(--radius)] px-4 py-2 text-sm font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-colors"
             >
               Sign In
             </Link>
             <Link
-              href="/register"
+              href="/auth/register"
               className="rounded-[var(--radius)] bg-[hsl(var(--primary))] px-4 py-2 text-sm font-medium text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] transition-colors shadow-[var(--shadow-sm)] press-scale"
             >
               Get Started
@@ -71,14 +71,14 @@ export default function HomePage() {
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up">
             <Link
-              href="/register"
+              href="/auth/register"
               className="inline-flex items-center gap-2 rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] px-6 py-3 text-base font-semibold text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] transition-all shadow-[var(--shadow-md)] press-scale"
             >
               Book an Appointment
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/login"
+              href="/auth/login"
               className="inline-flex items-center gap-2 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] px-6 py-3 text-base font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-all press-scale"
             >
               Staff Login
@@ -181,7 +181,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/register"
+              href="/auth/register"
               className="inline-flex items-center gap-2 rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] px-8 py-3.5 text-base font-semibold text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] transition-all shadow-[var(--shadow-md)] press-scale"
             >
               Get Started Free

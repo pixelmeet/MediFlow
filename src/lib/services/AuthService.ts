@@ -1,7 +1,9 @@
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK, AUTH_CONFIG } from "../auth/config";
+import { hashToken } from "../auth/token-hash";
 import { OtpDeliveryService } from "./OtpDeliveryService";
 import { TokenCleanupService } from "./TokenCleanupService";
 import { RegisterPatientInput, LoginInput, VerifyOtpInput } from "../validation/auth";
@@ -47,6 +49,14 @@ const memoryOtps = new Map<string, {
   expiresAt: Date;
   verified: boolean;
   attempts: number;
+  createdAt: Date;
+}>();
+
+const memoryPasswordResetTokens = new Map<string, {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
   createdAt: Date;
 }>();
 
@@ -803,5 +813,269 @@ export class AuthService {
       admin: memUser.role === "ADMIN" ? { id: `adm_${memUser.id}`, name: memUser.name } : null,
     };
   }
+
+  /**
+   * Request a password reset link.
+   * Returns generic success regardless of whether the user exists (prevents user enumeration).
+   * Rate limited to max 5 requests per 15 minutes per identifier/user.
+   */
+  static async requestPasswordReset(identifier: string): Promise<{
+    success: boolean;
+    error?: { code: string; message: string };
+    devResetLink?: string;
+    devToken?: string;
+  }> {
+    if (ALLOW_MEMORY_FALLBACK) {
+      await ensureDemoAccounts();
+    }
+
+    const isEmail = identifier.includes("@");
+    const windowStart = new Date(Date.now() - AUTH_CONFIG.passwordResetRateLimitWindowMs);
+
+    try {
+      // Trigger background cleanup of expired tokens
+      TokenCleanupService.cleanupExpiredTokens().catch((err) => {
+        console.warn("Background expired token cleanup skipped:", (err as Error).message);
+      });
+
+      const user = await prisma.user.findFirst({
+        where: isEmail
+          ? { email: identifier.toLowerCase() }
+          : { phone: identifier },
+        select: { id: true, email: true, phone: true, isActive: true },
+      });
+
+      let devResetLink: string | undefined;
+      let devToken: string | undefined;
+
+      if (user && user.isActive) {
+        // Enforce rate limit (max 5 requests per 15 mins)
+        const recentCount = await prisma.passwordResetToken.count({
+          where: {
+            userId: user.id,
+            createdAt: { gte: windowStart },
+          },
+        });
+
+        if (recentCount >= AUTH_CONFIG.passwordResetRateLimitMax) {
+          return {
+            success: false,
+            error: {
+              code: "RATE_LIMIT_EXCEEDED",
+              message: `Too many password reset requests. Maximum ${AUTH_CONFIG.passwordResetRateLimitMax} requests allowed per 15 minutes. Please try again later.`,
+            },
+          };
+        }
+
+        const rawToken = crypto.randomBytes(32).toString("hex");
+        const tokenHash = hashToken(rawToken);
+        const expiresAt = new Date(Date.now() + AUTH_CONFIG.passwordResetExpiryMinutes * 60 * 1000);
+
+        // Delete any existing unused reset tokens for this user
+        await prisma.passwordResetToken.deleteMany({
+          where: { userId: user.id },
+        });
+
+        // Store hashed token
+        await prisma.passwordResetToken.create({
+          data: {
+            userId: user.id,
+            tokenHash,
+            expiresAt,
+          },
+        });
+
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const resetUrl = `${appUrl}/auth/reset-password?token=${rawToken}`;
+        const recipient = user.email || user.phone || identifier;
+
+        console.log(`[DEV PASSWORD RESET] Recipient: ${recipient} | Reset Link: ${resetUrl} | Token: ${rawToken}`);
+
+        if (process.env.NODE_ENV !== "production") {
+          devResetLink = resetUrl;
+          devToken = rawToken;
+        }
+      }
+
+      return {
+        success: true,
+        ...(devResetLink ? { devResetLink, devToken } : {}),
+      };
+    } catch (dbError) {
+      console.error("Database error during requestPasswordReset:", dbError);
+
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "We're having trouble reaching the database. Please try again in a moment.",
+          },
+        };
+      }
+
+      console.warn("Database unavailable, falling back to memory store for requestPasswordReset in dev mode");
+    }
+
+    // Memory Store Fallback (dev mode only)
+    const memUser = Array.from(memoryUsers.values()).find((u) =>
+      isEmail
+        ? u.email.toLowerCase() === identifier.toLowerCase()
+        : u.phone === identifier
+    );
+
+    let devResetLink: string | undefined;
+    let devToken: string | undefined;
+
+    if (memUser && memUser.isActive) {
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = hashToken(rawToken);
+      const expiresAt = new Date(Date.now() + AUTH_CONFIG.passwordResetExpiryMinutes * 60 * 1000);
+
+      // Clean up previous tokens for this user in memory
+      for (const [hash, t] of memoryPasswordResetTokens.entries()) {
+        if (t.userId === memUser.id) {
+          memoryPasswordResetTokens.delete(hash);
+        }
+      }
+
+      memoryPasswordResetTokens.set(tokenHash, {
+        id: `prt_${Date.now()}`,
+        userId: memUser.id,
+        tokenHash,
+        expiresAt,
+        createdAt: new Date(),
+      });
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const resetUrl = `${appUrl}/auth/reset-password?token=${rawToken}`;
+      const recipient = memUser.email || memUser.phone || identifier;
+
+      console.log(`[DEV PASSWORD RESET] Recipient: ${recipient} | Reset Link: ${resetUrl} | Token: ${rawToken}`);
+      devResetLink = resetUrl;
+      devToken = rawToken;
+    }
+
+    return {
+      success: true,
+      ...(devResetLink ? { devResetLink, devToken } : {}),
+    };
+  }
+
+  /**
+   * Reset user password with a verified link token.
+   * Hashes new password, invalidates the reset token, and terminates all active refresh tokens.
+   */
+  static async resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<{ success: boolean; error?: { code: string; message: string } }> {
+    if (!token || !newPassword) {
+      return {
+        success: false,
+        error: {
+          code: "INVALID_INPUT",
+          message: "Token and new password are required.",
+        },
+      };
+    }
+
+    const tokenHash = hashToken(token);
+    const now = new Date();
+
+    try {
+      const resetRecord = await prisma.passwordResetToken.findUnique({
+        where: { tokenHash },
+      });
+
+      if (!resetRecord || resetRecord.expiresAt < now) {
+        if (resetRecord) {
+          await prisma.passwordResetToken.delete({ where: { id: resetRecord.id } }).catch(() => {});
+        }
+        return {
+          success: false,
+          error: {
+            code: "INVALID_OR_EXPIRED_TOKEN",
+            message: "This password reset link is invalid or has expired. Please request a new one.",
+          },
+        };
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(newPassword, salt);
+
+      // Atomically update password, invalidate reset token, and revoke all sessions
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await tx.user.update({
+          where: { id: resetRecord.userId },
+          data: {
+            passwordHash,
+            failedLogins: 0,
+            lockedUntil: null,
+          },
+        });
+
+        await tx.passwordResetToken.delete({
+          where: { id: resetRecord.id },
+        });
+
+        await tx.refreshToken.deleteMany({
+          where: { userId: resetRecord.userId },
+        });
+      });
+
+      return { success: true };
+    } catch (dbError) {
+      console.error("Database error during resetPassword:", dbError);
+
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "We're having trouble reaching the database. Please try again in a moment.",
+          },
+        };
+      }
+
+      console.warn("Database query failed during resetPassword, checking memory store in dev mode...");
+    }
+
+    // Memory Store Fallback (dev mode only)
+    const memRecord = memoryPasswordResetTokens.get(tokenHash);
+    if (!memRecord || memRecord.expiresAt < now) {
+      if (memRecord) {
+        memoryPasswordResetTokens.delete(tokenHash);
+      }
+      return {
+        success: false,
+        error: {
+          code: "INVALID_OR_EXPIRED_TOKEN",
+          message: "This password reset link is invalid or has expired. Please request a new one.",
+        },
+      };
+    }
+
+    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === memRecord.userId);
+    if (!memUser) {
+      memoryPasswordResetTokens.delete(tokenHash);
+      return {
+        success: false,
+        error: {
+          code: "USER_NOT_FOUND",
+          message: "User account associated with this reset link could not be found.",
+        },
+      };
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    memUser.passwordHash = await bcrypt.hash(newPassword, salt);
+    memUser.failedLogins = 0;
+    memUser.lockedUntil = null;
+    memoryPasswordResetTokens.delete(tokenHash);
+
+    return { success: true };
+  }
 }
+
 
