@@ -16,6 +16,7 @@ export function useQueueSocket(doctorId: string, options?: UseQueueSocketOptions
 
   // Fetch full authoritative snapshot via REST
   const fetchAuthoritativeSnapshot = React.useCallback(async () => {
+    if (!doctorId) return;
     try {
       const res = await fetch(`/api/v1/queue/${doctorId}`);
       const json = await res.json();
@@ -30,6 +31,8 @@ export function useQueueSocket(doctorId: string, options?: UseQueueSocketOptions
   }, [doctorId]);
 
   React.useEffect(() => {
+    if (!doctorId) return;
+
     let isMounted = true;
     let eventSource: EventSource | null = null;
     let reconnectTimeout: NodeJS.Timeout | null = null;

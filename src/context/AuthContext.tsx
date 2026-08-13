@@ -12,6 +12,8 @@ export interface AuthUser {
   role: "PATIENT" | "DOCTOR" | "ADMIN";
   name: string;
   displayName?: string;
+  doctorId?: string;   // Doctor.id, only present when role === "DOCTOR"
+  patientId?: string;  // Patient.id, only present when role === "PATIENT"
 }
 
 interface AuthContextType {
@@ -45,6 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             phone: json.data.phone,
             role: json.data.role,
             name: json.data.displayName || "User",
+            displayName: json.data.displayName,
+            doctorId: json.data.doctor?.id,
+            patientId: json.data.patient?.id,
           });
         } else {
           setUser(null);

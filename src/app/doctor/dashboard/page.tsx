@@ -2,22 +2,21 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Activity, Stethoscope, Users, Calendar, Clock, LogOut, User, CheckCircle2, PhoneCall, RefreshCw, AlertCircle, Coffee, AlertTriangle, Play } from "lucide-react";
+import { Activity, Stethoscope, Users, Calendar, Clock, CheckCircle2, PhoneCall, RefreshCw, AlertCircle, Coffee, AlertTriangle, Play } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { StatCard } from "@/components/shared";
 import { useToast } from "@/components/ui/toast";
 import { useQueueSocket } from "@/hooks/useQueueSocket";
-import { NotificationBell } from "@/components/shared/NotificationBell";
 import type { QueueItemDTO, DoctorClinicalStatus } from "@/lib/services/QueueService";
 
 export default function DoctorDashboard() {
   const { user, logout, isLoading: isAuthLoading } = useAuth();
   const { addToast } = useToast();
 
-  const doctorId = "doc_patel_01";
-  const { snapshot, isConnected, isReconnecting, error, refresh } = useQueueSocket(doctorId);
+  const doctorId = user?.doctorId;
+  const { snapshot, isConnected, isReconnecting, error, refresh } = useQueueSocket(doctorId || "");
 
   const [isCallingNext, setIsCallingNext] = React.useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
@@ -29,6 +28,7 @@ export default function DoctorDashboard() {
   const [statusNote, setStatusNote] = React.useState("");
 
   const handleCallNext = async () => {
+    if (!doctorId) return;
     setIsCallingNext(true);
     try {
       const res = await fetch(`/api/v1/queue/${doctorId}/call-next`, {
@@ -62,6 +62,7 @@ export default function DoctorDashboard() {
   };
 
   const handleUpdateStatus = async (status: DoctorClinicalStatus, minutes: number = 0, note?: string) => {
+    if (!doctorId) return;
     setIsUpdatingStatus(true);
     try {
       const res = await fetch(`/api/v1/queue/${doctorId}/status`, {
@@ -97,7 +98,7 @@ export default function DoctorDashboard() {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[hsl(var(--background))]">
         <div className="text-center">
           <Activity className="h-8 w-8 text-[hsl(var(--primary))] animate-spin mx-auto mb-2" />
           <p className="text-sm text-[hsl(var(--muted-foreground))]">Loading clinical portal...</p>
@@ -106,47 +107,36 @@ export default function DoctorDashboard() {
     );
   }
 
-  const currentStatus = snapshot?.doctorStatus?.status || "CONSULTING";
-
-  return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-12">
-      {/* ─── Top Header ─────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]">
-              <Stethoscope className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="text-lg font-bold text-[hsl(var(--foreground))]">
-                MediFlow
-              </span>
-              <span className="ml-2 rounded-[var(--radius-full)] bg-[hsl(var(--success-light))] px-2 py-0.5 text-xs font-semibold text-[hsl(var(--success))]">
-                Doctor Station
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4">
-            <NotificationBell />
-
-            <div className="hidden sm:flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
-              <User className="h-4 w-4" />
-              <span className="font-medium text-[hsl(var(--foreground))]">{user?.name}</span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="text-xs flex items-center gap-1.5"
-            >
-              <LogOut className="h-3.5 w-3.5" />
+  if (!user || user.role !== "DOCTOR" || !doctorId) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[hsl(var(--background))] p-4">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center max-w-md shadow-[var(--shadow-sm)]">
+          <AlertCircle className="h-10 w-10 text-[hsl(var(--danger))] mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-[hsl(var(--foreground))] mb-1">
+            Unable to load your doctor profile
+          </h2>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6">
+            Please ensure you are signed in with an active Doctor account or contact administration.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Link href="/auth/login">
+              <Button size="sm" variant="outline" className="text-xs">
+                Switch Account
+              </Button>
+            </Link>
+            <Button size="sm" onClick={logout} className="text-xs">
               Sign Out
             </Button>
           </div>
         </div>
-      </header>
+      </div>
+    );
+  }
 
+  const currentStatus = snapshot?.doctorStatus?.status || "CONSULTING";
+
+  return (
+    <div className="bg-[hsl(var(--background))] pb-12">
       {/* ─── Main Content ───────────────────────────────── */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {error && (

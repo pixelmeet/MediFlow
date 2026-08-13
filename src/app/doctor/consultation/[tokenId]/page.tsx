@@ -235,9 +235,9 @@ export default function DoctorConsultationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-24">
-      {/* ─── Header ───────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
+    <div className="bg-[hsl(var(--background))] pb-24">
+      {/* ─── Header / Action Bar ──────────────────────────── */}
+      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)] backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link href="/doctor/dashboard">
@@ -288,7 +288,7 @@ export default function DoctorConsultationPage() {
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ─── Two-Column Clinical Workspace ───────────────── */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">

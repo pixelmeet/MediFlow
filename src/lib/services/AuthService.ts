@@ -14,6 +14,8 @@ export interface AuthResult {
     phone?: string | null;
     role: "PATIENT" | "DOCTOR" | "ADMIN";
     name: string;
+    doctorId?: string;
+    patientId?: string;
     requiresOtp?: boolean;
     devOtp?: string;
   };
@@ -384,6 +386,8 @@ export class AuthService {
             phone: user.phone,
             role: user.role,
             name,
+            doctorId: user.doctor?.id,
+            patientId: user.patient?.id,
           },
         };
       }
@@ -491,6 +495,8 @@ export class AuthService {
         phone: memUser.phone,
         role: memUser.role,
         name: memUser.name,
+        doctorId: memUser.role === "DOCTOR" ? (memUser.id === "usr_doc_01" ? "doc_patel_01" : `doc_${memUser.id}`) : undefined,
+        patientId: memUser.role === "PATIENT" ? (memUser.id === "usr_pat_01" ? "pat_meet_01" : `pat_${memUser.id}`) : undefined,
       },
     };
   }
@@ -573,6 +579,8 @@ export class AuthService {
             phone: user.phone,
             role: user.role,
             name: user.patient?.name || "User",
+            doctorId: user.doctor?.id,
+            patientId: user.patient?.id,
           },
         };
       }
@@ -659,6 +667,7 @@ export class AuthService {
         phone: memUser?.phone,
         role: "PATIENT",
         name: memUser?.name || "Patient",
+        patientId: input.userId === "usr_pat_01" ? "pat_meet_01" : `pat_${input.userId}`,
       },
     };
   }
@@ -789,8 +798,8 @@ export class AuthService {
       isVerified: memUser.isVerified,
       isActive: memUser.isActive,
       createdAt: new Date(),
-      patient: memUser.role === "PATIENT" ? { id: `pat_${memUser.id}`, name: memUser.name, age: 34, gender: "MALE", bloodGroup: "O+" } : null,
-      doctor: memUser.role === "DOCTOR" ? { id: `doc_${memUser.id}`, name: memUser.name, specialty: "Cardiology" } : null,
+      patient: memUser.role === "PATIENT" ? { id: memUser.id === "usr_pat_01" ? "pat_meet_01" : `pat_${memUser.id}`, name: memUser.name, age: 34, gender: "MALE", bloodGroup: "O+" } : null,
+      doctor: memUser.role === "DOCTOR" ? { id: memUser.id === "usr_doc_01" ? "doc_patel_01" : `doc_${memUser.id}`, name: memUser.name, specialty: "Cardiology" } : null,
       admin: memUser.role === "ADMIN" ? { id: `adm_${memUser.id}`, name: memUser.name } : null,
     };
   }

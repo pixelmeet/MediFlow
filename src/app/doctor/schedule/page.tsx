@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, Clock, Calendar, Save, Plus, Trash2, ShieldAlert, Sparkles } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -38,7 +39,8 @@ interface BlockedSlotState {
 }
 
 export default function DoctorSchedulePage() {
-  const doctorId = "doc_patel_01"; // In dev, demo doctor
+  const { user, logout, isLoading: isAuthLoading } = useAuth();
+  const doctorId = user?.doctorId;
   const { addToast } = useToast();
 
   const [appointmentDuration, setAppointmentDuration] = React.useState(20);
@@ -66,6 +68,7 @@ export default function DoctorSchedulePage() {
 
   // Fetch schedule
   React.useEffect(() => {
+    if (!doctorId) return;
     let isMounted = true;
     const fetchSchedule = async () => {
       try {
@@ -93,6 +96,7 @@ export default function DoctorSchedulePage() {
 
   // Fetch live preview slots
   React.useEffect(() => {
+    if (!doctorId) return;
     let isMounted = true;
     const fetchPreview = async () => {
       setIsLoadingPreview(true);
@@ -137,6 +141,7 @@ export default function DoctorSchedulePage() {
   };
 
   const handleSaveSchedule = async () => {
+    if (!doctorId) return;
     setIsSaving(true);
     try {
       const res = await fetch(`/api/v1/doctors/${doctorId}/schedule`, {
@@ -176,7 +181,7 @@ export default function DoctorSchedulePage() {
   };
 
   const handleAddBlockedSlot = async () => {
-    if (!blockDate) return;
+    if (!blockDate || !doctorId) return;
     setIsAddingBlocked(true);
 
     try {
@@ -223,6 +228,7 @@ export default function DoctorSchedulePage() {
   };
 
   const handleDeleteBlockedSlot = async (slotId: string) => {
+    if (!doctorId) return;
     try {
       const res = await fetch(`/api/v1/doctors/${doctorId}/blocked-slots/${slotId}`, {
         method: "DELETE",
@@ -251,12 +257,38 @@ export default function DoctorSchedulePage() {
     }
   };
 
-  if (isLoading) {
+  if (isAuthLoading || (doctorId && isLoading)) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--background))] p-8">
+      <div className="min-h-[calc(100vh-4rem)] bg-[hsl(var(--background))] p-8">
         <div className="max-w-5xl mx-auto space-y-6 animate-pulse">
           <div className="h-20 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
           <div className="h-96 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "DOCTOR" || !doctorId) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[hsl(var(--background))] p-4">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center max-w-md shadow-[var(--shadow-sm)]">
+          <ShieldAlert className="h-10 w-10 text-[hsl(var(--danger))] mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-[hsl(var(--foreground))] mb-1">
+            Unable to load your doctor profile
+          </h2>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6">
+            Please ensure you are signed in with an active Doctor account or contact administration.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Link href="/doctor/dashboard">
+              <Button size="sm" variant="outline" className="text-xs">
+                Back to Dashboard
+              </Button>
+            </Link>
+            <Button size="sm" onClick={logout} className="text-xs">
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -278,9 +310,9 @@ export default function DoctorSchedulePage() {
   });
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
-      {/* ─── Header ───────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
+    <div className="bg-[hsl(var(--background))] pb-16">
+      {/* ─── Header / Action Bar ──────────────────────────── */}
+      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)] backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/doctor/dashboard">
@@ -308,7 +340,7 @@ export default function DoctorSchedulePage() {
             {isSaving ? "Saving Changes..." : "Save Schedule"}
           </Button>
         </div>
-      </header>
+      </div>
 
       {/* ─── Main Content ─────────────────────────────────── */}
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 space-y-8">
