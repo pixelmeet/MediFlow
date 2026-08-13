@@ -14,10 +14,91 @@ import {
   BarChart3,
   Percent,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { StatCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import type { AnalyticsSummaryDTO } from "@/lib/services/AnalyticsService";
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    payload: {
+      date: string;
+      total: number;
+      completed: number;
+      cancelled: number;
+      revenue: number;
+    };
+  }>;
+  label?: string;
+}
+
+function DailyTrendTooltip({ active, payload }: CustomTooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+  const item = payload[0]?.payload;
+  if (!item) return null;
+
+  const formattedDate = (() => {
+    try {
+      const d = new Date(item.date + "T00:00:00");
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch {
+      return item.date;
+    }
+  })();
+
+  return (
+    <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-lg)] space-y-2 text-xs min-w-[190px]">
+      <div className="border-b border-[hsl(var(--border))] pb-1.5 font-bold text-[hsl(var(--foreground))] flex items-center justify-between">
+        <span>{formattedDate}</span>
+        <span className="text-[10px] text-[hsl(var(--muted-foreground))]">Daily Report</span>
+      </div>
+
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-1.5 font-medium text-[hsl(var(--muted-foreground))]">
+            <span className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />
+            Total Bookings
+          </span>
+          <span className="font-bold font-mono text-[hsl(var(--foreground))]">{item.total}</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-1.5 font-medium text-[hsl(var(--muted-foreground))]">
+            <span className="h-2 w-2 rounded-full bg-[hsl(var(--success))]" />
+            Completed
+          </span>
+          <span className="font-bold font-mono text-[hsl(var(--success))]">{item.completed}</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-1.5 font-medium text-[hsl(var(--muted-foreground))]">
+            <span className="h-2 w-2 rounded-full bg-[hsl(var(--danger))]" />
+            Cancelled
+          </span>
+          <span className="font-bold font-mono text-[hsl(var(--danger))]">{item.cancelled}</span>
+        </div>
+
+        <div className="pt-1.5 border-t border-[hsl(var(--border))] flex items-center justify-between font-bold">
+          <span className="text-[hsl(var(--foreground))]">Est. Revenue</span>
+          <span className="text-[hsl(var(--primary))] font-mono">₹{item.revenue.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminAnalyticsPage() {
   const [range, setRange] = React.useState<"today" | "7days" | "30days">("7days");
@@ -78,6 +159,15 @@ export default function AdminAnalyticsPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const formatShortDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr + "T00:00:00");
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return dateStr;
+    }
   };
 
   return (
@@ -230,6 +320,114 @@ export default function AdminAnalyticsPage() {
               <TrendingUp className="h-5 w-5" />
             </div>
           </div>
+        </div>
+
+        {/* ─── Fix 25a: Appointment Volume & Daily Trends Chart ─────────── */}
+        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[hsl(var(--border))]">
+            <div>
+              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-[hsl(var(--primary))]" />
+                Appointment Trends &amp; Daily Trajectory
+              </h2>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+                Daily comparison of total appointments vs completed consultations and cancellations
+              </p>
+            </div>
+            {data?.dailyTrends && data.dailyTrends.length >= 3 && (
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--primary))]" />
+                  <span className="text-[hsl(var(--muted-foreground))] font-medium">Total</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--success))]" />
+                  <span className="text-[hsl(var(--muted-foreground))] font-medium">Completed</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--danger))]" />
+                  <span className="text-[hsl(var(--muted-foreground))] font-medium">Cancelled</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {!data?.dailyTrends || data.dailyTrends.length < 3 ? (
+            <div className="py-12 text-center text-xs text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted)/0.15)] rounded-[var(--radius-xl)] border border-dashed border-[hsl(var(--border))] flex flex-col items-center justify-center gap-1.5">
+              <BarChart3 className="h-8 w-8 text-[hsl(var(--muted-foreground)/0.5)] mb-1" />
+              <span className="font-semibold text-sm text-[hsl(var(--foreground))]">Insufficient data for trend visualization</span>
+              <span>At least 3 days of appointment data are required to render meaningful trends. Select a wider date range (e.g. 7 or 30 days).</span>
+            </div>
+          ) : (
+            <div className="h-72 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={data.dailyTrends}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="colorCancelled" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--danger))" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="hsl(var(--danger))" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatShortDate}
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                  />
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={11}
+                    allowDecimals={false}
+                    tickLine={false}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                  />
+                  <Tooltip content={<DailyTrendTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="total"
+                    name="Total Bookings"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#colorTotal)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="completed"
+                    name="Completed"
+                    stroke="hsl(var(--success))"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorCompleted)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="cancelled"
+                    name="Cancelled"
+                    stroke="hsl(var(--danger))"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    fillOpacity={1}
+                    fill="url(#colorCancelled)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
         {/* ─── Two Column Breakdown Section ──────────────────── */}

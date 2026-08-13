@@ -50,6 +50,17 @@ export const BranchAdminSchema = z.object({
 
 export type BranchAdminInput = z.infer<typeof BranchAdminSchema>;
 
+export const UpdateBranchAdminSchema = z.object({
+  name: z.string().min(2).optional(),
+  address: z.string().optional().nullable(),
+  timezone: z.string().optional(),
+  gracePeriodMin: z.number().int().min(5).max(60).optional(),
+  rescheduleCutoffHrs: z.number().int().min(0).max(48).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type UpdateBranchAdminInput = z.infer<typeof UpdateBranchAdminSchema>;
+
 export const AppointmentOverrideSchema = z.object({
   doctorId: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD").optional(),

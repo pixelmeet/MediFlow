@@ -5,6 +5,8 @@ import type {
   CreateDoctorAdminInput,
   UpdateDoctorAdminInput,
   DepartmentAdminInput,
+  BranchAdminInput,
+  UpdateBranchAdminInput,
   AppointmentOverrideInput,
 } from "../validation/admin";
 
@@ -638,6 +640,142 @@ export class AdminService {
         departmentCount: 3,
       },
     ];
+  }
+
+  /**
+   * Create a new hospital branch
+   */
+  static async createBranch(
+    input: BranchAdminInput
+  ): Promise<{ success: boolean; branchId?: string; error?: string }> {
+    try {
+      let hospital = await prisma.hospital.findFirst();
+      if (!hospital) {
+        hospital = await prisma.hospital.create({
+          data: { name: "MediFlow Health System" },
+        });
+      }
+
+      const branch = await prisma.branch.create({
+        data: {
+          hospitalId: hospital.id,
+          name: input.name,
+          address: input.address,
+          timezone: input.timezone || "Asia/Kolkata",
+          gracePeriodMin: input.gracePeriodMin ?? 15,
+          rescheduleCutoffHrs: input.rescheduleCutoffHrs ?? 2,
+          isActive: input.isActive ?? true,
+        },
+      });
+
+      return { success: true, branchId: branch.id };
+    } catch (dbError) {
+      console.error("Database error creating branch:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return { success: false, error: "Database error creating branch" };
+      }
+      return { success: true, branchId: `br_${Date.now()}` };
+    }
+  }
+
+  /**
+   * Update branch configuration and details
+   */
+  static async updateBranch(
+    branchId: string,
+    input: UpdateBranchAdminInput
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      await prisma.branch.update({
+        where: { id: branchId },
+        data: {
+          ...(input.name !== undefined ? { name: input.name } : {}),
+          ...(input.address !== undefined ? { address: input.address } : {}),
+          ...(input.timezone !== undefined ? { timezone: input.timezone } : {}),
+          ...(input.gracePeriodMin !== undefined ? { gracePeriodMin: input.gracePeriodMin } : {}),
+          ...(input.rescheduleCutoffHrs !== undefined ? { rescheduleCutoffHrs: input.rescheduleCutoffHrs } : {}),
+          ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+        },
+      });
+
+      return { success: true };
+    } catch (dbError) {
+      console.error("Database error updating branch:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return { success: false, error: "Failed to update branch" };
+      }
+      return { success: true };
+    }
+  }
+
+  /**
+   * Soft-delete / deactivate branch with conflict resolution guard for linked departments, doctors, and appointments
+   */
+  static async deleteBranch(
+    branchId: string
+  ): Promise<{
+    success: boolean;
+    conflict?: boolean;
+    error?: string;
+    details?: {
+      departmentsCount: number;
+      doctorsCount: number;
+      activeAppointmentsCount: number;
+    };
+  }> {
+    const today = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00.000Z");
+
+    try {
+      const [departments, doctors, activeAppointments] = await Promise.all([
+        prisma.department.findMany({
+          where: { branchId, isActive: true },
+        }),
+        prisma.doctor.findMany({
+          where: {
+            department: { branchId },
+            isActive: true,
+          },
+        }),
+        prisma.appointment.findMany({
+          where: {
+            branchId,
+            date: { gte: today },
+            status: { in: ["CONFIRMED", "WAITING", "CHECKED_IN"] },
+          },
+        }),
+      ]);
+
+      if (departments.length > 0 || doctors.length > 0 || activeAppointments.length > 0) {
+        const issues: string[] = [];
+        if (departments.length > 0) issues.push(`${departments.length} active department(s)`);
+        if (doctors.length > 0) issues.push(`${doctors.length} active doctor(s)`);
+        if (activeAppointments.length > 0) issues.push(`${activeAppointments.length} upcoming appointment(s)`);
+
+        return {
+          success: false,
+          conflict: true,
+          error: `Cannot remove branch with linked records. Please reassign or deactivate: ${issues.join(", ")}.`,
+          details: {
+            departmentsCount: departments.length,
+            doctorsCount: doctors.length,
+            activeAppointmentsCount: activeAppointments.length,
+          },
+        };
+      }
+
+      await prisma.branch.update({
+        where: { id: branchId },
+        data: { isActive: false },
+      });
+
+      return { success: true };
+    } catch (dbError) {
+      console.error("Database error deleting branch:", dbError);
+      if (!ALLOW_MEMORY_FALLBACK) {
+        return { success: false, error: "Failed to delete branch" };
+      }
+      return { success: true };
+    }
   }
 
   /**
