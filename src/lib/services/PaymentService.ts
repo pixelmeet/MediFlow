@@ -36,14 +36,19 @@ export class PaymentService {
     error?: string;
   }> {
     try {
-      const appointment = await prisma.appointment.findUnique({
-        where: { id: input.appointmentId },
-        include: {
-          doctor: true,
-          patient: { include: { user: true } },
-          payment: true,
-        },
-      });
+      const [actorUser, appointment] = await Promise.all([
+        actorUserId
+          ? prisma.user.findUnique({ where: { id: actorUserId }, select: { id: true, role: true } })
+          : Promise.resolve(null),
+        prisma.appointment.findUnique({
+          where: { id: input.appointmentId },
+          include: {
+            doctor: true,
+            patient: { include: { user: true } },
+            payment: true,
+          },
+        }),
+      ]);
 
       if (!appointment) {
         if (ALLOW_MEMORY_FALLBACK && memoryPayments.has(input.appointmentId)) {
@@ -56,6 +61,29 @@ export class PaymentService {
           return { success: true, data: existingMem };
         }
         return { success: false, error: "Appointment not found" };
+      }
+
+      // Fix 28a — Validate submitted amount against the server-side fee snapshot
+      const expectedAmount = Number(appointment.feeSnapshot);
+      if (Math.abs(Number(input.amount) - expectedAmount) > 0.01) {
+        return {
+          success: false,
+          error: `Payment amount does not match the appointment fee (expected ₹${expectedAmount}).`,
+        };
+      }
+
+      // Fix 28b — Verify the actor owns this appointment (ADMIN may bypass)
+      if (actorUserId) {
+        const isAdmin = actorUser?.role === "ADMIN";
+        if (!isAdmin) {
+          const patient = await prisma.patient.findFirst({ where: { userId: actorUserId } });
+          if (patient && appointment.patientId !== patient.id) {
+            return {
+              success: false,
+              error: "You do not have permission to process payment for this appointment.",
+            };
+          }
+        }
       }
 
       // Idempotency: Reject duplicate payments for an already paid appointment

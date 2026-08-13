@@ -244,7 +244,11 @@ export class PrescriptionService {
           // Doctors can only view if same hospital / treating
           return { success: false, error: "FORBIDDEN", message: "Prescription access restricted" };
         }
+      } else if (requestingRole !== "ADMIN") {
+        // Fix 28c — fail closed: any unrecognized or unexpected role is denied
+        return { success: false, error: "FORBIDDEN", message: "Access denied" };
       }
+
 
       const dto: PrescriptionDTO = {
         id: p.id,
