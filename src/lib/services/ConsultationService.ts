@@ -50,6 +50,7 @@ export interface PatientHistoryVisitDTO {
   doctorSpecialty: string;
   diagnosis: string;
   notes?: string | null;
+  prescriptionId?: string | null;
   medicines: {
     name: string;
     dosage: string;
@@ -753,6 +754,7 @@ export class ConsultationService {
             doctorSpecialty: apt.doctor.specialty,
             diagnosis: c?.diagnosis || "Routine Consultation",
             notes: c?.notes,
+            prescriptionId: rx?.id ?? null,
             medicines: rx?.items
               ? rx.items.map((i) => ({
                   name: i.medicine,

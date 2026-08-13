@@ -4,6 +4,54 @@ import { RescheduleAppointmentSchema, CancelAppointmentSchema } from "@/lib/vali
 import { AppointmentService } from "@/lib/services/AppointmentService";
 import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
 
+export async function GET(
+  _request: Request,
+  props: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json(
+        errorResponse("UNAUTHENTICATED", "Please sign in to view appointment"),
+        { status: 401 }
+      );
+    }
+
+    const params = await props.params;
+    const result = await AppointmentService.getAppointmentById(
+      params.id,
+      session.userId
+    );
+
+    if (!result.success) {
+      if (result.error?.code === "NOT_FOUND") {
+        return NextResponse.json(
+          errorResponse("NOT_FOUND", result.error.message),
+          { status: 404 }
+        );
+      }
+      if (result.error?.code === "FORBIDDEN") {
+        return NextResponse.json(
+          errorResponse("FORBIDDEN", result.error.message),
+          { status: 403 }
+        );
+      }
+      return NextResponse.json(
+        errorResponse(result.error?.code || "SERVER_ERROR", result.error?.message || "Failed to fetch appointment"),
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(successResponse(result.appointment));
+  } catch (error) {
+    console.error("Get appointment API error:", error);
+    return NextResponse.json(
+      errorResponse("SERVER_ERROR", "Failed to fetch appointment"),
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(
   request: Request,
   props: { params: Promise<{ id: string }> }

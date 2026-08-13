@@ -15,6 +15,7 @@ import {
   FileText,
   Bot,
   Sparkles,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -211,7 +212,7 @@ export default function PatientDashboard() {
           <h2 className="text-lg font-semibold text-[hsl(var(--foreground))] mb-4">
             Patient Services
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Link href="/patient/search" className="block group">
               <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all group-hover:border-[hsl(var(--primary))] group-hover:shadow-[var(--shadow)]">
                 <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] mb-3">
@@ -287,6 +288,21 @@ export default function PatientDashboard() {
                 </div>
               </div>
             )}
+
+            <Link href="/patient/medical-history" className="block group">
+              <div className="h-full rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all group-hover:border-[hsl(var(--primary))] group-hover:shadow-[var(--shadow)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--success-light))] text-[hsl(var(--success))] mb-3">
+                  <ClipboardList className="h-5 w-5" />
+                </div>
+                <h3 className="font-semibold text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors flex items-center justify-between">
+                  Medical History
+                  <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </h3>
+                <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
+                  Past diagnoses, prescriptions, and clinical notes.
+                </p>
+              </div>
+            </Link>
           </div>
         </div>
 

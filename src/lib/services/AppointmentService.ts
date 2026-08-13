@@ -474,6 +474,96 @@ export class AppointmentService {
   }
 
   /**
+   * Fetch a single appointment by ID, enforcing patient ownership.
+   * Returns NOT_FOUND if the appointment doesn't exist; FORBIDDEN if it
+   * exists but belongs to a different patient — the two cases are kept
+   * distinct to allow the API layer to map them to 404 vs 403.
+   */
+  static async getAppointmentById(
+    appointmentId: string,
+    patientUserId: string
+  ): Promise<{
+    success: boolean;
+    appointment?: AppointmentDTO;
+    error?: { code: string; message: string };
+  }> {
+    try {
+      const patient = await prisma.patient.findFirst({
+        where: { userId: patientUserId },
+      });
+
+      const existing = await prisma.appointment.findUnique({
+        where: { id: appointmentId },
+        include: {
+          doctor: {
+            include: {
+              department: { include: { branch: true } },
+            },
+          },
+          queueToken: true,
+        },
+      });
+
+      if (!existing) {
+        return {
+          success: false,
+          error: { code: "NOT_FOUND", message: "Appointment not found." },
+        };
+      }
+
+      if (patient && existing.patientId !== patient.id) {
+        return {
+          success: false,
+          error: { code: "FORBIDDEN", message: "This appointment does not belong to your account." },
+        };
+      }
+
+      const aptDateStr = existing.date.toISOString().slice(0, 10);
+      const now = new Date();
+      const eligibility = CheckInService.evaluateEligibility(
+        {
+          date: existing.date,
+          startTime: existing.startTime,
+          status: existing.status,
+          checkedInAt: existing.checkedInAt,
+          branch: existing.doctor.department.branch,
+        },
+        now
+      );
+
+      return {
+        success: true,
+        appointment: {
+          id: existing.id,
+          patientId: existing.patientId,
+          doctorId: existing.doctorId,
+          doctorName: existing.doctor.name,
+          doctorSpecialty: existing.doctor.specialty,
+          branchName: existing.doctor.department.branch.name,
+          branchAddress: existing.doctor.department.branch.address,
+          date: aptDateStr,
+          startTime: existing.startTime,
+          tokenNumber: existing.tokenNumber,
+          status: existing.status,
+          fee: Number(existing.feeSnapshot),
+          queueStatus: existing.queueToken?.status || null,
+          queuePosition: existing.queueToken?.position || null,
+          checkedInAt: existing.checkedInAt?.toISOString() || null,
+          cancelReason: existing.cancelReason,
+          eligibility,
+          createdAt: existing.createdAt.toISOString(),
+        },
+      };
+    } catch (dbError) {
+      console.error("Database error in getAppointmentById:", dbError);
+      return {
+        success: false,
+        error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+      };
+    }
+  }
+
+  /**
    * Cancel an appointment
    */
   static async cancelAppointment(

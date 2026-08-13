@@ -253,18 +253,25 @@ export default function PatientAppointmentsPage() {
         ) : (
           <div className="space-y-4">
             {currentList.map((apt) => (
-              <AppointmentCard
-                key={apt.id}
-                appointment={apt}
-                onCancel={(id) => setCancelModalAptId(id)}
-                onReschedule={(a) => {
-                  setRescheduleApt(a);
-                  setNewDate(a.date);
-                  setNewTime(a.startTime);
-                }}
-                onCheckIn={handleCheckIn}
-                isCheckingIn={checkingInId === apt.id}
-              />
+              <div key={apt.id} className="relative group">
+                <AppointmentCard
+                  appointment={apt}
+                  onCancel={(id) => setCancelModalAptId(id)}
+                  onReschedule={(a) => {
+                    setRescheduleApt(a);
+                    setNewDate(a.date);
+                    setNewTime(a.startTime);
+                  }}
+                  onCheckIn={handleCheckIn}
+                  isCheckingIn={checkingInId === apt.id}
+                />
+                <Link
+                  href={`/patient/appointments/${apt.id}`}
+                  className="absolute top-4 right-4 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] underline underline-offset-2 transition-colors z-10"
+                >
+                  View Details →
+                </Link>
+              </div>
             ))}
           </div>
         )}

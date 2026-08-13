@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Ticket, AlertCircle } from "lucide-react";
 import { QueueLiveCard } from "@/components/patient/QueueLiveCard";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,9 @@ import { useQueueSocket } from "@/hooks/useQueueSocket";
 
 export default function LiveQueuePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const doctorId = params.doctorId as string;
+  const tokenParam = searchParams.get("token") ?? undefined;
 
   const {
     snapshot,
@@ -68,10 +70,10 @@ export default function LiveQueuePage() {
             onRefresh={refresh}
             isConnected={isConnected}
             isReconnecting={isReconnecting}
+            userTokenNumber={tokenParam}
           />
         )}
       </main>
     </div>
   );
 }
-
