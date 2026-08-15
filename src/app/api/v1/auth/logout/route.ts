@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { clearSessionCookies } from "@/lib/auth/session";
 import { REFRESH_COOKIE_NAME } from "@/lib/auth/jwt";
 import { hashToken } from "@/lib/auth/token-hash";
-import { ALLOW_MEMORY_FALLBACK } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import { successResponse } from "@/lib/utils";
 
@@ -19,11 +18,7 @@ export async function POST() {
           where: { tokenHash },
         });
       } catch (error) {
-        if (!ALLOW_MEMORY_FALLBACK) {
-          console.error("Database error during logout token revocation:", error);
-        } else {
-          console.warn("Database unavailable during logout, skipped DB token revocation in dev fallback mode");
-        }
+        console.error("Database error during logout token revocation:", error);
       }
     }
 

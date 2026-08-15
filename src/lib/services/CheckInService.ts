@@ -1,9 +1,7 @@
 import { AppointmentStatus } from "@prisma/client";
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { NotificationService } from "./NotificationService";
 import { formatTime } from "../utils";
-
 
 export interface CheckInEligibility {
   eligible: boolean;
@@ -36,9 +34,6 @@ export interface CheckInDeskItemDTO {
   checkedInAt?: string | null;
   eligibility: CheckInEligibility;
 }
-
-// In-memory store for fallback mode in dev
-const memoryCheckIns = new Map<string, { status: string; checkedInAt?: string; cancelReason?: string }>();
 
 export class CheckInService {
   /**
@@ -253,21 +248,7 @@ export class CheckInService {
       };
     } catch (dbError) {
       console.error("Database error in CheckInService.checkInPatient:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "Database error during check-in." };
-      }
-
-      const now = new Date();
-      memoryCheckIns.set(appointmentId, {
-        status: "CHECKED_IN",
-        checkedInAt: now.toISOString(),
-      });
-
-      return {
-        success: true,
-        isLate: false,
-        checkedInAt: now.toISOString(),
-      };
+      return { success: false, error: "Database error during check-in." };
     }
   }
 
@@ -340,16 +321,7 @@ export class CheckInService {
       return { success: true };
     } catch (dbError) {
       console.error("Database error in CheckInService.reinstateNoShow:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "Failed to reinstate appointment." };
-      }
-
-      memoryCheckIns.set(appointmentId, {
-        status: "CHECKED_IN",
-        checkedInAt: new Date().toISOString(),
-      });
-
-      return { success: true };
+      return { success: false, error: "Failed to reinstate appointment." };
     }
   }
 
@@ -424,10 +396,7 @@ export class CheckInService {
       };
     } catch (dbError) {
       console.error("Database error in CheckInService.sweepNoShows:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-      return { sweptCount: 0, sweptIds: [], date: targetDateStr };
+      throw dbError;
     }
   }
 
@@ -491,75 +460,7 @@ export class CheckInService {
       });
     } catch (dbError) {
       console.error("Database error in listCheckInDeskItems:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-
-      // Dev fallback
-      return [
-        {
-          id: "apt_chk_01",
-          tokenNumber: "A-01",
-          patientName: "Suresh Gupta",
-          patientPhone: "+91 98201 11223",
-          doctorName: "Dr. Rajesh Patel",
-          doctorId: "doc_patel_01",
-          specialty: "Cardiology",
-          branchName: "Central Hospital - Main Branch",
-          branchId: "br_01",
-          date: targetDateStr,
-          startTime: "10:00",
-          status: "COMPLETED",
-          fee: 800,
-          checkedInAt: `${targetDateStr}T09:50:00.000Z`,
-          eligibility: {
-            eligible: false,
-            status: "NOT_CONFIRMED",
-            message: "Consultation completed",
-          },
-        },
-        {
-          id: "apt_chk_02",
-          tokenNumber: "A-02",
-          patientName: "Anita Sharma",
-          patientPhone: "+91 98334 55667",
-          doctorName: "Dr. Rajesh Patel",
-          doctorId: "doc_patel_01",
-          specialty: "Cardiology",
-          branchName: "Central Hospital - Main Branch",
-          branchId: "br_01",
-          date: targetDateStr,
-          startTime: "10:20",
-          status: "CHECKED_IN",
-          fee: 800,
-          checkedInAt: `${targetDateStr}T10:15:00.000Z`,
-          eligibility: {
-            eligible: false,
-            status: "ALREADY_CHECKED_IN",
-            message: "Patient checked in and waiting in queue",
-          },
-        },
-        {
-          id: "apt_chk_03",
-          tokenNumber: "A-03",
-          patientName: "Meet Vora",
-          patientPhone: "+91 98450 99887",
-          doctorName: "Dr. Rajesh Patel",
-          doctorId: "doc_patel_01",
-          specialty: "Cardiology",
-          branchName: "Central Hospital - Main Branch",
-          branchId: "br_01",
-          date: targetDateStr,
-          startTime: "10:40",
-          status: "CONFIRMED",
-          fee: 800,
-          eligibility: {
-            eligible: true,
-            status: "ELIGIBLE",
-            message: "Ready for check-in",
-          },
-        },
-      ];
+      throw dbError;
     }
   }
 
@@ -696,10 +597,7 @@ export class CheckInService {
       return { sent24h, sent1h };
     } catch (dbError) {
       console.error("Database error in CheckInService.sendDueReminders:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-      return { sent24h: 0, sent1h: 0 };
+      throw dbError;
     }
   }
 }

@@ -1,5 +1,4 @@
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 
 export interface TimeSlot {
   startTime: string; // "10:00"
@@ -100,10 +99,7 @@ export class SchedulingService {
       });
     } catch (dbError) {
       console.error("Database error in SchedulingService.generateSlots:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-      console.warn("Using default scheduling parameters in dev mode");
+      throw dbError;
     }
 
     if (!isWorkingDay) {
@@ -262,27 +258,8 @@ export class SchedulingService {
       };
     } catch (dbError) {
       console.error("Database error in getDoctorSchedule:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
+      throw dbError;
     }
-
-    // Dev fallback
-    const fallbackSchedules = [
-      { dayOfWeek: 0, startTime: "09:00", endTime: "17:00", isWorkingDay: false },
-      { dayOfWeek: 1, startTime: "09:00", endTime: "17:00", breakStart: "13:00", breakEnd: "14:00", isWorkingDay: true },
-      { dayOfWeek: 2, startTime: "09:00", endTime: "17:00", breakStart: "13:00", breakEnd: "14:00", isWorkingDay: true },
-      { dayOfWeek: 3, startTime: "09:00", endTime: "17:00", breakStart: "13:00", breakEnd: "14:00", isWorkingDay: true },
-      { dayOfWeek: 4, startTime: "09:00", endTime: "17:00", breakStart: "13:00", breakEnd: "14:00", isWorkingDay: true },
-      { dayOfWeek: 5, startTime: "09:00", endTime: "17:00", breakStart: "13:00", breakEnd: "14:00", isWorkingDay: true },
-      { dayOfWeek: 6, startTime: "09:00", endTime: "14:00", isWorkingDay: true },
-    ];
-
-    return {
-      appointmentDurationMin: 20,
-      schedules: fallbackSchedules,
-      blockedSlots: [],
-    };
   }
 
   /**
@@ -350,10 +327,7 @@ export class SchedulingService {
       return { success: true };
     } catch (dbError) {
       console.error("Database error in updateDoctorSchedule:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-      return { success: true };
+      throw dbError;
     }
   }
 
@@ -419,19 +393,7 @@ export class SchedulingService {
       };
     } catch (dbError) {
       console.error("Database error in addBlockedSlot:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "Database error creating blocked slot" };
-      }
-
-      return {
-        success: true,
-        blockedSlot: {
-          id: `blk_${Date.now()}`,
-          date: input.date,
-          isFullDay: input.isFullDay,
-        },
-        conflictCount: 0,
-      };
+      return { success: false, error: "Database error creating blocked slot" };
     }
   }
 
@@ -453,11 +415,7 @@ export class SchedulingService {
       return { success: true };
     } catch (dbError) {
       console.error("Database error in deleteBlockedSlot:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "Database error deleting blocked slot" };
-      }
-
-      return { success: true };
+      return { success: false, error: "Database error deleting blocked slot" };
     }
   }
 

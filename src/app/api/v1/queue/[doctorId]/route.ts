@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { QueueService } from "@/lib/services/QueueService";
 import { prisma } from "@/lib/db";
-import { ALLOW_MEMORY_FALLBACK } from "@/lib/auth/config";
 import { errorResponse, successResponse } from "@/lib/utils";
 
 export async function GET(
@@ -50,12 +49,10 @@ export async function GET(
         }
       } catch (dbError) {
         console.error("Database error in queue GET doctor lookup:", dbError);
-        if (!ALLOW_MEMORY_FALLBACK) {
-          return NextResponse.json(
-            errorResponse("SERVICE_UNAVAILABLE", "Database is unavailable. Please try again."),
-            { status: 503 }
-          );
-        }
+        return NextResponse.json(
+          errorResponse("SERVICE_UNAVAILABLE", "Database is unavailable. Please try again."),
+          { status: 503 }
+        );
       }
     }
 

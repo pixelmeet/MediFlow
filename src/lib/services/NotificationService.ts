@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { CreateNotificationInput } from "../validation/notifications";
 
 export interface NotificationDTO {
@@ -15,9 +14,6 @@ export interface NotificationDTO {
   createdAt: string;
   payload?: Record<string, unknown> | null;
 }
-
-// In-memory fallback
-const memoryNotifications = new Map<string, NotificationDTO[]>();
 
 export class NotificationService {
   /**
@@ -71,16 +67,6 @@ export class NotificationService {
       };
     } catch (err) {
       console.error("NotificationService.getUserNotifications error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        const userList = memoryNotifications.get(userId) || [];
-        const filtered = options?.unreadOnly ? userList.filter((n) => !n.isRead) : userList;
-        const unread = userList.filter((n) => !n.isRead).length;
-        return {
-          notifications: filtered.slice(0, options?.limit || 30),
-          unreadCount: unread,
-          totalCount: userList.length,
-        };
-      }
       return { notifications: [], unreadCount: 0, totalCount: 0 };
     }
   }
@@ -97,15 +83,6 @@ export class NotificationService {
       return true;
     } catch (err) {
       console.error("NotificationService.markAsRead error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        const userList = memoryNotifications.get(userId) || [];
-        const target = userList.find((n) => n.id === notificationId);
-        if (target) {
-          target.isRead = true;
-          target.readAt = new Date().toISOString();
-        }
-        return true;
-      }
       return false;
     }
   }
@@ -122,14 +99,6 @@ export class NotificationService {
       return true;
     } catch (err) {
       console.error("NotificationService.markAllAsRead error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        const userList = memoryNotifications.get(userId) || [];
-        userList.forEach((n) => {
-          n.isRead = true;
-          n.readAt = new Date().toISOString();
-        });
-        return true;
-      }
       return false;
     }
   }
@@ -165,23 +134,6 @@ export class NotificationService {
       };
     } catch (err) {
       console.error("NotificationService.createNotification error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        const mock: NotificationDTO = {
-          id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          userId: input.userId,
-          type: input.type,
-          title: input.title,
-          message: input.message,
-          channel: input.channel || "push",
-          isRead: false,
-          readAt: null,
-          createdAt: new Date().toISOString(),
-          payload: input.payload || null,
-        };
-        const current = memoryNotifications.get(input.userId) || [];
-        memoryNotifications.set(input.userId, [mock, ...current]);
-        return mock;
-      }
       return null;
     }
   }

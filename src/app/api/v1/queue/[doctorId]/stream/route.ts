@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { QueueService, queueEventBus } from "@/lib/services/QueueService";
 import { prisma } from "@/lib/db";
-import { ALLOW_MEMORY_FALLBACK } from "@/lib/auth/config";
 import { errorResponse } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -53,12 +52,10 @@ export async function GET(
       }
     } catch (dbError) {
       console.error("Database error in stream auth doctor lookup:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return NextResponse.json(
-          errorResponse("SERVICE_UNAVAILABLE", "Database is unavailable. Please try again."),
-          { status: 503 }
-        );
-      }
+      return NextResponse.json(
+        errorResponse("SERVICE_UNAVAILABLE", "Database is unavailable. Please try again."),
+        { status: 503 }
+      );
     }
   }
   // ── End auth guard ─────────────────────────────────────────────────

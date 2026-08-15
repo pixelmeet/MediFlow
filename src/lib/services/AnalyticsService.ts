@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 
 export interface AnalyticsSummaryDTO {
   dateRange: "today" | "7days" | "30days" | "all";
@@ -274,57 +273,6 @@ export class AnalyticsService {
       return { success: true, data: result };
     } catch (err) {
       console.error("AnalyticsService.getHospitalAnalytics error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: true,
-          data: {
-            dateRange: range,
-            startDate: new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0],
-            endDate: new Date().toISOString().split("T")[0],
-            kpis: {
-              totalAppointments: 48,
-              completedCount: 38,
-              completionRate: 79.2,
-              cancelledCount: 6,
-              cancellationRate: 12.5,
-              noShowCount: 4,
-              noShowRate: 8.3,
-              avgWaitTimeMinutes: 12,
-              avgConsultationMinutes: 16,
-              doctorUtilizationRate: 85,
-            },
-            financials: {
-              totalRevenue: 38400,
-              paidOnlineRevenue: 24000,
-              payAtClinicRevenue: 14400,
-              refundedAmount: 1600,
-              avgTicketValue: 800,
-            },
-            departmentBreakdown: [
-              { departmentId: "dept_cardio", departmentName: "Cardiology", appointmentCount: 22, completedCount: 18, revenue: 22000, doctorCount: 3 },
-              { departmentId: "dept_pedia", departmentName: "Pediatrics", appointmentCount: 16, completedCount: 14, revenue: 11200, doctorCount: 2 },
-              { departmentId: "dept_ortho", departmentName: "Orthopedics", appointmentCount: 10, completedCount: 6, revenue: 5200, doctorCount: 2 },
-            ],
-            hourlyDistribution: [
-              { hour: "09:00", count: 4, completed: 4 },
-              { hour: "10:00", count: 8, completed: 7 },
-              { hour: "11:00", count: 9, completed: 8 },
-              { hour: "12:00", count: 7, completed: 6 },
-              { hour: "14:00", count: 6, completed: 5 },
-              { hour: "15:00", count: 8, completed: 5 },
-              { hour: "16:00", count: 6, completed: 3 },
-            ],
-            dailyTrends: [
-              { date: "2026-08-06", total: 6, completed: 5, cancelled: 1, revenue: 4800 },
-              { date: "2026-08-07", total: 7, completed: 6, cancelled: 0, revenue: 5600 },
-              { date: "2026-08-08", total: 8, completed: 7, cancelled: 1, revenue: 6400 },
-              { date: "2026-08-09", total: 9, completed: 7, cancelled: 1, revenue: 7200 },
-              { date: "2026-08-10", total: 8, completed: 6, cancelled: 1, revenue: 6400 },
-              { date: "2026-08-11", total: 10, completed: 7, cancelled: 2, revenue: 8000 },
-            ],
-          },
-        };
-      }
       return { success: false, error: "Failed to generate hospital analytics" };
     }
   }

@@ -1,45 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
-import { ALLOW_MEMORY_FALLBACK } from "@/lib/auth/config";
 import { CreateReviewSchema } from "@/lib/validation/review";
 import { errorResponse, successResponse, safeParseJson } from "@/lib/utils";
-
-interface MemoryReview {
-  id: string;
-  doctorId: string;
-  patientName: string;
-  patientUserId: string;
-  rating: number;
-  comment?: string | null;
-  createdAt: string;
-}
-
-const memoryReviews = new Map<string, MemoryReview[]>([
-  [
-    "doc_patel_01",
-    [
-      {
-        id: "rev_1",
-        doctorId: "doc_patel_01",
-        patientName: "Aarav Sharma",
-        patientUserId: "user_aarav",
-        rating: 5,
-        comment: "Excellent cardiologist. Explained the diagnosis clearly and answered all questions with immense patience.",
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: "rev_2",
-        doctorId: "doc_patel_01",
-        patientName: "Pooja Mehta",
-        patientUserId: "user_pooja",
-        rating: 5,
-        comment: "Very professional consultation and minimal wait time using the queue token system.",
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-  ],
-]);
 
 export async function GET(
   _request: Request,
@@ -71,11 +34,7 @@ export async function GET(
 
       return NextResponse.json(successResponse(formatted));
     } catch (dbError) {
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-      const list = memoryReviews.get(doctorId) || [];
-      return NextResponse.json(successResponse(list));
+      throw dbError;
     }
   } catch (error) {
     console.error("GET doctor reviews error:", error);
@@ -173,32 +132,7 @@ export async function POST(
         { status: 201 }
       );
     } catch (dbError) {
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-
-      const list = memoryReviews.get(doctorId) || [];
-      const newMemReview: MemoryReview = {
-        id: `rev_${Date.now()}`,
-        doctorId,
-        patientName: session.name || "Patient",
-        patientUserId: session.userId,
-        rating: parseResult.data.rating,
-        comment: parseResult.data.comment,
-        createdAt: new Date().toISOString(),
-      };
-      const existingIdx = list.findIndex((r) => r.patientUserId === session.userId);
-      if (existingIdx >= 0) {
-        list[existingIdx] = newMemReview;
-      } else {
-        list.unshift(newMemReview);
-      }
-      memoryReviews.set(doctorId, list);
-
-      return NextResponse.json(
-        successResponse(newMemReview, { message: "Review submitted successfully" }),
-        { status: 201 }
-      );
+      throw dbError;
     }
   } catch (error) {
     console.error("POST doctor review error:", error);

@@ -1,5 +1,4 @@
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 
 export class TokenCleanupService {
   /**
@@ -34,9 +33,6 @@ export class TokenCleanupService {
       };
     } catch (error) {
       console.error("TokenCleanupService error:", error);
-      if (ALLOW_MEMORY_FALLBACK) {
-        return { success: true, deletedTokensCount: 0, deletedOtpsCount: 0, deletedResetTokensCount: 0 };
-      }
       return {
         success: false,
         deletedTokensCount: 0,

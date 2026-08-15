@@ -2,7 +2,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK, AUTH_CONFIG } from "../auth/config";
+import { AUTH_CONFIG } from "../auth/config";
 import { hashToken } from "../auth/token-hash";
 import { OtpDeliveryService } from "./OtpDeliveryService";
 import { TokenCleanupService } from "./TokenCleanupService";
@@ -28,93 +28,11 @@ export interface AuthResult {
   };
 }
 
-// In-memory demo store for development fallback when DB is unreachable (dev mode only)
-const memoryUsers = new Map<string, {
-  id: string;
-  email: string;
-  phone: string;
-  passwordHash: string;
-  role: "PATIENT" | "DOCTOR" | "ADMIN";
-  name: string;
-  isVerified: boolean;
-  isActive: boolean;
-  failedLogins: number;
-  lockedUntil: Date | null;
-}>();
-
-const memoryOtps = new Map<string, {
-  id: string;
-  userId: string;
-  code: string;
-  expiresAt: Date;
-  verified: boolean;
-  attempts: number;
-  createdAt: Date;
-}>();
-
-const memoryPasswordResetTokens = new Map<string, {
-  id: string;
-  userId: string;
-  tokenHash: string;
-  expiresAt: Date;
-  createdAt: Date;
-}>();
-
-// Initialize demo accounts in memory store
-async function ensureDemoAccounts() {
-  if (ALLOW_MEMORY_FALLBACK && memoryUsers.size === 0) {
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash("Password@123", salt);
-
-    memoryUsers.set("admin@mediflow.com", {
-      id: "usr_admin_01",
-      email: "admin@mediflow.com",
-      phone: "+919000000001",
-      passwordHash: hash,
-      role: "ADMIN",
-      name: "Priya Sharma (Admin Lead)",
-      isVerified: true,
-      isActive: true,
-      failedLogins: 0,
-      lockedUntil: null,
-    });
-
-    memoryUsers.set("dr.patel@mediflow.com", {
-      id: "usr_doc_01",
-      email: "dr.patel@mediflow.com",
-      phone: "+919000000002",
-      passwordHash: hash,
-      role: "DOCTOR",
-      name: "Dr. Rajesh Patel (Cardiologist)",
-      isVerified: true,
-      isActive: true,
-      failedLogins: 0,
-      lockedUntil: null,
-    });
-
-    memoryUsers.set("patient@mediflow.com", {
-      id: "usr_pat_01",
-      email: "patient@mediflow.com",
-      phone: "+919876543210",
-      passwordHash: hash,
-      role: "PATIENT",
-      name: "Meet Vora",
-      isVerified: true,
-      isActive: true,
-      failedLogins: 0,
-      lockedUntil: null,
-    });
-  }
-}
-
 export class AuthService {
   /**
    * Register a new patient account and create an OTP verification token
    */
   static async registerPatient(input: RegisterPatientInput): Promise<AuthResult> {
-    if (ALLOW_MEMORY_FALLBACK) {
-      await ensureDemoAccounts();
-    }
 
     try {
       // Try Prisma database first
@@ -206,79 +124,11 @@ export class AuthService {
       };
     } catch (dbError) {
       console.error("Database error during registerPatient:", dbError);
-
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "SERVICE_UNAVAILABLE",
-            message: "We're having trouble reaching the database. Please try again in a moment.",
-          },
-        };
-      }
-
-      console.warn("Database unavailable, falling back to memory store in dev mode:", (dbError as Error).message);
-
-      // Memory Store Fallback
-      const existingUser = Array.from(memoryUsers.values()).find(
-        (u) => u.email === input.email || u.phone === input.phone
-      );
-
-      if (existingUser) {
-        return {
-          success: false,
-          error: {
-            code: "DUPLICATE_USER",
-            message: "An account with this email or phone number already exists.",
-          },
-        };
-      }
-
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(input.password, salt);
-      const newId = `usr_${Date.now()}`;
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-      memoryUsers.set(input.email, {
-        id: newId,
-        email: input.email,
-        phone: input.phone,
-        passwordHash,
-        role: "PATIENT",
-        name: input.name,
-        isVerified: false,
-        isActive: true,
-        failedLogins: 0,
-        lockedUntil: null,
-      });
-
-      memoryOtps.set(newId, {
-        id: `otp_${Date.now()}`,
-        userId: newId,
-        code: otpCode,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-        verified: false,
-        attempts: 0,
-        createdAt: new Date(),
-      });
-
-      // Deliver OTP via dev fallback (memory store path is always dev-only)
-      const delivery = await OtpDeliveryService.deliver(
-        input.email || input.phone,
-        otpCode,
-        newId
-      );
-
       return {
-        success: true,
-        user: {
-          id: newId,
-          email: input.email,
-          phone: input.phone,
-          role: "PATIENT",
-          name: input.name,
-          requiresOtp: true,
-          ...(delivery.devOtp ? { devOtp: delivery.devOtp } : {}),
+        success: false,
+        error: {
+          code: "SERVICE_UNAVAILABLE",
+          message: "We're having trouble reaching the database. Please try again in a moment.",
         },
       };
     }
@@ -289,9 +139,6 @@ export class AuthService {
    * Enforces 5 failed attempts -> 15 min lockout rule and isVerified check
    */
   static async login(input: LoginInput): Promise<AuthResult> {
-    if (ALLOW_MEMORY_FALLBACK) {
-      await ensureDemoAccounts();
-    }
     const isEmail = input.identifier.includes("@");
 
     try {
@@ -403,39 +250,6 @@ export class AuthService {
       }
 
       // User not found in DB
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "INVALID_CREDENTIALS",
-            message: "Invalid email/phone or password.",
-          },
-        };
-      }
-    } catch (e) {
-      console.error("Database error during login:", e);
-
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "SERVICE_UNAVAILABLE",
-            message: "We're having trouble reaching the database. Please try again in a moment.",
-          },
-        };
-      }
-
-      console.warn("Database query failed during login, checking memory store in dev mode...");
-    }
-
-    // Check memory store for demo accounts or memory registered users (dev mode only)
-    const memUser = Array.from(memoryUsers.values()).find((u) =>
-      isEmail
-        ? u.email.toLowerCase() === input.identifier.toLowerCase()
-        : u.phone === input.identifier
-    );
-
-    if (!memUser) {
       return {
         success: false,
         error: {
@@ -443,72 +257,16 @@ export class AuthService {
           message: "Invalid email/phone or password.",
         },
       };
-    }
-
-    if (memUser.lockedUntil && memUser.lockedUntil > new Date()) {
-      const remainingMinutes = Math.ceil((memUser.lockedUntil.getTime() - Date.now()) / (60 * 1000));
+    } catch (e) {
+      console.error("Database error during login:", e);
       return {
         success: false,
         error: {
-          code: "ACCOUNT_LOCKED",
-          message: `Account is temporarily locked. Try again in ${remainingMinutes} minute(s).`,
-          lockoutRemainingMinutes: remainingMinutes,
+          code: "SERVICE_UNAVAILABLE",
+          message: "We're having trouble reaching the database. Please try again in a moment.",
         },
       };
     }
-
-    const passwordMatch = await bcrypt.compare(input.password, memUser.passwordHash);
-
-    if (!passwordMatch) {
-      memUser.failedLogins += 1;
-      if (memUser.failedLogins >= 5) {
-        memUser.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
-        memUser.failedLogins = 0;
-        return {
-          success: false,
-          error: {
-            code: "ACCOUNT_LOCKED",
-            message: "Too many failed login attempts. Account locked for 15 minutes.",
-            lockoutRemainingMinutes: 15,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          code: "INVALID_CREDENTIALS",
-          message: `Invalid password. ${5 - memUser.failedLogins} attempt(s) remaining before temporary lockout.`,
-        },
-      };
-    }
-
-    // Check if memory user is verified
-    if (!memUser.isVerified) {
-      return {
-        success: false,
-        error: {
-          code: "EMAIL_NOT_VERIFIED",
-          message: "Please verify your email/phone before logging in.",
-        },
-      };
-    }
-
-    memUser.failedLogins = 0;
-    memUser.lockedUntil = null;
-
-    return {
-      success: true,
-      user: {
-        id: memUser.id,
-        email: memUser.email,
-        phone: memUser.phone,
-        role: memUser.role,
-        name: memUser.name,
-        doctorId: memUser.role === "DOCTOR" ? (memUser.id === "usr_doc_01" ? "doc_patel_01" : `doc_${memUser.id}`) : undefined,
-        patientId: memUser.role === "PATIENT" ? (memUser.id === "usr_pat_01" ? "pat_meet_01" : `pat_${memUser.id}`) : undefined,
-      },
-    };
   }
 
   /**
@@ -595,91 +353,23 @@ export class AuthService {
         };
       }
 
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "NO_OTP_FOUND",
-            message: "No pending verification code found.",
-          },
-        };
-      }
+      return {
+        success: false,
+        error: {
+          code: "NO_OTP_FOUND",
+          message: "No pending verification code found.",
+        },
+      };
     } catch (dbError) {
       console.error("Database error during verifyOtp:", dbError);
-
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "SERVICE_UNAVAILABLE",
-            message: "We're having trouble reaching the database. Please try again in a moment.",
-          },
-        };
-      }
-
-      console.warn("Database unavailable for OTP, checking memory store in dev mode...");
-    }
-
-    // Memory Store OTP verification (dev mode only)
-    const memOtp = memoryOtps.get(input.userId);
-    if (!memOtp || memOtp.verified) {
-      return {
-        success: false,
-        error: { code: "NO_OTP_FOUND", message: "No pending verification code found." },
-      };
-    }
-
-    if (memOtp.attempts >= AUTH_CONFIG.otpMaxAttempts) {
       return {
         success: false,
         error: {
-          code: "OTP_MAX_ATTEMPTS",
-          message: "Too many failed attempts. This code is invalidated. Please request a new OTP.",
+          code: "SERVICE_UNAVAILABLE",
+          message: "We're having trouble reaching the database. Please try again in a moment.",
         },
       };
     }
-
-    if (new Date() > memOtp.expiresAt) {
-      return {
-        success: false,
-        error: { code: "OTP_EXPIRED", message: "Verification code has expired." },
-      };
-    }
-
-    if (memOtp.code !== input.code) {
-      memOtp.attempts = (memOtp.attempts || 0) + 1;
-      const isMaxedOut = memOtp.attempts >= AUTH_CONFIG.otpMaxAttempts;
-      if (isMaxedOut) {
-        memOtp.verified = true;
-      }
-      return {
-        success: false,
-        error: {
-          code: isMaxedOut ? "OTP_MAX_ATTEMPTS" : "INVALID_OTP",
-          message: isMaxedOut
-            ? "Too many failed attempts (5/5). This code has been invalidated. Please request a new OTP."
-            : `Invalid verification code. ${AUTH_CONFIG.otpMaxAttempts - memOtp.attempts} attempt(s) remaining.`,
-        },
-      };
-    }
-
-    memOtp.verified = true;
-    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === input.userId);
-    if (memUser) {
-      memUser.isVerified = true;
-    }
-
-    return {
-      success: true,
-      user: {
-        id: input.userId,
-        email: memUser?.email,
-        phone: memUser?.phone,
-        role: "PATIENT",
-        name: memUser?.name || "Patient",
-        patientId: input.userId === "usr_pat_01" ? "pat_meet_01" : `pat_${input.userId}`,
-      },
-    };
   }
 
   /**
@@ -724,32 +414,11 @@ export class AuthService {
       });
     } catch (dbError) {
       console.error("Database error during resendOtp:", dbError);
-
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          code: "SERVICE_UNAVAILABLE",
-          error: "We're having trouble reaching the database. Please try again in a moment.",
-        };
-      }
-
-      console.warn("Database unavailable, falling back to memory store in dev mode for resendOtp");
-
-      // Memory store rate limit check
-      const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
-      if (memUser) {
-        recipient = memUser.email || memUser.phone;
-      }
-
-      memoryOtps.set(userId, {
-        id: `otp_${Date.now()}`,
-        userId,
-        code: newCode,
-        expiresAt,
-        verified: false,
-        attempts: 0,
-        createdAt: new Date(),
-      });
+      return {
+        success: false,
+        code: "SERVICE_UNAVAILABLE",
+        error: "We're having trouble reaching the database. Please try again in a moment.",
+      };
     }
 
     // Deliver new OTP — provider choice based on env vars (same as registration)
@@ -788,84 +457,11 @@ export class AuthService {
         },
       });
       if (user) return user;
-      if (!ALLOW_MEMORY_FALLBACK) return null;
+      return null;
     } catch (dbError) {
       console.error("Database error in getUserProfile:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-      console.warn("Database unavailable for getUserProfile, falling back to memory store in dev mode...");
+      return null;
     }
-
-    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
-    if (!memUser) return null;
-
-    return {
-      id: memUser.id,
-      email: memUser.email,
-      phone: memUser.phone,
-      role: memUser.role,
-      isVerified: memUser.isVerified,
-      isActive: memUser.isActive,
-      createdAt: new Date(),
-      patient: memUser.role === "PATIENT" ? {
-        id: memUser.id === "usr_pat_01" ? "pat_meet_01" : `pat_${memUser.id}`,
-        userId: memUser.id,
-        name: memUser.name,
-        age: 34,
-        gender: "MALE",
-        bloodGroup: "O+",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } : null,
-      doctor: memUser.role === "DOCTOR" ? {
-        id: memUser.id === "usr_doc_01" ? "doc_patel_01" : `doc_${memUser.id}`,
-        name: memUser.name,
-        specialty: "Cardiology",
-        bio: "Consultant Cardiologist with special interest in preventive cardiology.",
-        qualifications: "MBBS, MD (General Medicine), DM (Cardiology)",
-        experience: 12,
-        language: ["English", "Hindi", "Gujarati"],
-        photoUrl: null,
-        fee: new Prisma.Decimal(800),
-        appointmentDurationMin: 20,
-        bufferMinutes: 0,
-        isActive: true,
-        departmentId: "dept_cardio_01",
-        userId: memUser.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        department: {
-          id: "dept_cardio_01",
-          name: "Cardiology",
-          branchId: "branch_central_01",
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          branch: {
-            id: "branch_central_01",
-            hospitalId: "hosp_01",
-            name: "MediFlow Central Hospital",
-            address: "123 Healthcare Ave, Mumbai",
-            timezone: "Asia/Kolkata",
-            isActive: true,
-            gracePeriodMin: 15,
-            earlyCheckinMin: 60,
-            maxAdvanceBookDays: 30,
-            rescheduleCutoffHrs: 2,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        },
-      } : null,
-      admin: memUser.role === "ADMIN" ? {
-        id: `adm_${memUser.id}`,
-        userId: memUser.id,
-        name: memUser.name,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } : null,
-    };
   }
 
   /**
@@ -877,10 +473,6 @@ export class AuthService {
     success: boolean;
     error?: { code: string; message: string };
   }> {
-    if (ALLOW_MEMORY_FALLBACK) {
-      await ensureDemoAccounts();
-    }
-
     const isEmail = identifier.includes("@");
     const windowStart = new Date(Date.now() - AUTH_CONFIG.passwordResetRateLimitWindowMs);
 
@@ -946,57 +538,14 @@ export class AuthService {
       };
     } catch (dbError) {
       console.error("Database error during requestPasswordReset:", dbError);
-
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "SERVICE_UNAVAILABLE",
-            message: "We're having trouble reaching the database. Please try again in a moment.",
-          },
-        };
-      }
-
-      console.warn("Database unavailable, falling back to memory store for requestPasswordReset in dev mode");
+      return {
+        success: false,
+        error: {
+          code: "SERVICE_UNAVAILABLE",
+          message: "We're having trouble reaching the database. Please try again in a moment.",
+        },
+      };
     }
-
-    // Memory Store Fallback (dev mode only)
-    const memUser = Array.from(memoryUsers.values()).find((u) =>
-      isEmail
-        ? u.email.toLowerCase() === identifier.toLowerCase()
-        : u.phone === identifier
-    );
-
-    if (memUser && memUser.isActive) {
-      const rawToken = crypto.randomBytes(32).toString("hex");
-      const tokenHash = hashToken(rawToken);
-      const expiresAt = new Date(Date.now() + AUTH_CONFIG.passwordResetExpiryMinutes * 60 * 1000);
-
-      // Clean up previous tokens for this user in memory
-      for (const [hash, t] of memoryPasswordResetTokens.entries()) {
-        if (t.userId === memUser.id) {
-          memoryPasswordResetTokens.delete(hash);
-        }
-      }
-
-      memoryPasswordResetTokens.set(tokenHash, {
-        id: `prt_${Date.now()}`,
-        userId: memUser.id,
-        tokenHash,
-        expiresAt,
-        createdAt: new Date(),
-      });
-
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      const resetUrl = `${appUrl}/auth/reset-password?token=${rawToken}`;
-      const recipient = memUser.email || memUser.phone || identifier;
-
-      console.log(`[DEV PASSWORD RESET] Recipient: ${recipient} | Reset Link: ${resetUrl} | Token: ${rawToken}`);
-    }
-
-    return {
-      success: true,
-    };
   }
 
   /**
@@ -1064,54 +613,14 @@ export class AuthService {
       return { success: true };
     } catch (dbError) {
       console.error("Database error during resetPassword:", dbError);
-
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "SERVICE_UNAVAILABLE",
-            message: "We're having trouble reaching the database. Please try again in a moment.",
-          },
-        };
-      }
-
-      console.warn("Database query failed during resetPassword, checking memory store in dev mode...");
-    }
-
-    // Memory Store Fallback (dev mode only)
-    const memRecord = memoryPasswordResetTokens.get(tokenHash);
-    if (!memRecord || memRecord.expiresAt < now) {
-      if (memRecord) {
-        memoryPasswordResetTokens.delete(tokenHash);
-      }
       return {
         success: false,
         error: {
-          code: "INVALID_OR_EXPIRED_TOKEN",
-          message: "This password reset link is invalid or has expired. Please request a new one.",
+          code: "SERVICE_UNAVAILABLE",
+          message: "We're having trouble reaching the database. Please try again in a moment.",
         },
       };
     }
-
-    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === memRecord.userId);
-    if (!memUser) {
-      memoryPasswordResetTokens.delete(tokenHash);
-      return {
-        success: false,
-        error: {
-          code: "USER_NOT_FOUND",
-          message: "User account associated with this reset link could not be found.",
-        },
-      };
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    memUser.passwordHash = await bcrypt.hash(newPassword, salt);
-    memUser.failedLogins = 0;
-    memUser.lockedUntil = null;
-    memoryPasswordResetTokens.delete(tokenHash);
-
-    return { success: true };
   }
 
   /**
@@ -1148,121 +657,74 @@ export class AuthService {
       });
 
       if (!patient) {
-        if (!ALLOW_MEMORY_FALLBACK) {
-          return {
-            success: false,
-            error: { code: "PATIENT_NOT_FOUND", message: "Patient profile not found." },
-          };
-        }
-      } else {
-        // If phone changed, check uniqueness across User table
-        if (input.phone && input.phone !== patient.user.phone) {
-          const existingPhone = await prisma.user.findFirst({
-            where: {
-              phone: input.phone,
-              NOT: { id: userId },
-            },
-          });
+        return {
+          success: false,
+          error: { code: "PATIENT_NOT_FOUND", message: "Patient profile not found." },
+        };
+      }
 
-          if (existingPhone) {
-            return {
-              success: false,
-              error: {
-                code: "PHONE_ALREADY_IN_USE",
-                message: "This phone number is already registered by another account.",
-              },
-            };
-          }
-        }
-
-        const updated = await prisma.$transaction(async (tx) => {
-          if (input.phone && input.phone !== patient.user.phone) {
-            await tx.user.update({
-              where: { id: userId },
-              data: { phone: input.phone },
-            });
-          }
-
-          const updatedPatient = await tx.patient.update({
-            where: { userId },
-            data: {
-              ...(input.name !== undefined ? { name: input.name } : {}),
-              ...(input.age !== undefined ? { age: input.age } : {}),
-              ...(input.gender !== undefined ? { gender: input.gender } : {}),
-              ...(input.bloodGroup !== undefined ? { bloodGroup: input.bloodGroup } : {}),
-            },
-            include: { user: true },
-          });
-
-          return updatedPatient;
+      // If phone changed, check uniqueness across User table
+      if (input.phone && input.phone !== patient.user.phone) {
+        const existingPhone = await prisma.user.findFirst({
+          where: {
+            phone: input.phone,
+            NOT: { id: userId },
+          },
         });
 
-        return {
-          success: true,
-          data: {
-            id: updated.id,
-            userId: updated.userId,
-            name: updated.name,
-            email: updated.user.email,
-            phone: updated.user.phone,
-            age: updated.age,
-            gender: updated.gender,
-            bloodGroup: updated.bloodGroup,
-          },
-        };
+        if (existingPhone) {
+          return {
+            success: false,
+            error: {
+              code: "PHONE_ALREADY_IN_USE",
+              message: "This phone number is already registered by another account.",
+            },
+          };
+        }
       }
+
+      const updated = await prisma.$transaction(async (tx) => {
+        if (input.phone && input.phone !== patient.user.phone) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { phone: input.phone },
+          });
+        }
+
+        const updatedPatient = await tx.patient.update({
+          where: { userId },
+          data: {
+            ...(input.name !== undefined ? { name: input.name } : {}),
+            ...(input.age !== undefined ? { age: input.age } : {}),
+            ...(input.gender !== undefined ? { gender: input.gender } : {}),
+            ...(input.bloodGroup !== undefined ? { bloodGroup: input.bloodGroup } : {}),
+          },
+          include: { user: true },
+        });
+
+        return updatedPatient;
+      });
+
+      return {
+        success: true,
+        data: {
+          id: updated.id,
+          userId: updated.userId,
+          name: updated.name,
+          email: updated.user.email,
+          phone: updated.user.phone,
+          age: updated.age,
+          gender: updated.gender,
+          bloodGroup: updated.bloodGroup,
+        },
+      };
     } catch (dbError) {
       console.error("Database error during updatePatientProfile:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
-        };
-      }
-    }
-
-    // Memory Store Fallback
-    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
-    if (!memUser) {
       return {
         success: false,
-        error: { code: "PATIENT_NOT_FOUND", message: "Patient profile not found." },
+        error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
       };
     }
-
-    if (input.phone && input.phone !== memUser.phone) {
-      const existingPhone = Array.from(memoryUsers.values()).find(
-        (u) => u.phone === input.phone && u.id !== userId
-      );
-      if (existingPhone) {
-        return {
-          success: false,
-          error: {
-            code: "PHONE_ALREADY_IN_USE",
-            message: "This phone number is already registered by another account.",
-          },
-        };
-      }
-      memUser.phone = input.phone;
-    }
-
-    if (input.name) {
-      memUser.name = input.name;
-    }
-
-    return {
-      success: true,
-      data: {
-        id: `pat_${userId}`,
-        userId,
-        name: memUser.name,
-        email: memUser.email,
-        phone: memUser.phone,
-        age: input.age !== undefined ? input.age : 34,
-        gender: input.gender !== undefined ? input.gender : "MALE",
-        bloodGroup: input.bloodGroup !== undefined ? input.bloodGroup : "O+",
-      },
-    };
   }
 
   /**
@@ -1306,74 +768,50 @@ export class AuthService {
       });
 
       if (!doctor) {
-        if (!ALLOW_MEMORY_FALLBACK) {
-          return {
-            success: false,
-            error: { code: "DOCTOR_NOT_FOUND", message: "Doctor profile not found." },
-          };
-        }
-      } else {
-        const updated = await prisma.doctor.update({
-          where: { userId },
-          data: {
-            ...(input.bio !== undefined ? { bio: input.bio } : {}),
-            ...(input.qualifications !== undefined ? { qualifications: input.qualifications } : {}),
-            ...(input.experience !== undefined ? { experience: input.experience } : {}),
-            ...(input.language !== undefined ? { language: input.language } : {}),
-            ...(input.photoUrl !== undefined ? { photoUrl: input.photoUrl || null } : {}),
-          },
-          include: {
-            department: { include: { branch: true } },
-          },
-        });
-
-        return {
-          success: true,
-          data: {
-            id: updated.id,
-            userId: updated.userId,
-            name: updated.name,
-            specialty: updated.specialty,
-            bio: updated.bio,
-            qualifications: updated.qualifications,
-            experience: updated.experience,
-            language: updated.language,
-            photoUrl: updated.photoUrl,
-            fee: Number(updated.fee),
-            departmentName: updated.department?.name,
-            branchName: updated.department?.branch?.name,
-          },
-        };
-      }
-    } catch (dbError) {
-      console.error("Database error during updateDoctorProfile:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
         return {
           success: false,
-          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+          error: { code: "DOCTOR_NOT_FOUND", message: "Doctor profile not found." },
         };
       }
-    }
 
-    // Memory Store Fallback
-    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
-    return {
-      success: true,
-      data: {
-        id: `doc_${userId}`,
-        userId,
-        name: memUser?.name || "Dr. Rajesh Patel",
-        specialty: "Cardiology",
-        bio: input.bio !== undefined ? input.bio : "Consultant Cardiologist with special interest in preventive cardiology.",
-        qualifications: input.qualifications !== undefined ? input.qualifications : "MBBS, MD (General Medicine), DM (Cardiology)",
-        experience: input.experience !== undefined ? input.experience : 12,
-        language: input.language || ["English", "Hindi", "Gujarati"],
-        photoUrl: input.photoUrl || null,
-        fee: 800,
-        departmentName: "Cardiology",
-        branchName: "MediFlow Central Hospital",
-      },
-    };
+      const updated = await prisma.doctor.update({
+        where: { userId },
+        data: {
+          ...(input.bio !== undefined ? { bio: input.bio } : {}),
+          ...(input.qualifications !== undefined ? { qualifications: input.qualifications } : {}),
+          ...(input.experience !== undefined ? { experience: input.experience } : {}),
+          ...(input.language !== undefined ? { language: input.language } : {}),
+          ...(input.photoUrl !== undefined ? { photoUrl: input.photoUrl || null } : {}),
+        },
+        include: {
+          department: { include: { branch: true } },
+        },
+      });
+
+      return {
+        success: true,
+        data: {
+          id: updated.id,
+          userId: updated.userId,
+          name: updated.name,
+          specialty: updated.specialty,
+          bio: updated.bio,
+          qualifications: updated.qualifications,
+          experience: updated.experience,
+          language: updated.language,
+          photoUrl: updated.photoUrl,
+          fee: Number(updated.fee),
+          departmentName: updated.department?.name,
+          branchName: updated.department?.branch?.name,
+        },
+      };
+    } catch (dbError) {
+      console.error("Database error during updateDoctorProfile:", dbError);
+      return {
+        success: false,
+        error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+      };
+    }
   }
 
   /**
@@ -1392,87 +830,56 @@ export class AuthService {
       });
 
       if (!user) {
-        if (!ALLOW_MEMORY_FALLBACK) {
-          return {
-            success: false,
-            error: { code: "USER_NOT_FOUND", message: "User account not found." },
-          };
-        }
-      } else {
-        const isMatch = user.passwordHash
-          ? await bcrypt.compare(currentPassword, user.passwordHash)
-          : false;
-
-        if (!isMatch) {
-          return {
-            success: false,
-            error: {
-              code: "INCORRECT_PASSWORD",
-              message: "The current password you entered is incorrect.",
-            },
-          };
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const newHash = await bcrypt.hash(newPassword, salt);
-
-        await prisma.$transaction(async (tx) => {
-          await tx.user.update({
-            where: { id: userId },
-            data: {
-              passwordHash: newHash,
-              failedLogins: 0,
-              lockedUntil: null,
-            },
-          });
-
-          // Invalidate all refresh tokens for this user EXCEPT current session token if provided
-          await tx.refreshToken.deleteMany({
-            where: {
-              userId,
-              ...(currentRefreshTokenHash ? { NOT: { tokenHash: currentRefreshTokenHash } } : {}),
-            },
-          });
-        });
-
-        return { success: true };
-      }
-    } catch (dbError) {
-      console.error("Database error in changePassword:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
         return {
           success: false,
-          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+          error: { code: "USER_NOT_FOUND", message: "User account not found." },
         };
       }
-    }
 
-    // Memory Store Fallback
-    const memUser = Array.from(memoryUsers.values()).find((u) => u.id === userId);
-    if (!memUser) {
+      const isMatch = user.passwordHash
+        ? await bcrypt.compare(currentPassword, user.passwordHash)
+        : false;
+
+      if (!isMatch) {
+        return {
+          success: false,
+          error: {
+            code: "INCORRECT_PASSWORD",
+            message: "The current password you entered is incorrect.",
+          },
+        };
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const newHash = await bcrypt.hash(newPassword, salt);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            passwordHash: newHash,
+            failedLogins: 0,
+            lockedUntil: null,
+          },
+        });
+
+        // Invalidate all refresh tokens for this user EXCEPT current session token if provided
+        await tx.refreshToken.deleteMany({
+          where: {
+            userId,
+            ...(currentRefreshTokenHash ? { NOT: { tokenHash: currentRefreshTokenHash } } : {}),
+          },
+        });
+      });
+
+      return { success: true };
+    } catch (dbError) {
+      console.error("Database error in changePassword:", dbError);
       return {
         success: false,
-        error: { code: "USER_NOT_FOUND", message: "User account not found." },
+        error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
       };
     }
-
-    const isMatch = await bcrypt.compare(currentPassword, memUser.passwordHash);
-    if (!isMatch) {
-      return {
-        success: false,
-        error: {
-          code: "INCORRECT_PASSWORD",
-          message: "The current password you entered is incorrect.",
-        },
-      };
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    memUser.passwordHash = await bcrypt.hash(newPassword, salt);
-    memUser.failedLogins = 0;
-    memUser.lockedUntil = null;
-
-    return { success: true };
   }
 }
 

@@ -1,5 +1,4 @@
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { ProcessPaymentInput, ProcessRefundInput } from "../validation/payments";
 import { NotificationService } from "./NotificationService";
 
@@ -21,11 +20,9 @@ export interface PaymentDTO {
   };
 }
 
-const memoryPayments = new Map<string, PaymentDTO>();
-
 export class PaymentService {
   /**
-   * Process a payment (online mock/gateway or pay-at-clinic)
+   * Process a payment (online gateway or pay-at-clinic)
    */
   static async processPayment(
     input: ProcessPaymentInput,
@@ -51,15 +48,6 @@ export class PaymentService {
       ]);
 
       if (!appointment) {
-        if (ALLOW_MEMORY_FALLBACK && memoryPayments.has(input.appointmentId)) {
-          const existingMem = memoryPayments.get(input.appointmentId)!;
-          if (existingMem.status === "PAID") {
-            return { success: false, error: "Payment for this appointment has already been completed." };
-          }
-          existingMem.status = input.provider === "clinic" ? "PENDING" : "PAID";
-          existingMem.transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-          return { success: true, data: existingMem };
-        }
         return { success: false, error: "Appointment not found" };
       }
 
@@ -94,7 +82,7 @@ export class PaymentService {
         };
       }
 
-      // Generate mock transaction ID if paid online
+      // Generate transaction ID if paid online
       const isOnline = input.provider !== "clinic";
       const status = isOnline ? "PAID" : "PENDING";
       const transactionId = isOnline
@@ -152,7 +140,7 @@ export class PaymentService {
         appointmentId: payment.appointmentId,
         amount: Number(payment.amount),
         status: payment.status as PaymentDTO["status"],
-        provider: payment.provider || "mock",
+        provider: payment.provider || "online",
         transactionId: payment.transactionId,
         refundedAt: payment.refundedAt?.toISOString() || null,
         createdAt: payment.createdAt.toISOString(),
@@ -168,23 +156,6 @@ export class PaymentService {
       return { success: true, data: dto };
     } catch (err) {
       console.error("PaymentService.processPayment error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        const existing = memoryPayments.get(input.appointmentId);
-        if (existing && existing.status === "PAID") {
-          return { success: false, error: "Payment for this appointment has already been completed." };
-        }
-        const mock: PaymentDTO = {
-          id: `pay_${Date.now()}`,
-          appointmentId: input.appointmentId,
-          amount: input.amount,
-          status: input.provider === "clinic" ? "PENDING" : "PAID",
-          provider: input.provider,
-          transactionId: `TXN-MEM-${Date.now()}`,
-          createdAt: new Date().toISOString(),
-        };
-        memoryPayments.set(input.appointmentId, mock);
-        return { success: true, data: mock };
-      }
       return { success: false, error: "Payment processing failed" };
     }
   }
@@ -214,12 +185,6 @@ export class PaymentService {
       });
 
       if (!payment) {
-        if (ALLOW_MEMORY_FALLBACK && memoryPayments.has(input.appointmentId)) {
-          const p = memoryPayments.get(input.appointmentId)!;
-          p.status = "REFUNDED";
-          p.refundedAt = new Date().toISOString();
-          return { success: true, data: p };
-        }
         return { success: false, error: "Payment record not found for this appointment" };
       }
 
@@ -269,7 +234,7 @@ export class PaymentService {
         appointmentId: updated.appointmentId,
         amount: Number(updated.amount),
         status: updated.status as PaymentDTO["status"],
-        provider: updated.provider || "mock",
+        provider: updated.provider || "online",
         transactionId: updated.transactionId,
         refundedAt: updated.refundedAt?.toISOString() || null,
         createdAt: updated.createdAt.toISOString(),
@@ -278,14 +243,6 @@ export class PaymentService {
       return { success: true, data: dto };
     } catch (err) {
       console.error("PaymentService.processRefund error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        const mem = memoryPayments.get(input.appointmentId);
-        if (mem) {
-          mem.status = "REFUNDED";
-          mem.refundedAt = new Date().toISOString();
-          return { success: true, data: mem };
-        }
-      }
       return { success: false, error: "Refund processing failed" };
     }
   }
@@ -308,7 +265,7 @@ export class PaymentService {
       });
 
       if (!p) {
-        return memoryPayments.get(appointmentId) || null;
+        return null;
       }
 
       return {
@@ -316,7 +273,7 @@ export class PaymentService {
         appointmentId: p.appointmentId,
         amount: Number(p.amount),
         status: p.status as PaymentDTO["status"],
-        provider: p.provider || "mock",
+        provider: p.provider || "online",
         transactionId: p.transactionId,
         refundedAt: p.refundedAt?.toISOString() || null,
         createdAt: p.createdAt.toISOString(),
@@ -330,7 +287,7 @@ export class PaymentService {
       };
     } catch (err) {
       console.error("PaymentService.getPaymentByAppointmentId error:", err);
-      return memoryPayments.get(appointmentId) || null;
+      return null;
     }
   }
 }

@@ -3,7 +3,7 @@ import { z } from "zod";
 export const ProcessPaymentSchema = z.object({
   appointmentId: z.string().min(1, "Appointment ID is required"),
   amount: z.number().positive("Payment amount must be greater than 0"),
-  provider: z.enum(["mock", "razorpay", "stripe", "clinic"]).default("mock"),
+  provider: z.enum(["online", "razorpay", "stripe", "clinic"]).default("online"),
   method: z.enum(["upi", "card", "netbanking", "cash"]).optional(),
   idempotencyKey: z.string().optional(),
 });

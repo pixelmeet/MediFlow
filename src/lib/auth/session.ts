@@ -9,7 +9,6 @@ import {
   SessionPayload,
 } from "./jwt";
 import { hashToken } from "./token-hash";
-import { ALLOW_MEMORY_FALLBACK } from "./config";
 import { prisma } from "../db";
 
 /**
@@ -42,12 +41,8 @@ export async function getSession(): Promise<SessionPayload | null> {
       return null;
     }
   } catch (dbError) {
-    if (!ALLOW_MEMORY_FALLBACK) {
-      console.error("Database error during refresh token validation:", dbError);
-      return null;
-    } else {
-      console.warn("Database unavailable, skipping DB refresh token revocation check in dev fallback mode");
-    }
+    console.error("Database error during refresh token validation:", dbError);
+    return null;
   }
 
   try {
@@ -90,9 +85,7 @@ export async function getSession(): Promise<SessionPayload | null> {
       exp: Math.floor(Date.now() / 1000) + 15 * 60,
     };
   } catch (error) {
-    if (!ALLOW_MEMORY_FALLBACK) {
-      console.error("Database error retrieving user during session refresh:", error);
-    }
+    console.error("Database error retrieving user during session refresh:", error);
     return null;
   }
 }
@@ -116,12 +109,8 @@ export async function setSessionCookies(payload: SessionPayload) {
       },
     });
   } catch (error) {
-    if (!ALLOW_MEMORY_FALLBACK) {
-      console.error("Failed to persist refresh token to database:", error);
-      throw error;
-    } else {
-      console.warn("Database unavailable, skipping refresh token persistence in dev fallback mode");
-    }
+    console.error("Failed to persist refresh token to database:", error);
+    throw error;
   }
 
   cookieStore.set(ACCESS_COOKIE_NAME, accessToken, {

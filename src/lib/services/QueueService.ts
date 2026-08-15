@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { CheckInService } from "./CheckInService";
 import { EventEmitter } from "events";
 
@@ -84,64 +83,6 @@ const doctorCabinStatuses = new Map<string, DoctorCabinStatusDTO>([
       note: "On schedule in Cabin 4",
       updatedAt: new Date().toISOString(),
     },
-  ],
-]);
-
-// In-memory queue state for dev mode fallback
-const memoryQueueState = new Map<string, QueueItemDTO[]>([
-  [
-    "doc_patel_01",
-    [
-      {
-        tokenId: "tok_01",
-        appointmentId: "apt_01",
-        tokenNumber: "A-01",
-        patientName: "Suresh Gupta",
-        scheduledTime: "10:00",
-        status: "DONE",
-        appointmentStatus: "COMPLETED",
-        isCheckedIn: true,
-        checkedInAt: "09:50",
-        position: 1,
-        calledAt: "10:02",
-      },
-      {
-        tokenId: "tok_02",
-        appointmentId: "apt_02",
-        tokenNumber: "A-02",
-        patientName: "Anita Sharma",
-        scheduledTime: "10:20",
-        status: "IN_PROGRESS",
-        appointmentStatus: "IN_CONSULTATION",
-        isCheckedIn: true,
-        checkedInAt: "10:15",
-        position: 2,
-        calledAt: "10:25",
-      },
-      {
-        tokenId: "tok_03",
-        appointmentId: "apt_03",
-        tokenNumber: "A-03",
-        patientName: "Meet Vora",
-        scheduledTime: "10:40",
-        status: "WAITING",
-        appointmentStatus: "CHECKED_IN",
-        isCheckedIn: true,
-        checkedInAt: "10:30",
-        position: 3,
-      },
-      {
-        tokenId: "tok_04",
-        appointmentId: "apt_04",
-        tokenNumber: "A-04",
-        patientName: "Rohan Deshmukh",
-        scheduledTime: "11:00",
-        status: "WAITING",
-        appointmentStatus: "CONFIRMED",
-        isCheckedIn: false,
-        position: 4,
-      },
-    ],
   ],
 ]);
 
@@ -275,53 +216,24 @@ export class QueueService {
         };
       }
 
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          doctorId,
-          doctorName: "Doctor",
-          specialty: "General",
-          date: dateStr,
-          doctorStatus,
-          currentToken: null,
-          waitingCount: 0,
-          totalToday: 0,
-          completedCount: 0,
-          avgDurationMinutes: 20,
-          estimatedWaitMinutes: 0,
-          queue: [],
-        };
-      }
+      return {
+        doctorId,
+        doctorName: "Doctor",
+        specialty: "General",
+        date: dateStr,
+        doctorStatus,
+        currentToken: null,
+        waitingCount: 0,
+        totalToday: 0,
+        completedCount: 0,
+        avgDurationMinutes: 20,
+        estimatedWaitMinutes: 0,
+        queue: [],
+      };
     } catch (dbError) {
       console.error("Database error in QueueService.getQueueSnapshot:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
+      throw dbError;
     }
-
-    // Dev fallback
-    const items = memoryQueueState.get(doctorId) || memoryQueueState.get("doc_patel_01") || [];
-    const currentToken = items.find((q) => q.status === "IN_PROGRESS") || null;
-    const waitingCount = items.filter((q) => q.status === "WAITING").length;
-    const completedCount = items.filter((q) => q.status === "DONE").length;
-    const avgDuration = 20;
-    const baseWaitMin = waitingCount * avgDuration;
-    const extraOffset = doctorStatus.status === "ON_BREAK" || doctorStatus.status === "DELAYED" ? doctorStatus.delayMinutes : 0;
-
-    return {
-      doctorId,
-      doctorName: "Dr. Rajesh Patel",
-      specialty: "Cardiology",
-      branchName: "Central Hospital - Main Branch",
-      date: dateStr,
-      doctorStatus,
-      currentToken,
-      waitingCount,
-      totalToday: items.length,
-      completedCount,
-      avgDurationMinutes: avgDuration,
-      estimatedWaitMinutes: Math.max(0, baseWaitMin + extraOffset),
-      queue: items,
-    };
   }
 
   /**
@@ -455,30 +367,7 @@ export class QueueService {
       };
     } catch (dbError) {
       console.error("Database error in QueueService.callNextPatient:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "Database error while advancing queue." };
-      }
-
-      // Dev fallback state transition
-      const items = memoryQueueState.get(doctorId) || memoryQueueState.get("doc_patel_01") || [];
-      const current = items.find((q) => q.status === "IN_PROGRESS");
-      if (current) current.status = "DONE";
-
-      const next = items.find((q) => q.status === "WAITING");
-      if (!next) {
-        return { success: false, error: "No more waiting patients in queue for today." };
-      }
-
-      next.status = "IN_PROGRESS";
-      next.calledAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-      queueEventBus.broadcast(doctorId, "call_next", next);
-      queueEventBus.broadcast(doctorId, "queue_diff", { doctorId });
-
-      return {
-        success: true,
-        calledToken: next,
-      };
+      return { success: false, error: "Database error while advancing queue." };
     }
   }
 
@@ -539,12 +428,7 @@ export class QueueService {
       return { success: true };
     } catch (dbError) {
       console.error("Database error in QueueService.reorderQueue:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "Failed to reorder queue." };
-      }
-
-      queueEventBus.broadcast(doctorId, "queue_diff", { reordered: true, appointmentId });
-      return { success: true };
+      return { success: false, error: "Failed to reorder queue." };
     }
   }
 
@@ -600,26 +484,7 @@ export class QueueService {
       });
     } catch (dbError) {
       console.error("Database error in getHospitalQueueOverview:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
-
-      return [
-        {
-          doctorId: "doc_patel_01",
-          doctorName: "Dr. Rajesh Patel",
-          specialty: "Cardiology",
-          branchName: "Central Hospital - Main Branch",
-          doctorStatus: this.getDoctorStatus("doc_patel_01"),
-          currentTokenNumber: "A-02",
-          currentPatientName: "Anita Sharma",
-          waitingCount: 2,
-          completedCount: 1,
-          totalToday: 4,
-          avgDurationMinutes: 20,
-          estimatedWaitMinutes: 40,
-        },
-      ];
+      throw dbError;
     }
   }
 }

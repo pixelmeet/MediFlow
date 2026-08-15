@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { BookAppointmentInput, CancelAppointmentInput, RescheduleAppointmentInput } from "../validation/appointment";
 import { SchedulingService } from "./SchedulingService";
 import { CheckInService, type CheckInEligibility } from "./CheckInService";
@@ -27,10 +26,6 @@ export interface AppointmentDTO {
   eligibility?: CheckInEligibility;
   createdAt: string;
 }
-
-
-// In-memory appointments store for dev fallback
-const memoryAppointments: AppointmentDTO[] = [];
 
 export class AppointmentService {
   /**
@@ -229,46 +224,12 @@ export class AppointmentService {
         };
       }
 
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: {
-            code: "SERVICE_UNAVAILABLE",
-            message: "We're having trouble reaching the database. Please try again in a moment.",
-          },
-        };
-      }
-
-      console.warn("Falling back to in-memory appointment booking in dev mode");
-
-      const tokenSeq = memoryAppointments.filter((a) => a.doctorId === input.doctorId && a.date === input.date).length + 1;
-      const tokenNumber = `A-${tokenSeq.toString().padStart(2, "0")}`;
-      const newId = `apt_${Date.now()}`;
-
-      const created: AppointmentDTO = {
-        id: newId,
-        patientId: patientUserId,
-        doctorId: input.doctorId,
-        doctorName: "Dr. Rajesh Patel",
-        doctorSpecialty: "Cardiology",
-        branchName: "MediFlow Central Hospital",
-        branchAddress: "123 Healthcare Ave, Mumbai",
-        date: input.date,
-        startTime: input.startTime,
-        tokenNumber,
-        status: "CONFIRMED",
-        fee: 800,
-        patientName: "Patient",
-        queuePosition: tokenSeq,
-        queueStatus: "WAITING",
-        createdAt: new Date().toISOString(),
-      };
-
-      memoryAppointments.push(created);
-
       return {
-        success: true,
-        appointment: created,
+        success: false,
+        error: {
+          code: "SERVICE_UNAVAILABLE",
+          message: "We're having trouble reaching the database. Please try again in a moment.",
+        },
       };
     }
   }
@@ -350,24 +311,11 @@ export class AppointmentService {
         return { upcoming, past };
       }
 
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { upcoming: [], past: [] };
-      }
+      return { upcoming: [], past: [] };
     } catch (dbError) {
       console.error("Database error in getPatientAppointments:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
+      throw dbError;
     }
-
-    // In-memory fallback
-    const userApts = memoryAppointments.filter((a) => a.patientId === patientUserId);
-    const todayStr = new Date().toISOString().slice(0, 10);
-
-    return {
-      upcoming: userApts.filter((a) => (a.status === "CONFIRMED" || a.status === "WAITING") && a.date >= todayStr),
-      past: userApts.filter((a) => a.status === "COMPLETED" || a.status === "CANCELLED" || a.date < todayStr),
-    };
   }
 
   /**
@@ -455,21 +403,10 @@ export class AppointmentService {
       };
     } catch (dbError) {
       console.error("Database error in rescheduleAppointment:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
-        };
-      }
-
-      const memApt = memoryAppointments.find((a) => a.id === appointmentId);
-      if (memApt) {
-        memApt.date = input.date;
-        memApt.startTime = input.startTime;
-        return { success: true, appointment: memApt };
-      }
-
-      return { success: false, error: { code: "NOT_FOUND", message: "Appointment not found." } };
+      return {
+        success: false,
+        error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+      };
     }
   }
 
@@ -615,21 +552,10 @@ export class AppointmentService {
       return { success: true };
     } catch (dbError) {
       console.error("Database error in cancelAppointment:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return {
-          success: false,
-          error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
-        };
-      }
-
-      const memApt = memoryAppointments.find((a) => a.id === appointmentId);
-      if (memApt) {
-        memApt.status = "CANCELLED";
-        memApt.cancelReason = input.reason;
-        return { success: true };
-      }
-
-      return { success: false, error: { code: "NOT_FOUND", message: "Appointment not found." } };
+      return {
+        success: false,
+        error: { code: "SERVICE_UNAVAILABLE", message: "Database is unavailable. Please try again." },
+      };
     }
   }
 }

@@ -17,18 +17,6 @@ export const COOKIE_NAMES = {
   refreshToken: "mediflow_refresh_token",
 } as const;
 
-// Explicit opt-in required — cannot be enabled by accident from NODE_ENV.
-// MUST be the exact string "true". See .env.example for documentation.
-export const ALLOW_MEMORY_FALLBACK = process.env.ALLOW_MEMORY_FALLBACK === "true";
-
-if (ALLOW_MEMORY_FALLBACK) {
-  console.warn(
-    "⚠️  [MediFlow] ALLOW_MEMORY_FALLBACK is enabled. " +
-    "In-memory stores are active — DB revocation checks are skipped. " +
-    "DO NOT run with this flag in production."
-  );
-}
-
 
 export function getJwtSecrets() {
   const accessSecret = process.env.JWT_ACCESS_SECRET;

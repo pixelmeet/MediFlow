@@ -1,5 +1,4 @@
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { CompleteConsultationInput, PrescriptionItemInput, SaveConsultationDraftInput } from "../validation/consultation";
 import { NotificationService } from "./NotificationService";
 
@@ -58,9 +57,6 @@ export interface PatientHistoryVisitDTO {
     duration: string;
   }[];
 }
-
-// In-memory consultations store for dev fallback
-const memoryConsultations = new Map<string, ConsultationDetailsDTO>();
 
 export class ConsultationService {
   /**
@@ -176,93 +172,11 @@ export class ConsultationService {
         return { success: true, data: dto };
       }
 
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "NOT_FOUND", message: "Consultation session not found" };
-      }
+      return { success: false, error: "NOT_FOUND", message: "Consultation session not found" };
     } catch (dbError) {
       console.error("Database error in getConsultationDetails:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        throw dbError;
-      }
+      throw dbError;
     }
-
-    // Dev fallback mock consultation session with ownership check
-    if (requestingRole === "DOCTOR") {
-      const allowedDoctorUserIds = ["usr_doctor_01", "doc_patel_01"];
-      if (!allowedDoctorUserIds.includes(requestingUserId)) {
-        return {
-          success: false,
-          error: "FORBIDDEN",
-          message: "You are not assigned to this patient's consultation.",
-        };
-      }
-    } else if (requestingRole !== "ADMIN") {
-      return {
-        success: false,
-        error: "FORBIDDEN",
-        message: "You do not have permission to view this consultation.",
-      };
-    }
-
-    const cached = memoryConsultations.get(tokenIdOrAppointmentId);
-    if (cached) return { success: true, data: cached };
-
-    const mock: ConsultationDetailsDTO = {
-      id: `cons_${tokenIdOrAppointmentId}`,
-      tokenId: tokenIdOrAppointmentId,
-      tokenNumber: "A-02",
-      appointmentId: "apt_02",
-      appointmentDate: new Date().toISOString().slice(0, 10),
-      appointmentTime: "10:20",
-      status: "IN_CONSULTATION",
-      patient: {
-        id: "pat_demo_01",
-        name: "Anita Sharma",
-        email: "anita.sharma@example.com",
-        phone: "+91 98765 43210",
-        gender: "Female",
-        bloodGroup: "B+",
-        allergies: ["Penicillin", "Sulfa drugs"],
-        dob: "1994-06-15",
-        age: 32,
-      },
-      doctor: {
-        id: "doc_patel_01",
-        name: "Dr. Rajesh Patel",
-        specialty: "Cardiology",
-      },
-      consultation: {
-        id: `cons_${tokenIdOrAppointmentId}`,
-        complaints: "Mild chest discomfort upon exertion, shortness of breath for past 3 days.",
-        examinationNotes: "BP: 128/82 mmHg, Pulse: 76 bpm regular, SpO2: 99% on room air.",
-        diagnosis: "Atypical Exertional Angina (Mild)",
-        notes: "Advised 2D Echocardiography & lifestyle modification. Reduce salt intake.",
-        followUpDate: "2026-08-24",
-        prescription: {
-          id: "rx_demo_01",
-          prescriptionNumber: "RX-2026-0042",
-          items: [
-            {
-              medicineName: "Tab. Aspirin 75mg",
-              dosage: "75mg",
-              frequency: "Once daily (0-1-0)",
-              duration: "30 Days",
-              instructions: "After lunch",
-            },
-            {
-              medicineName: "Tab. Metoprolol 25mg",
-              dosage: "25mg",
-              frequency: "1-0-0",
-              duration: "15 Days",
-              instructions: "Before breakfast",
-            },
-          ],
-        },
-      },
-    };
-
-    memoryConsultations.set(tokenIdOrAppointmentId, mock);
-    return { success: true, data: mock };
   }
 
   /**
@@ -293,91 +207,67 @@ export class ConsultationService {
       });
 
       if (!appointment) {
-        if (!ALLOW_MEMORY_FALLBACK) {
-          return { success: false, error: "NOT_FOUND", message: "Appointment not found." };
-        }
-      } else {
-        // Ownership / Authorization verification
-        if (requestingRole === "DOCTOR") {
-          if (appointment.doctor.userId !== requestingUserId) {
-            return {
-              success: false,
-              error: "FORBIDDEN",
-              message: "You are not assigned to this patient's consultation.",
-            };
-          }
-        } else if (requestingRole !== "ADMIN") {
+        return { success: false, error: "NOT_FOUND", message: "Appointment not found." };
+      }
+
+      // Ownership / Authorization verification
+      if (requestingRole === "DOCTOR") {
+        if (appointment.doctor.userId !== requestingUserId) {
           return {
             success: false,
             error: "FORBIDDEN",
-            message: "Only assigned doctor or admin can start consultation.",
+            message: "You are not assigned to this patient's consultation.",
           };
         }
-
-        const now = new Date();
-
-        const consultation = await prisma.$transaction(async (tx) => {
-          // Update appointment and token status
-          await tx.appointment.update({
-            where: { id: appointment.id },
-            data: { status: "IN_CONSULTATION" },
-          });
-
-          if (appointment.queueToken) {
-            await tx.queueToken.update({
-              where: { id: appointment.queueToken.id },
-              data: {
-                status: "IN_PROGRESS",
-                calledAt: appointment.queueToken.calledAt || now,
-              },
-            });
-          }
-
-          // Upsert consultation record
-          const existingCons = await tx.consultation.findUnique({
-            where: { appointmentId: appointment.id },
-          });
-
-          if (existingCons) return existingCons;
-
-          return await tx.consultation.create({
-            data: {
-              appointmentId: appointment.id,
-              doctorId: appointment.doctorId,
-              diagnosis: "Consultation in progress",
-              startedAt: now,
-            },
-          });
-        });
-
-        return { success: true, consultationId: consultation.id };
-      }
-    } catch (dbError) {
-      console.error("Database error in startConsultation:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "SERVER_ERROR", message: "Database error starting consultation" };
-      }
-    }
-
-    // Dev fallback with authorization check
-    if (requestingRole === "DOCTOR") {
-      const allowedDoctorUserIds = ["usr_doctor_01", "doc_patel_01"];
-      if (!allowedDoctorUserIds.includes(requestingUserId)) {
+      } else if (requestingRole !== "ADMIN") {
         return {
           success: false,
           error: "FORBIDDEN",
-          message: "You are not assigned to this patient's consultation.",
+          message: "Only assigned doctor or admin can start consultation.",
         };
       }
-    } else if (requestingRole !== "ADMIN") {
-      return {
-        success: false,
-        error: "FORBIDDEN",
-        message: "Only assigned doctor or admin can start consultation.",
-      };
-    }
 
-    return { success: true, consultationId: `cons_${tokenIdOrAppointmentId}` };
+      const now = new Date();
+
+      const consultation = await prisma.$transaction(async (tx) => {
+        // Update appointment and token status
+        await tx.appointment.update({
+          where: { id: appointment.id },
+          data: { status: "IN_CONSULTATION" },
+        });
+
+        if (appointment.queueToken) {
+          await tx.queueToken.update({
+            where: { id: appointment.queueToken.id },
+            data: {
+              status: "IN_PROGRESS",
+              calledAt: appointment.queueToken.calledAt || now,
+            },
+          });
+        }
+
+        // Upsert consultation record
+        const existingCons = await tx.consultation.findUnique({
+          where: { appointmentId: appointment.id },
+        });
+
+        if (existingCons) return existingCons;
+
+        return await tx.consultation.create({
+          data: {
+            appointmentId: appointment.id,
+            doctorId: appointment.doctorId,
+            diagnosis: "Consultation in progress",
+            startedAt: now,
+          },
+        });
+      });
+
+      return { success: true, consultationId: consultation.id };
+    } catch (dbError) {
+      console.error("Database error in startConsultation:", dbError);
+      return { success: false, error: "SERVER_ERROR", message: "Database error starting consultation" };
+    }
   }
 
   /**
@@ -407,72 +297,48 @@ export class ConsultationService {
       });
 
       if (!appointment) {
-        if (!ALLOW_MEMORY_FALLBACK) {
-          return { success: false, error: "NOT_FOUND", message: "Appointment not found." };
-        }
-      } else {
-        // Ownership / Authorization verification
-        if (requestingRole === "DOCTOR") {
-          if (appointment.doctor.userId !== requestingUserId) {
-            return {
-              success: false,
-              error: "FORBIDDEN",
-              message: "You are not assigned to this patient's consultation.",
-            };
-          }
-        } else if (requestingRole !== "ADMIN") {
+        return { success: false, error: "NOT_FOUND", message: "Appointment not found." };
+      }
+
+      // Ownership / Authorization verification
+      if (requestingRole === "DOCTOR") {
+        if (appointment.doctor.userId !== requestingUserId) {
           return {
             success: false,
             error: "FORBIDDEN",
-            message: "Only assigned doctor or admin can save consultation draft.",
+            message: "You are not assigned to this patient's consultation.",
           };
         }
-
-        await prisma.consultation.upsert({
-          where: { appointmentId: appointment.id },
-          update: {
-            diagnosis: data.diagnosis || "Draft consultation",
-            notes: data.notes || null,
-            followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
-          },
-          create: {
-            appointmentId: appointment.id,
-            doctorId: appointment.doctorId,
-            diagnosis: data.diagnosis || "Draft consultation",
-            notes: data.notes || null,
-            followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
-            startedAt: new Date(),
-          },
-        });
-
-        return { success: true };
-      }
-    } catch (dbError) {
-      console.error("Database error in saveDraft:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "SERVER_ERROR", message: "Failed to save draft" };
-      }
-    }
-
-    // Dev fallback with authorization check
-    if (requestingRole === "DOCTOR") {
-      const allowedDoctorUserIds = ["usr_doctor_01", "doc_patel_01"];
-      if (!allowedDoctorUserIds.includes(requestingUserId)) {
+      } else if (requestingRole !== "ADMIN") {
         return {
           success: false,
           error: "FORBIDDEN",
-          message: "You are not assigned to this patient's consultation.",
+          message: "Only assigned doctor or admin can save consultation draft.",
         };
       }
-    } else if (requestingRole !== "ADMIN") {
-      return {
-        success: false,
-        error: "FORBIDDEN",
-        message: "Only assigned doctor or admin can save consultation draft.",
-      };
-    }
 
-    return { success: true };
+      await prisma.consultation.upsert({
+        where: { appointmentId: appointment.id },
+        update: {
+          diagnosis: data.diagnosis || "Draft consultation",
+          notes: data.notes || null,
+          followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
+        },
+        create: {
+          appointmentId: appointment.id,
+          doctorId: appointment.doctorId,
+          diagnosis: data.diagnosis || "Draft consultation",
+          notes: data.notes || null,
+          followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
+          startedAt: new Date(),
+        },
+      });
+
+      return { success: true };
+    } catch (dbError) {
+      console.error("Database error in saveDraft:", dbError);
+      return { success: false, error: "SERVER_ERROR", message: "Failed to save draft" };
+    }
   }
 
   /**
@@ -507,138 +373,114 @@ export class ConsultationService {
       });
 
       if (!appointment) {
-        if (!ALLOW_MEMORY_FALLBACK) {
-          return { success: false, error: "NOT_FOUND", message: "Appointment not found." };
-        }
-      } else {
-        // Ownership / Authorization verification
-        if (requestingRole === "DOCTOR") {
-          if (appointment.doctor.userId !== requestingUserId) {
-            return {
-              success: false,
-              error: "FORBIDDEN",
-              message: "You are not assigned to this patient's consultation.",
-            };
-          }
-        } else if (requestingRole !== "ADMIN") {
+        return { success: false, error: "NOT_FOUND", message: "Appointment not found." };
+      }
+
+      // Ownership / Authorization verification
+      if (requestingRole === "DOCTOR") {
+        if (appointment.doctor.userId !== requestingUserId) {
           return {
             success: false,
             error: "FORBIDDEN",
-            message: "Only assigned doctor or admin can complete consultation.",
+            message: "You are not assigned to this patient's consultation.",
           };
         }
-
-        await prisma.$transaction(async (tx) => {
-          // 1. Upsert Consultation record with completed data
-          const consultation = await tx.consultation.upsert({
-            where: { appointmentId: appointment.id },
-            update: {
-              diagnosis: data.diagnosis,
-              notes: data.notes || null,
-              followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
-              completedAt: now,
-            },
-            create: {
-              appointmentId: appointment.id,
-              doctorId: appointment.doctorId,
-              diagnosis: data.diagnosis,
-              notes: data.notes || null,
-              followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
-              startedAt: now,
-              completedAt: now,
-            },
-          });
-
-          // 2. Create Prescription and PrescriptionItems if items exist
-          if (data.prescriptionItems && data.prescriptionItems.length > 0) {
-            // Delete existing prescription items if draft existed
-            await tx.prescription.deleteMany({
-              where: { consultationId: consultation.id },
-            });
-
-            const rx = await tx.prescription.create({
-              data: {
-                consultationId: consultation.id,
-              },
-            });
-
-            for (let i = 0; i < data.prescriptionItems.length; i++) {
-              const item = data.prescriptionItems[i];
-              await tx.prescriptionItem.create({
-                data: {
-                  prescriptionId: rx.id,
-                  medicine: item.medicineName,
-                  dose: item.dosage,
-                  frequency: item.frequency,
-                  duration: item.duration,
-                  instructions: item.instructions || null,
-                  sortOrder: i,
-                },
-              });
-            }
-          }
-
-          // 3. Mark appointment as COMPLETED and token as DONE
-          await tx.appointment.update({
-            where: { id: appointment.id },
-            data: { status: "COMPLETED" },
-          });
-
-          if (appointment.queueToken) {
-            await tx.queueToken.update({
-              where: { id: appointment.queueToken.id },
-              data: {
-                status: "DONE",
-                completedAt: now,
-              },
-            });
-          }
-        });
-
-        // Dispatch consultation completed and prescription notifications
-        const patientRecord = await prisma.patient.findUnique({
-          where: { id: appointment.patientId },
-          select: { userId: true },
-        });
-
-        if (patientRecord?.userId) {
-          NotificationService.createNotification({
-            userId: patientRecord.userId,
-            type: "prescription_issued",
-            title: "Prescription Available",
-            message: `Your digital prescription (${prescriptionNumber}) and clinical instructions from ${appointment.doctor?.name || "your doctor"} are now ready to view.`,
-            payload: { appointmentId: appointment.id, prescriptionNumber },
-          }).catch((err) => console.error("Prescription notification error:", err));
-        }
-
-        return { success: true, prescriptionNumber };
-      }
-    } catch (dbError) {
-      console.error("Database error in completeConsultation:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "SERVER_ERROR", message: "Database error completing consultation" };
-      }
-    }
-
-    // Dev fallback with authorization check
-    if (requestingRole === "DOCTOR") {
-      const allowedDoctorUserIds = ["usr_doctor_01", "doc_patel_01"];
-      if (!allowedDoctorUserIds.includes(requestingUserId)) {
+      } else if (requestingRole !== "ADMIN") {
         return {
           success: false,
           error: "FORBIDDEN",
-          message: "You are not assigned to this patient's consultation.",
+          message: "Only assigned doctor or admin can complete consultation.",
         };
       }
-    } else if (requestingRole !== "ADMIN") {
-      return {
-        success: false,
-        error: "FORBIDDEN",
-        message: "Only assigned doctor or admin can complete consultation.",
-      };
-    }
 
-    return { success: true, prescriptionNumber };
+      await prisma.$transaction(async (tx) => {
+        // 1. Upsert Consultation record with completed data
+        const consultation = await tx.consultation.upsert({
+          where: { appointmentId: appointment.id },
+          update: {
+            diagnosis: data.diagnosis,
+            notes: data.notes || null,
+            followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
+            completedAt: now,
+          },
+          create: {
+            appointmentId: appointment.id,
+            doctorId: appointment.doctorId,
+            diagnosis: data.diagnosis,
+            notes: data.notes || null,
+            followUpDate: data.followUpDate ? new Date(data.followUpDate + "T00:00:00.000Z") : null,
+            startedAt: now,
+            completedAt: now,
+          },
+        });
+
+        // 2. Create Prescription and PrescriptionItems if items exist
+        if (data.prescriptionItems && data.prescriptionItems.length > 0) {
+          // Delete existing prescription items if draft existed
+          await tx.prescription.deleteMany({
+            where: { consultationId: consultation.id },
+          });
+
+          const rx = await tx.prescription.create({
+            data: {
+              consultationId: consultation.id,
+            },
+          });
+
+          for (let i = 0; i < data.prescriptionItems.length; i++) {
+            const item = data.prescriptionItems[i];
+            await tx.prescriptionItem.create({
+              data: {
+                prescriptionId: rx.id,
+                medicine: item.medicineName,
+                dose: item.dosage,
+                frequency: item.frequency,
+                duration: item.duration,
+                instructions: item.instructions || null,
+                sortOrder: i,
+              },
+            });
+          }
+        }
+
+        // 3. Mark appointment as COMPLETED and token as DONE
+        await tx.appointment.update({
+          where: { id: appointment.id },
+          data: { status: "COMPLETED" },
+        });
+
+        if (appointment.queueToken) {
+          await tx.queueToken.update({
+            where: { id: appointment.queueToken.id },
+            data: {
+              status: "DONE",
+              completedAt: now,
+            },
+          });
+        }
+      });
+
+      // Dispatch consultation completed and prescription notifications
+      const patientRecord = await prisma.patient.findUnique({
+        where: { id: appointment.patientId },
+        select: { userId: true },
+      });
+
+      if (patientRecord?.userId) {
+        NotificationService.createNotification({
+          userId: patientRecord.userId,
+          type: "prescription_issued",
+          title: "Prescription Available",
+          message: `Your digital prescription (${prescriptionNumber}) and clinical instructions from ${appointment.doctor?.name || "your doctor"} are now ready to view.`,
+          payload: { appointmentId: appointment.id, prescriptionNumber },
+        }).catch((err) => console.error("Prescription notification error:", err));
+      }
+
+      return { success: true, prescriptionNumber };
+    } catch (dbError) {
+      console.error("Database error in completeConsultation:", dbError);
+      return { success: false, error: "SERVER_ERROR", message: "Database error completing consultation" };
+    }
   }
 
   /**
@@ -663,16 +505,11 @@ export class ConsultationService {
         });
 
         if (!patient) {
-          if (!ALLOW_MEMORY_FALLBACK) {
-            return { success: false, error: "NOT_FOUND", message: "Patient not found." };
-          }
-          if (requestingUserId !== "usr_patient_01" && requestingUserId !== patientId) {
-            return { success: false, error: "FORBIDDEN", message: "You can only view your own medical history." };
-          }
-        } else {
-          if (patient.userId !== requestingUserId) {
-            return { success: false, error: "FORBIDDEN", message: "You can only view your own medical history." };
-          }
+          return { success: false, error: "NOT_FOUND", message: "Patient not found." };
+        }
+
+        if (patient.userId !== requestingUserId) {
+          return { success: false, error: "FORBIDDEN", message: "You can only view your own medical history." };
         }
       }
       // 2. Doctor role clinical relationship check
@@ -683,34 +520,23 @@ export class ConsultationService {
         });
 
         if (!doctor) {
-          if (!ALLOW_MEMORY_FALLBACK) {
-            return { success: false, error: "FORBIDDEN", message: "Doctor profile not found." };
-          }
-          const allowedDoctorUserIds = ["usr_doctor_01", "doc_patel_01"];
-          if (!allowedDoctorUserIds.includes(requestingUserId)) {
-            return {
-              success: false,
-              error: "FORBIDDEN",
-              message: "You can only view medical history for patients you have treated or are scheduled to treat.",
-            };
-          }
-        } else {
-          // Verify doctor has at least one past or present appointment with this patient
-          const existingAppointment = await prisma.appointment.findFirst({
-            where: {
-              doctorId: doctor.id,
-              patientId,
-            },
-            select: { id: true },
-          });
+          return { success: false, error: "FORBIDDEN", message: "Doctor profile not found." };
+        }
 
-          if (!existingAppointment) {
-            return {
-              success: false,
-              error: "FORBIDDEN",
-              message: "You can only view medical history for patients you have treated or are scheduled to treat.",
-            };
-          }
+        // Verify doctor has at least one past or present appointment with this patient
+        const existingAppointment = await prisma.appointment.findFirst({
+          where: {
+            doctorId: doctor.id,
+            patientId,
+          },
+        });
+
+        if (!existingAppointment) {
+          return {
+            success: false,
+            error: "FORBIDDEN",
+            message: "You can only view medical history for patients you have treated or are scheduled to treat.",
+          };
         }
       }
       // 3. Admin role has hospital oversight per PRD §3.8
@@ -769,59 +595,10 @@ export class ConsultationService {
         return { success: true, data: visits };
       }
 
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: true, data: [] };
-      }
+      return { success: true, data: [] };
     } catch (dbError) {
       console.error("Database error in getPatientHistory:", dbError);
-      if (!ALLOW_MEMORY_FALLBACK) {
-        return { success: false, error: "SERVER_ERROR", message: "Failed to retrieve patient medical history." };
-      }
+      return { success: false, error: "SERVER_ERROR", message: "Failed to retrieve patient medical history." };
     }
-
-    // Dev fallback past visits
-    return {
-      success: true,
-      data: [
-        {
-          consultationId: "hist_01",
-          date: "2026-06-12",
-          doctorName: "Dr. Rajesh Patel",
-          doctorSpecialty: "Cardiology",
-          diagnosis: "Hypertension Stage 1 (Controlled)",
-          notes: "Patient advised to maintain regular aerobic exercise and low sodium diet.",
-          medicines: [
-            {
-              name: "Tab. Telmisartan 40mg",
-              dosage: "40mg",
-              frequency: "1-0-0",
-              duration: "30 Days",
-            },
-          ],
-        },
-        {
-          consultationId: "hist_02",
-          date: "2026-03-05",
-          doctorName: "Dr. Sneha Kulkarni",
-          doctorSpecialty: "General Medicine",
-          diagnosis: "Upper Respiratory Tract Infection",
-          notes: "Mild fever and sore throat. Hydration encouraged.",
-          medicines: [
-            {
-              name: "Tab. Paracetamol 650mg",
-              dosage: "650mg",
-              frequency: "1-0-1 (SOS)",
-              duration: "5 Days",
-            },
-            {
-              name: "Tab. Levocetirizine 5mg",
-              dosage: "5mg",
-              frequency: "0-0-1",
-              duration: "5 Days",
-            },
-          ],
-        },
-      ],
-    };
   }
 }

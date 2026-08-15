@@ -84,14 +84,14 @@ export default function BookAppointmentPage() {
 
       const appointment: AppointmentDTO = json.data;
 
-      // Process payment (online mock or pay-at-clinic)
+      // Process payment (online or pay-at-clinic)
       const payRes = await fetch("/api/v1/payments/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           appointmentId: appointment.id,
           amount: Number(doctor?.fee || 800),
-          provider: paymentChoice === "online" ? "mock" : "clinic",
+          provider: paymentChoice === "online" ? "online" : "clinic",
           method: paymentChoice === "online" ? paymentMethod : undefined,
           idempotencyKey: `pay_${appointment.id}`,
         }),
@@ -158,7 +158,7 @@ export default function BookAppointmentPage() {
                   ? "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
                   : "bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))]"
               }`}>
-                {paymentChoice === "online" ? "PAID ONLINE (MOCK)" : "PAY AT CLINIC"}
+                {paymentChoice === "online" ? "PAID ONLINE" : "PAY AT CLINIC"}
               </span>
             </div>
           </div>
@@ -340,7 +340,7 @@ export default function BookAppointmentPage() {
               <div className="p-3 rounded-[var(--radius-lg)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] flex items-center justify-between text-xs">
                 <span className="font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1">
                   <Lock className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
-                  Mock Gateway Sandbox (Instant Confirmation)
+                  Online Payment (Instant Confirmation)
                 </span>
                 <div className="flex items-center gap-2">
                   <button

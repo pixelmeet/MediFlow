@@ -1,5 +1,4 @@
 import { prisma } from "../db";
-import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 
 export interface PrescriptionItemDTO {
   id: string;
@@ -46,9 +45,6 @@ export interface PrescriptionDTO {
   createdAt: string;
 }
 
-// In-memory store for fallback/dev
-const memoryPrescriptions = new Map<string, PrescriptionDTO>();
-
 export class PrescriptionService {
   /**
    * List all prescriptions for a logged-in patient
@@ -71,16 +67,6 @@ export class PrescriptionService {
       });
 
       if (!patient) {
-        // Dev fallback check
-        if (ALLOW_MEMORY_FALLBACK) {
-          const list = Array.from(memoryPrescriptions.values()).filter(
-            (p) => p.patient.id === patientUserId || p.patient.name.toLowerCase().includes("patient")
-          );
-          return {
-            success: true,
-            data: { prescriptions: list, total: list.length },
-          };
-        }
         return { success: false, error: "Patient record not found" };
       }
 
@@ -176,10 +162,6 @@ export class PrescriptionService {
       };
     } catch (err) {
       console.error("PrescriptionService.getPatientPrescriptions error:", err);
-      if (ALLOW_MEMORY_FALLBACK) {
-        const list = Array.from(memoryPrescriptions.values());
-        return { success: true, data: { prescriptions: list, total: list.length } };
-      }
       return { success: false, error: "Failed to retrieve prescriptions" };
     }
   }
@@ -228,9 +210,6 @@ export class PrescriptionService {
       });
 
       if (!p) {
-        if (ALLOW_MEMORY_FALLBACK && memoryPrescriptions.has(prescriptionId)) {
-          return { success: true, data: memoryPrescriptions.get(prescriptionId) };
-        }
         return { success: false, error: "NOT_FOUND", message: "Prescription not found" };
       }
 
@@ -294,17 +273,7 @@ export class PrescriptionService {
       return { success: true, data: dto };
     } catch (err) {
       console.error("PrescriptionService.getPrescriptionById error:", err);
-      if (ALLOW_MEMORY_FALLBACK && memoryPrescriptions.has(prescriptionId)) {
-        return { success: true, data: memoryPrescriptions.get(prescriptionId) };
-      }
       return { success: false, error: "SERVER_ERROR", message: "Failed to load prescription details" };
     }
-  }
-
-  /**
-   * Helper for in-memory seed / testing
-   */
-  static seedMemoryPrescription(dto: PrescriptionDTO) {
-    memoryPrescriptions.set(dto.id, dto);
   }
 }

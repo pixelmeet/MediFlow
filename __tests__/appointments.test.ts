@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { BookAppointmentSchema } from "@/lib/validation/appointment";
-import { PaymentService } from "@/lib/services/PaymentService";
+import { ProcessPaymentSchema } from "@/lib/validation/payments";
 
-describe("Appointment Booking & Payment Idempotency", () => {
+describe("Appointment Booking & Payment Schema Validation", () => {
   describe("Schema Validation", () => {
     it("should enforce required idempotencyKey", () => {
       const invalid = BookAppointmentSchema.safeParse({
@@ -45,29 +45,28 @@ describe("Appointment Booking & Payment Idempotency", () => {
     });
   });
 
-  describe("Payment Idempotency", () => {
-    it("should reject double-payment on already paid appointment in fallback store", async () => {
-      const aptId = `apt_test_${Date.now()}`;
+  describe("Payment Schema Validation", () => {
+    it("should validate allowed provider values (online, razorpay, stripe, clinic) and reject mock", () => {
+      const validOnline = ProcessPaymentSchema.safeParse({
+        appointmentId: "apt_123",
+        amount: 800,
+        provider: "online",
+      });
+      expect(validOnline.success).toBe(true);
 
-      // First payment
-      const payment1 = await PaymentService.processPayment({
-        appointmentId: aptId,
+      const validClinic = ProcessPaymentSchema.safeParse({
+        appointmentId: "apt_123",
+        amount: 800,
+        provider: "clinic",
+      });
+      expect(validClinic.success).toBe(true);
+
+      const invalidMock = ProcessPaymentSchema.safeParse({
+        appointmentId: "apt_123",
         amount: 800,
         provider: "mock",
-        method: "card",
       });
-      expect(payment1.success).toBe(true);
-      expect(payment1.data?.status).toBe("PAID");
-
-      // Second payment on same appointment should be rejected
-      const payment2 = await PaymentService.processPayment({
-        appointmentId: aptId,
-        amount: 800,
-        provider: "mock",
-        method: "card",
-      });
-      expect(payment2.success).toBe(false);
-      expect(payment2.error).toContain("already been completed");
+      expect(invalidMock.success).toBe(false);
     });
   });
 });
