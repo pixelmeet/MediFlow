@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Activity, Eye, EyeOff, ShieldAlert, Sparkles } from "lucide-react";
+import { Activity, Eye, EyeOff, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,21 +44,6 @@ export default function LoginPage() {
     }
   };
 
-  // Demo credential autofill helper
-  const handleQuickFill = (role: "ADMIN" | "DOCTOR" | "PATIENT") => {
-    setErrorMessage(null);
-    if (role === "ADMIN") {
-      setIdentifier("admin@mediflow.com");
-      setPassword("Password@123");
-    } else if (role === "DOCTOR") {
-      setIdentifier("dr.patel@mediflow.com");
-      setPassword("Password@123");
-    } else {
-      setIdentifier("patient@mediflow.com");
-      setPassword("Password@123");
-    }
-  };
-
   return (
     <div className="w-full max-w-md mx-auto py-8 animate-fade-in-up">
       <div className="text-center mb-8">
@@ -74,39 +59,8 @@ export default function LoginPage() {
           Welcome back
         </h1>
         <p className="mt-1.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
-          Sign in to access your appointments & clinical telemetry
+          Sign in to access your appointments &amp; clinical telemetry
         </p>
-      </div>
-
-      {/* Demo Credentials Helper Box */}
-      <div className="mb-5 rounded-[var(--radius-lg)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 text-xs text-[hsl(var(--foreground))] shadow-[var(--shadow-sm)]">
-        <div className="flex items-center gap-1.5 font-medium text-[hsl(var(--foreground))] mb-2">
-          <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
-          <span>Quick Demo Access (Password: Password@123)</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => handleQuickFill("PATIENT")}
-            className="rounded-[var(--radius-sm)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
-          >
-            👤 Patient
-          </button>
-          <button
-            type="button"
-            onClick={() => handleQuickFill("DOCTOR")}
-            className="rounded-[var(--radius-sm)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
-          >
-            🩺 Dr. Patel
-          </button>
-          <button
-            type="button"
-            onClick={() => handleQuickFill("ADMIN")}
-            className="rounded-[var(--radius-sm)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
-          >
-            ⚡ Admin
-          </button>
-        </div>
       </div>
 
       {/* Main Login Card */}
