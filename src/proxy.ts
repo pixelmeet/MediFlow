@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { verifyAccessToken, verifyRefreshToken, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } from "./lib/auth/jwt";
 import { verifyOrigin } from "./lib/api/csrf";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Check Origin/Referer on state-changing API endpoints
