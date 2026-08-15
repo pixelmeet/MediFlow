@@ -41,7 +41,7 @@ export function DoctorFilterBar({
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button
           onClick={() => onSpecialtyChange(undefined)}
-          className={`shrink-0 rounded-[var(--radius-full)] px-3.5 py-1.5 text-xs font-semibold transition-all ${
+          className={`shrink-0 rounded-[var(--radius-full)] px-3.5 py-1.5 text-xs font-medium transition-all ${
             !selectedSpecialty
               ? "bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]"
               : "bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary)/0.4)]"
@@ -53,7 +53,7 @@ export function DoctorFilterBar({
           <button
             key={spec}
             onClick={() => onSpecialtyChange(selectedSpecialty === spec ? undefined : spec)}
-            className={`shrink-0 rounded-[var(--radius-full)] px-3.5 py-1.5 text-xs font-semibold transition-all ${
+            className={`shrink-0 rounded-[var(--radius-full)] px-3.5 py-1.5 text-xs font-medium transition-all ${
               selectedSpecialty === spec
                 ? "bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]"
                 : "bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary)/0.4)]"
@@ -70,7 +70,7 @@ export function DoctorFilterBar({
         <select
           value={selectedBranchId || ""}
           onChange={(e) => onBranchChange(e.target.value || undefined)}
-          className="rounded-[var(--radius-md)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+          className="rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
         >
           <option value="">All Hospital Branches</option>
           {branches.map((b) => (
@@ -84,7 +84,7 @@ export function DoctorFilterBar({
         <select
           value={selectedMaxFee?.toString() || ""}
           onChange={(e) => onMaxFeeChange(e.target.value ? Number(e.target.value) : undefined)}
-          className="rounded-[var(--radius-md)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+          className="rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
         >
           <option value="">Any Consultation Fee</option>
           <option value="600">Up to ₹600</option>
@@ -96,7 +96,7 @@ export function DoctorFilterBar({
         <select
           value={selectedLanguage || ""}
           onChange={(e) => onLanguageChange(e.target.value || undefined)}
-          className="rounded-[var(--radius-md)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+          className="rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
         >
           <option value="">Any Language</option>
           <option value="English">English</option>

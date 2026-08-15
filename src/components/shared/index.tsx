@@ -12,18 +12,18 @@ const statusPillVariants = cva(
   {
     variants: {
       status: {
-        confirmed: "bg-[hsl(var(--status-confirmed)/0.12)] text-[hsl(var(--status-confirmed))]",
-        checked_in: "bg-[hsl(var(--status-checked-in)/0.12)] text-[hsl(var(--status-checked-in))]",
-        waiting: "bg-[hsl(var(--status-waiting)/0.12)] text-[hsl(var(--status-waiting))]",
-        in_consultation: "bg-[hsl(var(--status-in-consultation)/0.12)] text-[hsl(var(--status-in-consultation))]",
-        completed: "bg-[hsl(var(--status-completed)/0.12)] text-[hsl(var(--status-completed))]",
-        cancelled: "bg-[hsl(var(--status-cancelled)/0.12)] text-[hsl(var(--status-cancelled))]",
-        no_show: "bg-[hsl(var(--status-no-show)/0.12)] text-[hsl(var(--status-no-show))]",
+        confirmed: "bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]",
+        checked_in: "bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]",
+        waiting: "bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] border border-[hsl(var(--warning)/0.3)]",
+        in_consultation: "bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))]",
+        completed: "bg-[hsl(var(--success-light))] text-[hsl(var(--success))] border border-[hsl(var(--success)/0.3)]",
+        cancelled: "bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))] border border-[hsl(var(--danger)/0.3)]",
+        no_show: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]",
         // Payment statuses
-        pending: "bg-[hsl(var(--status-waiting)/0.12)] text-[hsl(var(--status-waiting))]",
-        paid: "bg-[hsl(var(--status-completed)/0.12)] text-[hsl(var(--status-completed))]",
-        failed: "bg-[hsl(var(--status-cancelled)/0.12)] text-[hsl(var(--status-cancelled))]",
-        refunded: "bg-[hsl(var(--status-no-show)/0.12)] text-[hsl(var(--status-no-show))]",
+        pending: "bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] border border-[hsl(var(--warning)/0.3)]",
+        paid: "bg-[hsl(var(--success-light))] text-[hsl(var(--success))] border border-[hsl(var(--success)/0.3)]",
+        failed: "bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))] border border-[hsl(var(--danger)/0.3)]",
+        refunded: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]",
       },
     },
     defaultVariants: {
@@ -82,7 +82,7 @@ function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "rounded-[var(--radius)] animate-shimmer",
+        "rounded-[var(--radius)] bg-[hsl(var(--muted))] animate-pulse",
         className
       )}
       {...props}
@@ -111,15 +111,15 @@ function EmptyState({ icon, title, description, action, className }: EmptyStateP
       {icon && (
         <div className="mb-4 text-[hsl(var(--muted-foreground))]">{icon}</div>
       )}
-      <h3 className="text-lg font-semibold text-[hsl(var(--foreground))]">
+      <h3 className="font-serif text-xl font-normal tracking-tight text-[hsl(var(--foreground))]">
         {title}
       </h3>
       {description && (
-        <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))] max-w-sm">
+        <p className="mt-1.5 text-sm text-[hsl(var(--muted-foreground))] max-w-sm leading-relaxed">
           {description}
         </p>
       )}
-      {action && <div className="mt-4">{action}</div>}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }
@@ -138,20 +138,20 @@ function StatCard({ label, value, icon, trend, className }: StatCardProps) {
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-lg)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)] transition-all hover:shadow-[var(--shadow)]",
+        "rounded-[var(--radius-lg)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)]",
         className
       )}
     >
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+        <p className="text-xs font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
           {label}
         </p>
         {icon && (
           <div className="text-[hsl(var(--muted-foreground))]">{icon}</div>
         )}
       </div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <p className="text-2xl font-bold tabular-nums text-[hsl(var(--foreground))]">
+      <div className="mt-3 flex items-baseline gap-2">
+        <p className="text-3xl font-serif font-normal tabular-nums text-[hsl(var(--foreground))]">
           {value}
         </p>
         {trend && (
@@ -205,7 +205,7 @@ function Avatar({ src, alt, fallback, size = "md", className }: AvatarProps) {
         height={sizePixels[size]}
         unoptimized={typeof src === "string" && (src.startsWith("data:") || src.startsWith("http"))}
         className={cn(
-          "rounded-full object-cover",
+          "rounded-full object-cover border border-[hsl(var(--card-border))]",
           sizeClasses[size],
           className
         )}
@@ -216,7 +216,7 @@ function Avatar({ src, alt, fallback, size = "md", className }: AvatarProps) {
   return (
     <div
       className={cn(
-        "rounded-full bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] flex items-center justify-center font-semibold",
+        "rounded-full bg-[hsl(var(--card))] border border-[hsl(var(--card-border))] text-[hsl(var(--foreground))] flex items-center justify-center font-medium",
         sizeClasses[size],
         className
       )}
@@ -230,22 +230,22 @@ function Avatar({ src, alt, fallback, size = "md", className }: AvatarProps) {
 // ─── Badge ───────────────────────────────────────────────
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-[var(--radius-full)] px-2.5 py-0.5 text-xs font-semibold transition-colors",
+  "inline-flex items-center rounded-[var(--radius-full)] px-2.5 py-0.5 text-xs font-medium transition-colors",
   {
     variants: {
       variant: {
         default:
           "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]",
         secondary:
-          "bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]",
+          "border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]",
         outline:
           "border border-[hsl(var(--border))] text-[hsl(var(--foreground))]",
         success:
-          "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]",
+          "border border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success-light))] text-[hsl(var(--success))]",
         warning:
-          "bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))]",
+          "border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))]",
         danger:
-          "bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))]",
+          "border border-[hsl(var(--danger)/0.3)] bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))]",
       },
     },
     defaultVariants: {
@@ -281,7 +281,7 @@ function Spinner({ size = "md", className }: SpinnerProps) {
   return (
     <div
       className={cn(
-        "animate-spin rounded-full border-2 border-[hsl(var(--muted))] border-t-[hsl(var(--primary))]",
+        "animate-spin rounded-full border-2 border-[hsl(var(--border))] border-t-[hsl(var(--primary))]",
         sizeClasses[size],
         className
       )}

@@ -157,7 +157,7 @@ export default function DoctorProfilePage() {
     return (
       <div className="min-h-screen bg-[hsl(var(--background))] p-8">
         <div className="max-w-4xl mx-auto space-y-6 animate-pulse">
-          <div className="h-40 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
+          <div className="h-40 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
           <div className="h-64 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function DoctorProfilePage() {
       <div className="min-h-screen bg-[hsl(var(--background))] flex items-center justify-center p-6">
         <div className="max-w-md w-full rounded-[var(--radius-xl)] border border-[hsl(var(--danger)/0.2)] bg-[hsl(var(--danger-light))] p-6 text-center space-y-4">
           <AlertCircle className="h-10 w-10 text-[hsl(var(--danger))] mx-auto" />
-          <h2 className="text-lg font-bold text-[hsl(var(--danger))]">Profile Unavailable</h2>
+          <h2 className="font-serif text-xl font-normal text-[hsl(var(--danger))]">Profile Unavailable</h2>
           <p className="text-xs text-[hsl(var(--muted-foreground))]">{error || "Doctor record was not found."}</p>
           <Button variant="outline" onClick={() => router.push("/patient/dashboard")}>
             Back to Dashboard
@@ -182,26 +182,26 @@ export default function DoctorProfilePage() {
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
       {/* Top Navbar Backstrip */}
-      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 sm:px-8 py-4">
+      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] px-4 sm:px-8 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link
             href="/patient/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Find Doctors
+            Back to Dashboard
           </Link>
-          <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
-            Doctor Profile &amp; Booking
+          <span className="text-xs font-mono text-[hsl(var(--muted-foreground))]">
+            Physician Profile &amp; Scheduling
           </span>
         </div>
       </div>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-8 mt-6 space-y-6">
         {/* Doctor Header Card */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
           <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <div className="flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center rounded-[var(--radius-2xl)] bg-gradient-to-br from-[hsl(var(--primary)/0.2)] to-[hsl(var(--primary)/0.05)] border border-[hsl(var(--primary)/0.2)] text-[hsl(var(--primary))] text-3xl font-extrabold shadow-inner">
+            <div className="flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-[var(--radius-xl)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] text-2xl sm:text-3xl font-serif font-normal shadow-sm">
               {doctor.name
                 .split(" ")
                 .map((n) => n[0])
@@ -211,39 +211,39 @@ export default function DoctorProfilePage() {
 
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))]">
+                <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight">
                   {doctor.name}
                 </h1>
-                <div className="flex items-center gap-1.5 rounded-full bg-[hsl(var(--warning-light))] px-3 py-1 text-xs font-bold text-[hsl(var(--warning))]">
+                <div className="flex items-center gap-1.5 rounded-full bg-[hsl(var(--warning-light))] border border-[hsl(var(--warning)/0.3)] px-3 py-1 text-xs font-mono font-medium text-[hsl(var(--warning))]">
                   <Star className="h-3.5 w-3.5 fill-current" />
                   <span>{doctor.averageRating} ({doctor.totalReviews} reviews)</span>
                 </div>
               </div>
 
-              <p className="text-sm font-semibold text-[hsl(var(--primary))] mt-1">
+              <p className="text-xs sm:text-sm font-medium text-[hsl(var(--primary))] mt-1 font-sans">
                 {doctor.specialty} • {doctor.qualifications}
               </p>
 
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2 line-clamp-2">
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2 line-clamp-2 font-sans">
                 {doctor.bio || "Experienced clinical specialist providing patient-centered healthcare."}
               </p>
 
               {/* Badges strip */}
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-[hsl(var(--muted-foreground))] pt-4 border-t border-[hsl(var(--border))]">
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-[hsl(var(--muted-foreground))] pt-4 border-t border-[hsl(var(--border))] font-sans">
                 <div className="flex items-center gap-1.5">
-                  <Award className="h-4 w-4 text-[hsl(var(--primary))]" />
+                  <Award className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                   <span>{doctor.experience || 10} Years Experience</span>
                 </div>
-                <div className="flex items-center gap-1.5 font-bold text-[hsl(var(--foreground))]">
+                <div className="flex items-center gap-1.5 font-medium text-[hsl(var(--foreground))]">
                   <span>₹{doctor.fee}</span>
                   <span className="font-normal text-[hsl(var(--muted-foreground))]">Consultation Fee</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 text-[hsl(var(--primary))]" />
+                  <MapPin className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                   <span>{doctor.branch.name}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Languages className="h-4 w-4 text-[hsl(var(--primary))]" />
+                  <Languages className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                   <span>{doctor.language.join(", ")}</span>
                 </div>
               </div>
@@ -252,14 +252,14 @@ export default function DoctorProfilePage() {
         </div>
 
         {/* Slot Booking Panel */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
           <div className="flex items-center justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+              <h2 className="font-serif text-lg sm:text-xl font-normal text-[hsl(var(--foreground))]">
                 Choose Appointment Date &amp; Slot
               </h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                Slots are updated in real-time. Pick an available time below.
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
+                Slots are synchronized in real-time. Select an available session below.
               </p>
             </div>
           </div>
@@ -272,14 +272,14 @@ export default function DoctorProfilePage() {
                 <button
                   key={d.iso}
                   onClick={() => setSelectedDate(d.iso)}
-                  className={`flex flex-col items-center justify-center min-w-[90px] py-2.5 px-3 rounded-[var(--radius-xl)] border transition-all ${
+                  className={`flex flex-col items-center justify-center min-w-[90px] py-2.5 px-3 rounded-[var(--radius-lg)] border transition-all ${
                     isSelected
-                      ? "bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))] shadow-[var(--shadow-sm)] scale-[1.02]"
-                      : "bg-[hsl(var(--card))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary)/0.4)]"
+                      ? "bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))] shadow-[var(--shadow-sm)]"
+                      : "bg-[hsl(var(--background))] border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary)/0.4)]"
                   }`}
                 >
-                  <span className="text-[11px] font-semibold uppercase opacity-90">{d.dayName}</span>
-                  <span className="text-xs font-bold mt-0.5">{d.monthDay}</span>
+                  <span className="text-[10px] font-medium uppercase opacity-90">{d.dayName}</span>
+                  <span className="text-xs font-mono font-medium mt-0.5">{d.monthDay}</span>
                 </button>
               );
             })}
@@ -295,7 +295,7 @@ export default function DoctorProfilePage() {
 
           {/* Footer Action Bar */}
           <div className="mt-8 pt-6 border-t border-[hsl(var(--border))] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-[hsl(var(--muted-foreground))]">
+            <div className="text-xs text-[hsl(var(--muted-foreground))] font-sans">
               {selectedSlot ? (
                 <span>
                   Selected Slot: <strong className="text-[hsl(var(--foreground))]">{selectedDate}</strong> at{" "}
@@ -310,7 +310,7 @@ export default function DoctorProfilePage() {
               size="lg"
               disabled={!selectedSlot}
               onClick={handleProceedToBook}
-              className="w-full sm:w-auto flex items-center justify-center gap-2"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 font-medium"
             >
               Continue to Confirmation
               <ChevronRight className="h-4 w-4" />
@@ -319,13 +319,13 @@ export default function DoctorProfilePage() {
         </div>
 
         {/* Patient Reviews Section */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+              <h2 className="font-serif text-lg sm:text-xl font-normal text-[hsl(var(--foreground))]">
                 Patient Feedback &amp; Reviews
               </h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
                 Verified reviews from patients who attended consultations with {doctor.name}
               </p>
             </div>
@@ -333,21 +333,22 @@ export default function DoctorProfilePage() {
               variant="outline"
               size="sm"
               onClick={() => setShowReviewForm(!showReviewForm)}
+              className="text-xs font-medium"
             >
               {showReviewForm ? "Cancel" : "Write a Review"}
             </Button>
           </div>
 
           {reviewMessage && (
-            <div className="rounded-[var(--radius-md)] bg-[hsl(var(--primary-light))] border border-[hsl(var(--primary-border))] p-3 text-xs text-[hsl(var(--primary))] font-medium">
+            <div className="rounded-[var(--radius-md)] bg-[hsl(var(--background))] border border-[hsl(var(--card-border))] p-3 text-xs text-[hsl(var(--foreground))] font-medium">
               {reviewMessage}
             </div>
           )}
 
           {/* Review Submission Form */}
           {showReviewForm && (
-            <form onSubmit={handleReviewSubmit} className="rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] p-4 space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--foreground))]">
+            <form onSubmit={handleReviewSubmit} className="rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] p-5 space-y-4">
+              <h3 className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">
                 Rate your consultation experience
               </h3>
               <div className="flex items-center gap-2">
@@ -359,10 +360,10 @@ export default function DoctorProfilePage() {
                     className="p-1 text-[hsl(var(--warning))] hover:scale-110 transition-transform"
                     aria-label={`Rate ${star} star`}
                   >
-                    <Star className={`h-6 w-6 ${star <= newRating ? "fill-current" : "stroke-current fill-none"}`} />
+                    <Star className={`h-5 w-5 ${star <= newRating ? "fill-current" : "stroke-current fill-none"}`} />
                   </button>
                 ))}
-                <span className="text-xs font-bold text-[hsl(var(--muted-foreground))] ml-2">
+                <span className="text-xs font-mono text-[hsl(var(--muted-foreground))] ml-2">
                   {newRating} / 5 Stars
                 </span>
               </div>
@@ -373,7 +374,7 @@ export default function DoctorProfilePage() {
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Share details of your consultation (e.g. communication, punctuality, diagnosis clarity)..."
                   rows={3}
-                  className="w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-[hsl(var(--card))] p-3 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--input-focus))]"
+                  className="w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-[hsl(var(--card))] p-3 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                 />
               </div>
 
@@ -390,24 +391,24 @@ export default function DoctorProfilePage() {
 
           {/* Reviews List */}
           {isLoadingReviews ? (
-            <div className="py-6 text-center text-xs text-[hsl(var(--muted-foreground))] animate-pulse">
+            <div className="py-6 text-center text-xs text-[hsl(var(--muted-foreground))] animate-pulse font-sans">
               Loading verified reviews...
             </div>
           ) : reviews.length === 0 ? (
-            <div className="py-8 text-center rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.2)] border border-dashed border-[hsl(var(--border))]">
+            <div className="py-8 text-center rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-dashed border-[hsl(var(--border))]">
               <Star className="h-8 w-8 text-[hsl(var(--muted-foreground))] mx-auto mb-2 opacity-50" />
-              <p className="text-xs font-semibold text-[hsl(var(--foreground))]">No reviews yet</p>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-1">Be the first patient to share feedback for {doctor.name}.</p>
+              <p className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">No reviews yet</p>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-1 font-sans">Be the first patient to share feedback for {doctor.name}.</p>
             </div>
           ) : (
             <div className="space-y-4 divide-y divide-[hsl(var(--border))]">
               {reviews.map((r) => (
-                <div key={r.id} className="pt-4 first:pt-0 space-y-1.5">
+                <div key={r.id} className="pt-4 first:pt-0 space-y-1.5 font-sans">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-[hsl(var(--foreground))]">
+                    <span className="text-xs font-medium text-[hsl(var(--foreground))]">
                       {r.patientName}
                     </span>
-                    <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                    <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))]">
                       {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </span>
                   </div>

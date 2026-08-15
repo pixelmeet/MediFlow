@@ -26,26 +26,26 @@ export function AppointmentCard({
   const canCheckIn = appointment.status === "CONFIRMED";
 
   return (
-    <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-5 sm:p-6 shadow-[var(--shadow-sm)] transition-all hover:border-[hsl(var(--primary)/0.4)] hover:shadow-[var(--shadow)]">
+    <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-[var(--shadow-sm)] transition-colors hover:border-[hsl(var(--primary)/0.4)]">
       {/* Top row: Doctor info and status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[hsl(var(--border))]">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] font-bold text-sm">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-serif font-normal text-base">
             {appointment.doctorName.replace("Dr. ", "").slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <h3 className="font-bold text-base text-[hsl(var(--foreground))]">
+            <h3 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
               {appointment.doctorName}
             </h3>
-            <p className="text-xs font-medium text-[hsl(var(--primary))]">
+            <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
               {appointment.doctorSpecialty}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-[hsl(var(--primary-light))] px-3 py-1 rounded-[var(--radius-full)] text-xs font-bold text-[hsl(var(--primary))] border border-[hsl(var(--primary)/0.2)]">
-            <Ticket className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-1.5 bg-[hsl(var(--muted))] px-3 py-1 rounded-[var(--radius-full)] text-xs font-mono font-medium text-[hsl(var(--foreground))] border border-[hsl(var(--border))]">
+            <Ticket className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
             <span>Token: {appointment.tokenNumber}</span>
           </div>
           <StatusPill status={appointment.status.toLowerCase() as "confirmed" | "checked_in" | "waiting" | "in_consultation" | "completed" | "cancelled" | "no_show"} />
@@ -53,22 +53,22 @@ export function AppointmentCard({
       </div>
 
       {/* Middle row: Date, Time, Branch, Fee */}
-      <div className="py-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[hsl(var(--muted-foreground))]">
+      <div className="py-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[hsl(var(--muted-foreground))] font-sans">
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-[hsl(var(--primary))]" />
+          <Calendar className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
           <div>
-            <span className="font-semibold text-[hsl(var(--foreground))]">{appointment.date}</span>
+            <span className="font-medium text-[hsl(var(--foreground))]">{appointment.date}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-[hsl(var(--primary))]" />
+          <Clock className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
           <div>
-            <span className="font-semibold text-[hsl(var(--foreground))]">{appointment.startTime}</span>
+            <span className="font-medium text-[hsl(var(--foreground))]">{appointment.startTime}</span>
             <span className="ml-1 text-[hsl(var(--muted-foreground))]">(Slot time)</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-[hsl(var(--primary))] shrink-0" />
+          <MapPin className="h-4 w-4 text-[hsl(var(--muted-foreground))] shrink-0" />
           <span className="truncate">{appointment.branchName}</span>
         </div>
       </div>
@@ -88,7 +88,7 @@ export function AppointmentCard({
       )}
 
       {appointment.cancelReason && (
-        <div className="mb-4 rounded-[var(--radius-md)] bg-[hsl(var(--danger-light))] p-3 text-xs text-[hsl(var(--danger))]">
+        <div className="mb-4 rounded-[var(--radius-md)] bg-[hsl(var(--danger-light))] border border-[hsl(var(--danger)/0.3)] p-3 text-xs text-[hsl(var(--danger))]">
           <span className="font-semibold">Cancellation reason:</span> {appointment.cancelReason}
         </div>
       )}
@@ -114,7 +114,7 @@ export function AppointmentCard({
                   size="sm"
                   onClick={() => onCheckIn(appointment.id)}
                   disabled={isCheckingIn}
-                  className="text-xs border-[hsl(var(--warning))] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning-light))]"
+                  className="text-xs border-[hsl(var(--warning)/0.4)] text-[hsl(var(--warning))] bg-[hsl(var(--warning-light))]"
                 >
                   <CheckCircle className="h-3.5 w-3.5 mr-1" />
                   {isCheckingIn ? "Checking In..." : "Check In (Grace Active)"}
@@ -125,7 +125,7 @@ export function AppointmentCard({
                   size="sm"
                   onClick={() => onCheckIn(appointment.id)}
                   disabled={isCheckingIn}
-                  className="text-xs border-[hsl(var(--success))] text-[hsl(var(--success))] hover:bg-[hsl(var(--success-light))]"
+                  className="text-xs border-[hsl(var(--success)/0.4)] text-[hsl(var(--success))] bg-[hsl(var(--success-light))]"
                 >
                   <CheckCircle className="h-3.5 w-3.5 mr-1" />
                   {isCheckingIn ? "Checking In..." : "Check In Now"}
@@ -134,9 +134,8 @@ export function AppointmentCard({
             )}
 
             <Link href={`/patient/queue/${appointment.doctorId}`}>
-              <Button size="sm" className="text-xs flex items-center gap-1">
+              <Button size="sm" className="text-xs flex items-center gap-1 font-medium">
                 <span className="relative flex h-2 w-2 mr-1">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                 </span>
                 Live Queue Tracker
@@ -172,4 +171,3 @@ export function AppointmentCard({
     </div>
   );
 }
-

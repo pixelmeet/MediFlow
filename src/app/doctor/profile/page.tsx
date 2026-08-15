@@ -198,24 +198,24 @@ export default function DoctorProfilePage() {
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-16">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
+        <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
           <Stethoscope className="h-7 w-7 text-[hsl(var(--primary))]" />
           Doctor Professional Profile
         </h1>
-        <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-          Manage your clinical biography, qualifications, languages, and security credentials
+        <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1 font-sans">
+          Manage your clinical biography, qualifications, languages, and account credentials
         </p>
       </div>
 
       {isLoading ? (
         <div className="space-y-6 animate-pulse">
-          <div className="h-44 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
-          <div className="h-96 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
+          <div className="h-44 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
+          <div className="h-96 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
         </div>
       ) : error ? (
         <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--danger-light))] bg-[hsl(var(--card))] p-8 text-center max-w-md mx-auto">
           <AlertCircle className="h-8 w-8 text-[hsl(var(--danger))] mx-auto mb-2" />
-          <h3 className="font-bold text-sm text-[hsl(var(--foreground))]">{error}</h3>
+          <h3 className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">{error}</h3>
           <Button
             size="sm"
             onClick={() => window.location.reload()}
@@ -227,34 +227,34 @@ export default function DoctorProfilePage() {
       ) : (
         <>
           {/* ── Hospital Assignment / Read-Only Parameters Card ── */}
-          <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-[var(--shadow-sm)] space-y-4">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-[var(--shadow-sm)] space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[hsl(var(--border))]">
               <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-[hsl(var(--primary))]" />
-                <h2 className="text-sm font-bold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                <Building2 className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                <h2 className="font-serif text-sm font-normal text-[hsl(var(--foreground))] uppercase tracking-wider">
                   Hospital Assignment &amp; Consultation Parameters
                 </h2>
               </div>
-              <span className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted)/0.4)] px-2.5 py-0.5 rounded-[var(--radius-full)] inline-flex items-center gap-1">
+              <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))] bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2.5 py-0.5 rounded-[var(--radius-full)] inline-flex items-center gap-1">
                 <Lock className="h-3 w-3" /> Admin Managed
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-3.5 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] block mb-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-sans">
+              <div className="p-3.5 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+                <span className="text-[10px] uppercase font-medium tracking-wider text-[hsl(var(--muted-foreground))] block mb-1">
                   Physician Name
                 </span>
-                <p className="text-sm font-bold text-[hsl(var(--foreground))]">
+                <p className="text-sm font-medium text-[hsl(var(--foreground))]">
                   {profile?.name}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] block mb-1">
+              <div className="p-3.5 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+                <span className="text-[10px] uppercase font-medium tracking-wider text-[hsl(var(--muted-foreground))] block mb-1">
                   Specialty &amp; Branch
                 </span>
-                <p className="text-sm font-bold text-[hsl(var(--primary))] truncate">
+                <p className="text-sm font-medium text-[hsl(var(--primary))] truncate">
                   {profile?.specialty}
                 </p>
                 <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
@@ -262,45 +262,45 @@ export default function DoctorProfilePage() {
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-1 mb-1">
-                  <CreditCard className="h-3 w-3 text-[hsl(var(--primary))]" />
+              <div className="p-3.5 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+                <span className="text-[10px] uppercase font-medium tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-1 mb-1">
+                  <CreditCard className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />
                   Consultation Fee
                 </span>
-                <p className="text-sm font-bold text-[hsl(var(--foreground))] font-mono">
+                <p className="text-sm font-mono text-[hsl(var(--foreground))]">
                   ₹{profile?.fee}
                 </p>
                 <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Per visit</p>
               </div>
 
-              <div className="p-3.5 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-1 mb-1">
-                  <Clock className="h-3 w-3 text-[hsl(var(--primary))]" />
+              <div className="p-3.5 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+                <span className="text-[10px] uppercase font-medium tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-1 mb-1">
+                  <Clock className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />
                   Slot Duration
                 </span>
-                <p className="text-sm font-bold text-[hsl(var(--foreground))]">
+                <p className="text-sm font-mono text-[hsl(var(--foreground))]">
                   {profile?.appointmentDurationMin || 20} Minutes
                 </p>
-                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Default consultation time</p>
+                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Default session length</p>
               </div>
             </div>
 
-            <p className="text-[11px] text-[hsl(var(--muted-foreground))] italic">
+            <p className="text-[11px] text-[hsl(var(--muted-foreground))] italic font-sans">
               Note: Specialty, department assignment, consultation fees, and appointment slot durations are configured by hospital administration.
             </p>
           </div>
 
           {/* ── Two-Column Grid: Editable Profile (7 cols) + Security (5 cols) ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 font-sans">
             {/* ── Editable Profile Form (7 cols) ── */}
             <div className="lg:col-span-7">
-              <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6">
+              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b border-[hsl(var(--border))]">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] font-bold text-sm shadow-[var(--shadow-sm)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-serif font-normal text-sm shadow-sm">
                     <Stethoscope className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-[hsl(var(--foreground))]">
+                    <h2 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
                       Clinical &amp; Public Bio
                     </h2>
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">
@@ -311,7 +311,7 @@ export default function DoctorProfilePage() {
 
                 <form onSubmit={handleSaveProfile} className="space-y-5">
                   {saveError && (
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--danger-light))] bg-[hsl(var(--danger)/0.05)] p-3 text-xs text-[hsl(var(--danger))] flex items-start gap-2.5">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--danger)/0.3)] bg-[hsl(var(--danger-light))] p-3 text-xs text-[hsl(var(--danger))] flex items-start gap-2.5">
                       <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                       <span>{saveError}</span>
                     </div>
@@ -320,10 +320,10 @@ export default function DoctorProfilePage() {
                   {/* Bio */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))]">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))]">
                         Professional Biography
                       </label>
-                      <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
+                      <span className="text-[10px] font-mono text-[hsl(var(--muted-foreground))]">
                         {bio.length}/1000 characters
                       </span>
                     </div>
@@ -331,17 +331,17 @@ export default function DoctorProfilePage() {
                       rows={4}
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
-                      placeholder="Brief overview of clinical expertise, clinical interests, fellowships, and patient care philosophy..."
+                      placeholder="Brief overview of clinical expertise, special interests, fellowships, and patient care philosophy..."
                       maxLength={1000}
                       disabled={isSaving}
-                      className="w-full p-3 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors leading-relaxed"
+                      className="w-full p-3 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors leading-relaxed"
                     />
                   </div>
 
                   {/* Qualifications & Experience Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                         Medical Qualifications
                       </label>
                       <div className="relative">
@@ -354,13 +354,13 @@ export default function DoctorProfilePage() {
                           onChange={(e) => setQualifications(e.target.value)}
                           placeholder="e.g. MBBS, MD (Medicine), DM (Cardiology), FACC"
                           disabled={isSaving}
-                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors"
+                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                         Experience (Years)
                       </label>
                       <div className="relative">
@@ -375,7 +375,7 @@ export default function DoctorProfilePage() {
                           min={0}
                           max={70}
                           disabled={isSaving}
-                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors"
+                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                         />
                       </div>
                     </div>
@@ -383,7 +383,7 @@ export default function DoctorProfilePage() {
 
                   {/* Languages Selection */}
                   <div>
-                    <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                    <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                       Consultation Languages
                     </label>
                     <div className="flex flex-wrap gap-1.5 mb-2">
@@ -398,7 +398,7 @@ export default function DoctorProfilePage() {
                             className={`text-xs px-2.5 py-1 rounded-[var(--radius-md)] font-medium transition-colors border ${
                               isSelected
                                 ? "bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))]"
-                                : "bg-[hsl(var(--background))] text-[hsl(var(--foreground))] border-[hsl(var(--input))] hover:border-[hsl(var(--primary))]"
+                                : "bg-[hsl(var(--background))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.4)]"
                             }`}
                           >
                             {lang} {isSelected && "✓"}
@@ -425,7 +425,7 @@ export default function DoctorProfilePage() {
                           }}
                           placeholder="Add custom language (e.g. French, German)..."
                           disabled={isSaving}
-                          className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                          className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                         />
                       </div>
                       <Button
@@ -434,7 +434,7 @@ export default function DoctorProfilePage() {
                         size="sm"
                         onClick={handleAddCustomLanguage}
                         disabled={!customLanguage.trim() || isSaving}
-                        className="text-xs"
+                        className="text-xs font-medium"
                       >
                         <Plus className="h-3.5 w-3.5 mr-1" />
                         Add
@@ -443,13 +443,13 @@ export default function DoctorProfilePage() {
 
                     {/* Selected languages pills */}
                     <div className="flex flex-wrap gap-1.5 mt-2.5">
-                      <span className="text-[10px] uppercase font-bold text-[hsl(var(--muted-foreground))] mr-1 self-center">
+                      <span className="text-[10px] uppercase font-mono text-[hsl(var(--muted-foreground))] mr-1 self-center">
                         Active:
                       </span>
                       {languages.map((lang) => (
                         <span
                           key={lang}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] px-2.5 py-0.5 rounded-[var(--radius-full)]"
+                          className="inline-flex items-center gap-1 text-[11px] font-medium bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] px-2.5 py-0.5 rounded-[var(--radius-full)]"
                         >
                           {lang}
                           <button
@@ -466,7 +466,7 @@ export default function DoctorProfilePage() {
 
                   {/* Profile Photo URL */}
                   <div>
-                    <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                    <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                       Doctor Photo URL (Optional)
                     </label>
                     <div className="relative">
@@ -479,7 +479,7 @@ export default function DoctorProfilePage() {
                         onChange={(e) => setPhotoUrl(e.target.value)}
                         placeholder="https://images.unsplash.com/photo-..."
                         disabled={isSaving}
-                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                       />
                     </div>
                   </div>
@@ -489,7 +489,7 @@ export default function DoctorProfilePage() {
                       type="submit"
                       size="sm"
                       disabled={isSaving}
-                      className="text-xs font-bold flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
+                      className="text-xs font-medium flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
                     >
                       <Save className="h-3.5 w-3.5" />
                       {isSaving ? "Saving Changes..." : "Save Profile Details"}

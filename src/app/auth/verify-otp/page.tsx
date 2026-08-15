@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export default function VerifyOtpPage() {
   return (
-    <React.Suspense fallback={<div className="text-center p-8">Loading verification...</div>}>
+    <React.Suspense fallback={<div className="text-center p-8 text-sm text-[hsl(var(--muted-foreground))]">Loading verification...</div>}>
       <VerifyOtpContent />
     </React.Suspense>
   );
@@ -134,34 +134,34 @@ function VerifyOtpContent() {
 
   return (
     <div className="w-full max-w-md mx-auto py-8 animate-fade-in-up">
-      <div className="text-center mb-6">
-        <Link href="/" className="inline-flex items-center gap-2 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] shadow-[var(--shadow-sm)]">
-            <Activity className="h-5 w-5 text-white" />
+      <div className="text-center mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]">
+            <Activity className="h-5 w-5" />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+          <span className="font-serif text-2xl font-normal tracking-tight text-[hsl(var(--foreground))]">
             MediFlow
           </span>
         </Link>
-        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">
+        <h1 className="font-serif text-3xl font-normal tracking-tight text-[hsl(var(--foreground))]">
           Verify Your Account
         </h1>
-        <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-          We sent a 6-digit OTP to{" "}
-          <span className="font-semibold text-[hsl(var(--foreground))]">{email}</span>
+        <p className="mt-1.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
+          We sent a 6-digit OTP code to{" "}
+          <span className="font-medium text-[hsl(var(--foreground))]">{email}</span>
         </p>
       </div>
 
-      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-md)]">
+      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
         {devOtp && (
-          <div className="mb-4 flex items-center justify-between rounded-[var(--radius)] bg-[hsl(var(--primary-light))] border border-[hsl(var(--primary-border))] p-3 text-xs text-[hsl(var(--primary))] font-medium">
+          <div className="mb-4 flex items-center justify-between rounded-[var(--radius-md)] bg-[hsl(var(--background))] border border-[hsl(var(--card-border))] p-3 text-xs text-[hsl(var(--foreground))] font-mono">
             <span>
-              [DEV MODE] Verification Code: <strong className="tracking-widest font-mono text-sm">{devOtp}</strong>
+              [DEV MODE] Code: <strong className="tracking-widest font-bold text-[hsl(var(--primary))]">{devOtp}</strong>
             </span>
             <button
               type="button"
               onClick={fillDevOtp}
-              className="underline hover:opacity-80 font-bold ml-2"
+              className="text-[hsl(var(--primary))] underline hover:opacity-80 font-medium ml-2"
             >
               Autofill
             </button>
@@ -170,7 +170,7 @@ function VerifyOtpContent() {
 
         {errorMessage && (
           <div
-            className="mb-4 flex items-start gap-2 rounded-[var(--radius)] bg-[hsl(var(--danger-light))] p-3 text-xs font-medium text-[hsl(var(--danger))]"
+            className="mb-4 flex items-start gap-2 rounded-[var(--radius)] bg-[hsl(var(--danger-light))] p-3 text-xs font-medium text-[hsl(var(--danger))] border border-[hsl(var(--danger)/0.3)]"
             role="alert"
           >
             <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
@@ -194,17 +194,17 @@ function VerifyOtpContent() {
                 onChange={(e) => handleDigitChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 disabled={isLoading}
-                className="h-12 w-12 text-center text-xl font-bold tabular-nums rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--input-focus))] transition-all"
+                className="h-12 w-12 text-center text-xl font-mono font-medium tabular-nums rounded-[var(--radius)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-all"
                 aria-label={`Digit ${index + 1}`}
               />
             ))}
           </div>
 
           {/* Countdown & Resend */}
-          <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))] font-sans">
             <span>
-              Code expires in:{" "}
-              <strong className="text-[hsl(var(--foreground))] tabular-nums">
+              Expires in:{" "}
+              <strong className="text-[hsl(var(--foreground))] tabular-nums font-mono font-medium">
                 {formatTimer(timeLeft)}
               </strong>
             </span>
@@ -212,7 +212,7 @@ function VerifyOtpContent() {
               type="button"
               onClick={handleResend}
               disabled={isResending || timeLeft > 240}
-              className="flex items-center gap-1 font-medium text-[hsl(var(--primary))] hover:underline disabled:opacity-50 disabled:no-underline"
+              className="flex items-center gap-1 font-medium text-[hsl(var(--primary))] hover:underline active:underline disabled:opacity-50 disabled:no-underline"
             >
               <RefreshCw className={`h-3 w-3 ${isResending ? "animate-spin" : ""}`} />
               Resend OTP
@@ -232,11 +232,11 @@ function VerifyOtpContent() {
         </form>
       </div>
 
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="mt-6 text-center text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
         Entered wrong details?{" "}
         <Link
           href="/auth/register"
-          className="font-semibold text-[hsl(var(--primary))] hover:underline"
+          className="font-medium text-[hsl(var(--primary))] hover:underline active:underline"
         >
           Register again
         </Link>

@@ -113,11 +113,11 @@ export default function AdminDepartmentsPage() {
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
+            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
               <Building2 className="h-7 w-7 text-[hsl(var(--primary))]" />
               Medical Departments
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
+            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1 font-sans">
               Manage clinical specialties and hospital branch departmental assignments
             </p>
           </div>
@@ -125,7 +125,7 @@ export default function AdminDepartmentsPage() {
           <Button
             size="sm"
             onClick={() => setIsAddOpen(true)}
-            className="text-xs font-bold flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
+            className="text-xs font-medium flex items-center gap-1.5 shadow-[var(--shadow-sm)] font-sans"
           >
             <Plus className="h-4 w-4" /> Add Department
           </Button>
@@ -135,40 +135,40 @@ export default function AdminDepartmentsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-40 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))] animate-pulse" />
+              <div key={i} className="h-40 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))] animate-pulse" />
             ))
           ) : departments.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-xs text-[hsl(var(--muted-foreground))]">
+            <div className="col-span-full py-12 text-center text-xs text-[hsl(var(--muted-foreground))] font-sans">
               No departments found.
             </div>
           ) : (
             departments.map((dept) => (
               <div
                 key={dept.id}
-                className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4 hover:shadow-[var(--shadow-md)] transition-shadow"
+                className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4 hover:border-[hsl(var(--primary)/0.4)] transition-colors"
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] font-bold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-serif font-normal">
                     <Building2 className="h-5 w-5" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase bg-[hsl(var(--success-light))] text-[hsl(var(--success))] px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-mono uppercase bg-[hsl(var(--success-light))] border border-[hsl(var(--success)/0.3)] text-[hsl(var(--success))] px-2.5 py-0.5 rounded-full">
                     Active
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-base text-[hsl(var(--foreground))]">{dept.name}</h3>
-                  <div className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] mt-1">
+                  <h3 className="font-serif text-base font-normal text-[hsl(var(--foreground))]">{dept.name}</h3>
+                  <div className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] mt-1 font-sans">
                     <MapPin className="h-3.5 w-3.5" />
                     <span>{dept.branchName}</span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[hsl(var(--border))] flex items-center justify-between text-xs font-semibold">
-                  <span className="text-[hsl(var(--muted-foreground))] flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> Assigned Doctors
+                <div className="pt-3 border-t border-[hsl(var(--border))] flex items-center justify-between text-xs font-sans">
+                  <span className="text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 font-medium">
+                    <Users className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" /> Assigned Doctors
                   </span>
-                  <span className="font-mono text-[hsl(var(--primary))] font-bold">{dept.doctorCount} Doctors</span>
+                  <span className="font-mono text-[hsl(var(--foreground))] font-medium">{dept.doctorCount} Doctors</span>
                 </div>
               </div>
             ))
@@ -183,24 +183,24 @@ export default function AdminDepartmentsPage() {
         title="Add Medical Department"
         description="Register a new clinical department in a specific hospital branch."
       >
-        <div className="space-y-4 pt-2 text-xs">
+        <div className="space-y-4 pt-2 text-xs font-sans">
           <div>
-            <label className="font-semibold block mb-1">Department Name</label>
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Department Name</label>
             <input
               type="text"
               value={deptName}
               onChange={(e) => setDeptName(e.target.value)}
               placeholder="e.g., Neurology, Pediatrics, Dermatology"
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">Assigned Hospital Branch</label>
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Assigned Hospital Branch</label>
             <select
               value={branchId}
               onChange={(e) => setBranchId(e.target.value)}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -214,7 +214,7 @@ export default function AdminDepartmentsPage() {
             <Button variant="outline" size="sm" onClick={() => setIsAddOpen(false)}>
               Cancel
             </Button>
-            <Button size="sm" onClick={handleCreateDepartment} disabled={isSubmitting || !deptName}>
+            <Button size="sm" onClick={handleCreateDepartment} disabled={isSubmitting || !deptName} className="font-medium">
               {isSubmitting ? "Creating..." : "Add Department"}
             </Button>
           </div>

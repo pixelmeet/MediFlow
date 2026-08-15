@@ -29,8 +29,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             "placeholder:text-[hsl(var(--muted-foreground))]",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0",
             error
-              ? "border-[hsl(var(--danger))] focus-visible:ring-[hsl(var(--danger))]"
-              : "border-[hsl(var(--input))] focus-visible:ring-[hsl(var(--input-focus))]",
+              ? "border-[hsl(var(--danger))] focus-visible:ring-[hsl(var(--danger)/0.3)]"
+              : "border-[hsl(var(--input))] focus-visible:border-[hsl(var(--input-focus))] focus-visible:ring-[hsl(var(--input-focus)/0.3)]",
             "disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}

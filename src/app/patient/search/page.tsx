@@ -81,7 +81,7 @@ export default function DoctorSearchPage() {
   return (
     <div className="min-h-screen bg-[hsl(var(--background))]">
       {/* ─── Header ───────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-[var(--shadow-sm)]">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link href="/patient/dashboard">
@@ -93,17 +93,17 @@ export default function DoctorSearchPage() {
               <Stethoscope className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+              <h1 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
                 Find Doctors
               </h1>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                Search verified specialists & live slot availability
+              <p className="text-xs text-[hsl(var(--muted-foreground))] font-sans">
+                Search verified specialists &amp; live slot availability
               </p>
             </div>
           </div>
 
           <Link href="/patient/appointments">
-            <Button variant="outline" size="sm" className="text-xs">
+            <Button variant="outline" size="sm" className="text-xs font-medium font-sans">
               My Appointments
             </Button>
           </Link>
@@ -111,7 +111,7 @@ export default function DoctorSearchPage() {
       </header>
 
       {/* ─── Main Content ─────────────────────────────────── */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 font-sans">
         {/* Search Bar input */}
         <div className="relative mb-6">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
@@ -120,7 +120,7 @@ export default function DoctorSearchPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by doctor name or specialty (e.g. Cardiologist, Dr. Patel)..."
-            className="w-full h-11 pl-10 pr-4 rounded-[var(--radius-xl)] border border-[hsl(var(--input))] bg-[hsl(var(--card))] text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[var(--shadow-sm)] focus:border-[hsl(var(--primary))] focus:outline-none transition-colors"
+            className="w-full h-11 pl-10 pr-4 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
           />
           {search && (
             <button
@@ -160,30 +160,30 @@ export default function DoctorSearchPage() {
         ) : error ? (
           <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--danger-light))] bg-[hsl(var(--card))] p-8 text-center max-w-lg mx-auto">
             <AlertCircle className="h-8 w-8 text-[hsl(var(--danger))] mx-auto mb-2" />
-            <h3 className="font-bold text-sm text-[hsl(var(--foreground))]">Error Loading Doctors</h3>
+            <h3 className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">Error Loading Doctors</h3>
             <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">{error}</p>
-            <Button size="sm" onClick={() => setReloadKey((k) => k + 1)} className="mt-4 text-xs">
+            <Button size="sm" onClick={() => setReloadKey((k) => k + 1)} className="mt-4 text-xs font-medium">
               <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
               Try Again
             </Button>
           </div>
         ) : doctors.length === 0 ? (
-          <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-12 text-center max-w-xl mx-auto">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-12 text-center max-w-xl mx-auto">
             <Stethoscope className="h-10 w-10 text-[hsl(var(--muted-foreground))] mx-auto mb-3" />
-            <h3 className="text-base font-bold text-[hsl(var(--foreground))]">
+            <h3 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
               No doctors found matching your criteria
             </h3>
             <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
               Try adjusting your specialty or fee filters to see more available specialists.
             </p>
-            <Button size="sm" onClick={handleClearFilters} className="mt-5 text-xs">
+            <Button size="sm" onClick={handleClearFilters} className="mt-5 text-xs font-medium">
               Reset All Filters
             </Button>
           </div>
         ) : (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+              <p className="text-xs font-mono font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
                 Showing {doctors.length} Specialist{doctors.length === 1 ? "" : "s"}
               </p>
             </div>

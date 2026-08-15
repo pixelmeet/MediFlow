@@ -48,19 +48,19 @@ export default function ForgotPasswordPage() {
   return (
     <div className="w-full max-w-md mx-auto py-8 animate-fade-in-up">
       {/* Brand Header */}
-      <div className="text-center mb-6">
-        <Link href="/" className="inline-flex items-center gap-2 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] shadow-[var(--shadow-sm)]">
-            <Activity className="h-5 w-5 text-white" />
+      <div className="text-center mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]">
+            <Activity className="h-5 w-5" />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+          <span className="font-serif text-2xl font-normal tracking-tight text-[hsl(var(--foreground))]">
             MediFlow
           </span>
         </Link>
-        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">
+        <h1 className="font-serif text-3xl font-normal tracking-tight text-[hsl(var(--foreground))]">
           {isSuccess ? "Check your inbox" : "Reset your password"}
         </h1>
-        <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+        <p className="mt-1.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
           {isSuccess
             ? "We've sent password recovery instructions"
             : "Enter your registered email or phone to receive a reset link"}
@@ -68,10 +68,10 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Main Card */}
-      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-md)]">
+      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
         {isSuccess ? (
           <div className="space-y-5 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--success-light))] text-[hsl(var(--success))]">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--success-light))] text-[hsl(var(--success))] border border-[hsl(var(--success)/0.3)]">
               <CheckCircle2 className="h-6 w-6" />
             </div>
 
@@ -87,11 +87,11 @@ export default function ForgotPasswordPage() {
             </div>
 
             {/* Development Environment Notice */}
-            <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--primary-light))] p-3 text-left text-xs">
-              <p className="font-semibold text-[hsl(var(--primary))] mb-1">
+            <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--card-border))] bg-[hsl(var(--background))] p-3 text-left text-xs">
+              <p className="font-medium text-[hsl(var(--foreground))] mb-1">
                 Development Note
               </p>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed font-mono">
                 In development, the password reset link is logged directly to the server terminal console instead of being emailed.
               </p>
             </div>
@@ -116,7 +116,7 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {errorMessage && (
               <div
-                className="flex items-start gap-2 rounded-[var(--radius)] bg-[hsl(var(--danger-light))] p-3 text-xs font-medium text-[hsl(var(--danger))]"
+                className="flex items-start gap-2 rounded-[var(--radius)] bg-[hsl(var(--danger-light))] p-3 text-xs font-medium text-[hsl(var(--danger))] border border-[hsl(var(--danger)/0.3)]"
                 role="alert"
               >
                 <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
@@ -151,7 +151,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Footer Navigation */}
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="mt-6 text-center text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
         <Link
           href="/auth/login"
           className="inline-flex items-center gap-1.5 font-medium text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] transition-colors"

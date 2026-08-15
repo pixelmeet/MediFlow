@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function LoginPage() {
+export default function AuthPage() {
   const { login } = useAuth();
   const [identifier, setIdentifier] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -61,56 +61,56 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md mx-auto py-8 animate-fade-in-up">
-      <div className="text-center mb-6">
-        <Link href="/" className="inline-flex items-center gap-2 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] shadow-[var(--shadow-sm)]">
-            <Activity className="h-5 w-5 text-white" />
+      <div className="text-center mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]">
+            <Activity className="h-5 w-5" />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+          <span className="font-serif text-2xl font-normal tracking-tight text-[hsl(var(--foreground))]">
             MediFlow
           </span>
         </Link>
-        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">
+        <h1 className="font-serif text-3xl font-normal tracking-tight text-[hsl(var(--foreground))]">
           Welcome back
         </h1>
-        <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-          Sign in to access your appointments & medical flow
+        <p className="mt-1.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
+          Sign in to access your appointments & clinical telemetry
         </p>
       </div>
 
-      {/* Demo Credentials Helper Pill */}
-      <div className="mb-4 rounded-[var(--radius-lg)] border border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--primary-light))] p-3 text-xs text-[hsl(var(--foreground))]">
-        <div className="flex items-center gap-1.5 font-semibold text-[hsl(var(--primary))] mb-2">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Quick Demo Logins (Password: Password@123)</span>
+      {/* Demo Credentials Helper Box */}
+      <div className="mb-5 rounded-[var(--radius-lg)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 text-xs text-[hsl(var(--foreground))] shadow-[var(--shadow-sm)]">
+        <div className="flex items-center gap-1.5 font-medium text-[hsl(var(--foreground))] mb-2">
+          <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+          <span>Quick Demo Access (Password: Password@123)</span>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => handleQuickFill("PATIENT")}
-            className="rounded-[var(--radius-sm)] bg-white dark:bg-black/30 border px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
+            className="rounded-[var(--radius-sm)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
           >
             👤 Patient
           </button>
           <button
             type="button"
             onClick={() => handleQuickFill("DOCTOR")}
-            className="rounded-[var(--radius-sm)] bg-white dark:bg-black/30 border px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
+            className="rounded-[var(--radius-sm)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
           >
             🩺 Dr. Patel
           </button>
           <button
             type="button"
             onClick={() => handleQuickFill("ADMIN")}
-            className="rounded-[var(--radius-sm)] bg-white dark:bg-black/30 border px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
+            className="rounded-[var(--radius-sm)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-2.5 py-1 text-xs font-medium hover:border-[hsl(var(--primary))] transition-colors"
           >
-            ⚡ Hospital Admin
+            ⚡ Admin
           </button>
         </div>
       </div>
 
       {/* Main Login Card */}
-      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-md)]">
+      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
         {errorMessage && (
           <div
             className={`mb-4 flex items-start gap-2 rounded-[var(--radius)] p-3 text-xs font-medium ${
@@ -147,6 +147,12 @@ export default function LoginPage() {
               >
                 Password
               </label>
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs font-medium text-[hsl(var(--primary))] hover:underline active:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
             <div className="relative">
               <input
@@ -156,7 +162,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                className="flex h-10 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 py-2 pr-10 text-sm placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--input-focus))] disabled:opacity-50"
+                className="flex h-10 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-2 pr-10 text-sm placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] disabled:opacity-50 transition-colors"
                 required
               />
               <button
@@ -181,11 +187,11 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="mt-6 text-center text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
         New patient?{" "}
         <Link
           href="/auth/register"
-          className="font-semibold text-[hsl(var(--primary))] hover:underline"
+          className="font-medium text-[hsl(var(--primary))] hover:underline active:underline"
         >
           Create an account
         </Link>

@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
 import {
   Calendar,
@@ -7,130 +10,141 @@ import {
   Shield,
   Stethoscope,
   ArrowRight,
-  CheckCircle,
+  Menu,
+  X,
+  Sparkles,
+  ChevronRight,
+  Check,
 } from "lucide-react";
 
 export default function HomePage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))]">
-      {/* ─── Navbar ───────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-lg">
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      {/* ─── Band 1: Navbar (Cream Canvas) ───────────────────── */}
+      <nav className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))]">
-              <Activity className="h-5 w-5 text-white" />
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]">
+              <Activity className="h-5 w-5" />
             </div>
-            <span className="text-xl font-bold text-[hsl(var(--foreground))]">
+            <span className="font-serif text-2xl font-normal tracking-tight text-[hsl(var(--foreground))]">
               MediFlow
             </span>
-          </div>
-          <div className="flex items-center gap-3">
+          </Link>
+
+          {/* Desktop Nav Actions */}
+          <div className="hidden md:flex items-center gap-4">
             <Link
               href="/auth/login"
-              className="rounded-[var(--radius)] px-4 py-2 text-sm font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-colors"
+              className="rounded-[var(--radius)] px-4 py-2 text-sm font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/auth/register"
-              className="rounded-[var(--radius)] bg-[hsl(var(--primary))] px-4 py-2 text-sm font-medium text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] transition-colors shadow-[var(--shadow-sm)] press-scale"
+              className="rounded-[var(--radius)] bg-[hsl(var(--primary))] px-4 py-2 text-sm font-medium text-white hover:bg-[hsl(var(--primary-hover))] active:bg-[hsl(var(--primary-hover))] transition-colors shadow-[var(--shadow-sm)] press-scale"
             >
               Get Started
             </Link>
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-[var(--radius-md)] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
+
+        {/* Mobile Navigation Drawer Sheet (Cream) */}
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-x-0 top-16 bottom-0 z-50 bg-[hsl(var(--background))] border-t border-[hsl(var(--border))] p-6 flex flex-col justify-between animate-fade-in">
+            <div className="space-y-4">
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-lg font-serif font-normal py-2 border-b border-[hsl(var(--border))]"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-lg font-serif font-normal py-2 border-b border-[hsl(var(--border))]"
+              >
+                Create Account
+              </Link>
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm text-[hsl(var(--muted-foreground))] py-1"
+              >
+                Doctor & Hospital Staff Portal
+              </Link>
+            </div>
+
+            <div className="pt-6">
+              <Link
+                href="/auth/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] py-3.5 text-base font-medium text-white shadow-[var(--shadow-sm)]"
+              >
+                Get Started Free
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
-      {/* ─── Hero Section ─────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* Gradient background accent */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[hsl(var(--primary)/0.06)] rounded-full blur-3xl" />
-        </div>
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-24 text-center">
-          <div className="animate-fade-in-up">
-            <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-full)] bg-[hsl(var(--primary-light))] px-3 py-1 text-xs font-semibold text-[hsl(var(--primary))] mb-6">
-              <Activity className="h-3.5 w-3.5" />
-              Smart Hospital Management
-            </span>
+      {/* ─── Band 2: Hero Section (Cream Canvas, 96px Spacing) ── */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 rounded-[var(--radius-full)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] px-3.5 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] mb-8 shadow-[var(--shadow-sm)]">
+            <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+            <span>Intelligent Hospital Flow & Real-Time Queue Management</span>
           </div>
 
-          <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[hsl(var(--foreground))] animate-fade-in-up">
-            Reduce Wait Times.
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-[-0.03em] leading-[1.08] text-[hsl(var(--foreground))] max-w-4xl mx-auto">
+            Reduce wait times.
             <br />
-            <span className="text-[hsl(var(--primary))]">
-              Streamline Patient Flow.
+            <span className="italic text-[hsl(var(--primary))]">
+              Streamline patient flow.
             </span>
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto animate-fade-in-up">
-            MediFlow combines intelligent appointment scheduling with real-time
-            queue management to transform your hospital operations.
+          <p className="mt-6 text-lg sm:text-xl text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto font-sans leading-relaxed">
+            MediFlow unifies patient booking, live telemetry queues, and clinical consultation workflows into one calm, predictable platform.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/register"
-              className="inline-flex items-center gap-2 rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] px-6 py-3 text-base font-semibold text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] transition-all shadow-[var(--shadow-md)] press-scale"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] px-7 py-3.5 text-sm font-medium text-white hover:bg-[hsl(var(--primary-hover))] active:bg-[hsl(var(--primary-hover))] transition-colors shadow-[var(--shadow-sm)] press-scale"
             >
               Book an Appointment
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/auth/login"
-              className="inline-flex items-center gap-2 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] px-6 py-3 text-base font-semibold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-all press-scale"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-7 py-3.5 text-sm font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary-hover))] transition-colors press-scale"
             >
-              Staff Login
+              Staff Portal
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* ─── Features Grid ────────────────────────────── */}
-      <section className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-[hsl(var(--foreground))]">
-              Everything You Need
-            </h2>
-            <p className="mt-3 text-[hsl(var(--muted-foreground))] max-w-lg mx-auto">
-              A complete platform for patients, doctors, and administrators.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
-              <div
-                key={feature.title}
-                className="group rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] transition-all hover:shadow-[var(--shadow-md)] hover:border-[hsl(var(--primary)/0.3)]"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] mb-4 group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-colors">
-                  {feature.icon}
-                </div>
-                <h3 className="text-base font-semibold text-[hsl(var(--foreground))]">
-                  {feature.title}
-                </h3>
-                <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Stats Section ────────────────────────────── */}
-      <section className="border-t border-[hsl(var(--border))]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Key Metric Indicators */}
+          <div className="mt-16 pt-10 border-t border-[hsl(var(--border))] grid grid-cols-2 md:grid-cols-4 gap-6 text-left">
             {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-3xl font-bold text-[hsl(var(--primary))] tabular-nums">
+              <div key={stat.label} className="p-2">
+                <p className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tabular-nums">
                   {stat.value}
                 </p>
-                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 font-sans">
                   {stat.label}
                 </p>
               </div>
@@ -139,28 +153,147 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── How It Works ─────────────────────────────── */}
-      <section className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-[hsl(var(--foreground))]">
-              How It Works
+      {/* ─── Band 3: Feature Grid (Surface Card #efe9de, 96px Spacing) ── */}
+      <section className="py-24 bg-[hsl(var(--card))] border-y border-[hsl(var(--card-border))]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mx-auto text-center mb-16">
+            <h2 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[hsl(var(--card-foreground))]">
+              Everything built for precision care
             </h2>
-            <p className="mt-3 text-[hsl(var(--muted-foreground))]">
-              Three simple steps to a better hospital experience.
+            <p className="mt-3 text-sm sm:text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
+              Designed to eliminate crowded waiting lobbies and deliver clear, dependable schedules.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature) => (
+              <div
+                key={feature.title}
+                className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-8 shadow-[var(--shadow-sm)] transition-colors hover:border-[hsl(var(--primary)/0.4)] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--card))] border border-[hsl(var(--card-border))] text-[hsl(var(--foreground))] mb-5">
+                    {feature.icon}
+                  </div>
+                  <h3 className="font-serif text-xl font-normal tracking-tight text-[hsl(var(--foreground))]">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-2.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))] leading-relaxed font-sans">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Band 4: Product Preview (Dark Navy #181715, 96px Spacing) ── */}
+      <section className="py-24 bg-[#181715] text-[#faf9f5]">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#a09d96]">
+              Real-Time Telemetry
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#faf9f5] mt-2">
+              Live Queue Intelligence
+            </h2>
+            <p className="mt-3 text-sm text-[#a09d96] leading-relaxed">
+              Patients track estimated arrival windows from their phone; clinics operate in synchronized tranquility.
+            </p>
+          </div>
+
+          {/* Dark Product Mockup Card */}
+          <div className="rounded-[var(--radius-xl)] border border-[#2d2b27] bg-[#252320] p-6 sm:p-10 shadow-2xl">
+            {/* Mockup Header Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#33302b] gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-[var(--radius-md)] bg-[#181715] border border-[#33302b] flex items-center justify-center text-[hsl(var(--primary))]">
+                  <Stethoscope className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-serif text-lg font-normal text-[#faf9f5]">
+                    Dr. Ananya Patel, MD
+                  </h4>
+                  <p className="text-xs text-[#a09d96]">
+                    Cardiology Suite 4B • Active Consultation Stream
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#181715] border border-[#33302b] text-xs font-mono text-[#5db872]">
+                  <span className="h-2 w-2 rounded-full bg-[#5db872] animate-pulse" />
+                  Live Sync Active
+                </span>
+              </div>
+            </div>
+
+            {/* Mockup Data Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+              <div className="rounded-[var(--radius-md)] bg-[#181715] p-4 border border-[#33302b]">
+                <p className="text-[11px] font-mono uppercase text-[#a09d96]">Current Token</p>
+                <p className="font-serif text-3xl font-normal text-[hsl(var(--primary))] mt-1">A-104</p>
+                <p className="text-xs text-[#a09d96] mt-0.5">In Consultation Cabin</p>
+              </div>
+
+              <div className="rounded-[var(--radius-md)] bg-[#181715] p-4 border border-[#33302b]">
+                <p className="text-[11px] font-mono uppercase text-[#a09d96]">Patients Ahead</p>
+                <p className="font-serif text-3xl font-normal text-[#faf9f5] mt-1">2</p>
+                <p className="text-xs text-[#a09d96] mt-0.5">Average visit: ~12 mins</p>
+              </div>
+
+              <div className="rounded-[var(--radius-md)] bg-[#181715] p-4 border border-[#33302b]">
+                <p className="text-[11px] font-mono uppercase text-[#a09d96]">Estimated Wait</p>
+                <p className="font-serif text-3xl font-normal text-[#e8a55a] mt-1">~18 mins</p>
+                <p className="text-xs text-[#a09d96] mt-0.5">Automated SMS 10m prior</p>
+              </div>
+            </div>
+
+            {/* Mockup Flow Timeline */}
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center justify-between p-3 rounded-[var(--radius-sm)] bg-[#181715] border border-[#33302b] text-xs font-mono">
+                <span className="text-[hsl(var(--primary))] font-medium">Token A-104 • Rahul Sharma</span>
+                <span className="text-[#5db872]">Inside Cabin (08m elapsed)</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-[var(--radius-sm)] bg-[#181715]/60 border border-[#33302b]/60 text-xs font-mono text-[#a09d96]">
+                <span>Token A-105 • Meera Iyer</span>
+                <span>Next in line • Checked In</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-[var(--radius-sm)] bg-[#181715]/40 border border-[#33302b]/40 text-xs font-mono text-[#a09d96]">
+                <span>Token A-106 • Siddharth Roy</span>
+                <span>Waiting • ETA 11:45 AM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Band 5: How It Works (Cream Canvas, 96px Spacing) ── */}
+      <section className="py-24 bg-[hsl(var(--background))]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[hsl(var(--foreground))]">
+              How MediFlow Works
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-[hsl(var(--muted-foreground))]">
+              Three deliberate steps to a frictionless clinical visit.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
-              <div key={step.title} className="relative text-center">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-lg font-bold mb-4">
-                  {i + 1}
+              <div
+                key={step.title}
+                className="relative rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 shadow-[var(--shadow-sm)]"
+              >
+                <div className="font-serif text-3xl font-normal text-[hsl(var(--primary))] mb-4">
+                  0{i + 1}
                 </div>
-                <h3 className="text-lg font-semibold text-[hsl(var(--foreground))]">
+                <h3 className="font-serif text-xl font-normal tracking-tight text-[hsl(var(--foreground))]">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))] max-w-xs mx-auto">
+                <p className="mt-2.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))] leading-relaxed font-sans">
                   {step.description}
                 </p>
               </div>
@@ -169,56 +302,67 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── CTA Section ──────────────────────────────── */}
-      <section className="border-t border-[hsl(var(--border))]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h2 className="text-3xl font-bold text-[hsl(var(--foreground))]">
-            Ready to Transform Your Hospital?
+      {/* ─── Band 6: Major Callout (Full-Bleed Coral #cc785c, 96px Spacing) ── */}
+      <section className="py-24 bg-[hsl(var(--primary))] text-white">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal tracking-tight text-white">
+            Ready to transform your patient flow?
           </h2>
-          <p className="mt-3 text-[hsl(var(--muted-foreground))] max-w-lg mx-auto">
-            Join hospitals that have reduced wait times by 50% and improved
-            patient satisfaction.
+          <p className="mt-4 text-base sm:text-lg text-white/90 max-w-xl mx-auto leading-relaxed font-sans">
+            Join modern medical practices reducing wait times by half and restoring dignity to healthcare scheduling.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/register"
-              className="inline-flex items-center gap-2 rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] px-8 py-3.5 text-base font-semibold text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] transition-all shadow-[var(--shadow-md)] press-scale"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[hsl(var(--secondary))] px-8 py-3.5 text-sm font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] active:bg-[hsl(var(--muted))] transition-colors shadow-md press-scale"
             >
               Get Started Free
-              <ArrowRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-[hsl(var(--muted-foreground))]">
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-white/80 font-sans">
             <span className="flex items-center gap-1.5">
-              <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
-              No setup fee
+              <Check className="h-3.5 w-3.5" /> No credit card required
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
-              Free for patients
+              <Check className="h-3.5 w-3.5" /> Free for patient bookings
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
-              Live in minutes
+              <Check className="h-3.5 w-3.5" /> Ready in minutes
             </span>
           </div>
         </div>
       </section>
 
-      {/* ─── Footer ───────────────────────────────────── */}
-      <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-[var(--radius)] bg-[hsl(var(--primary))]">
-                <Activity className="h-4 w-4 text-white" />
+      {/* ─── Band 7: Footer (Dark Navy #181715, Never Inverts) ── */}
+      <footer className="py-16 bg-[#181715] text-[#a09d96] border-t border-[#252320]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--primary))] text-white">
+                <Activity className="h-4 w-4" />
               </div>
-              <span className="text-sm font-semibold text-[hsl(var(--foreground))]">
+              <span className="font-serif text-xl font-normal text-[#faf9f5]">
                 MediFlow
               </span>
             </div>
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">
-              © {new Date().getFullYear()} MediFlow. Built for better healthcare.
+
+            <div className="flex items-center gap-6 text-xs">
+              <Link href="/auth/login" className="hover:text-[#faf9f5] transition-colors">
+                Doctor Login
+              </Link>
+              <Link href="/auth/login" className="hover:text-[#faf9f5] transition-colors">
+                Admin Station
+              </Link>
+              <Link href="/auth/register" className="hover:text-[#faf9f5] transition-colors">
+                Patient Registration
+              </Link>
+            </div>
+
+            <p className="text-xs text-[#a09d96]">
+              © {new Date().getFullYear()} MediFlow. Warm-canvas editorial healthcare system.
             </p>
           </div>
         </div>
@@ -227,68 +371,68 @@ export default function HomePage() {
   );
 }
 
-// ─── Data ────────────────────────────────────────────────
+// ─── Content Data ────────────────────────────────────────
 
 const features = [
   {
     icon: <Calendar className="h-5 w-5" />,
     title: "Smart Scheduling",
     description:
-      "Intelligent slot generation that accounts for breaks, holidays, and buffer time. Patients only see truly available slots.",
+      "Dynamic slot generation that accounts for consultation complexity, physician breaks, and buffer intervals.",
   },
   {
     icon: <Clock className="h-5 w-5" />,
-    title: "Live Queue Tracking",
+    title: "Live Queue Telemetry",
     description:
-      "Real-time queue position, wait time estimates, and doctor status updates via WebSocket — no more guessing.",
+      "Real-time token advancement, live cabin indicators, and dynamic wait times broadcasted via WebSockets.",
   },
   {
     icon: <Stethoscope className="h-5 w-5" />,
-    title: "Doctor Dashboard",
+    title: "Physician Station",
     description:
-      "Fast, low-friction consultation workflow with patient history, prescription builder, and auto-queue advancement.",
+      "Low-friction clinical workflow with instant patient history, digital Rx generation, and single-click token progression.",
   },
   {
     icon: <Users className="h-5 w-5" />,
-    title: "Multi-Role Platform",
+    title: "Multi-Role Architecture",
     description:
-      "Purpose-built interfaces for patients, doctors, and admin staff — all sharing one source of truth.",
+      "Purpose-crafted portals for patients, physicians, and clinic administrators backed by unified audit logging.",
   },
   {
     icon: <Activity className="h-5 w-5" />,
-    title: "Hospital Analytics",
+    title: "Operational Analytics",
     description:
-      "Real-time KPIs — utilization rates, wait times, no-show tracking, department performance, and trend analysis.",
+      "Real-time visibility into department utilization, no-show rates, throughput velocity, and doctor availability.",
   },
   {
     icon: <Shield className="h-5 w-5" />,
-    title: "Secure & Audited",
+    title: "Clinical Data Integrity",
     description:
-      "Role-based access control, encrypted sessions, full audit trail on every admin action and override.",
+      "Encrypted sessions, role-based authorization, and strict compliance boundaries for health telemetry.",
   },
 ];
 
 const stats = [
   { value: "±10 min", label: "Wait Time Accuracy" },
-  { value: "50%", label: "Reduced Queue Time" },
-  { value: "<2s", label: "Real-time Updates" },
-  { value: "99.5%", label: "System Uptime" },
+  { value: "50%", label: "Lobby Congestion Reduction" },
+  { value: "<2s", label: "Live Queue Sync Velocity" },
+  { value: "99.9%", label: "Platform Availability" },
 ];
 
 const steps = [
   {
     title: "Find Your Doctor",
     description:
-      "Search by specialty, location, availability, or fee. View profiles and choose the right fit.",
+      "Filter by specialty, branch, fee, and real-time open slots. Review physician credentials with clarity.",
   },
   {
-    title: "Book Instantly",
+    title: "Confirm & Receive Token",
     description:
-      "Pick an available slot, confirm your appointment, and receive a token number — all in seconds.",
+      "Lock your appointment slot instantly and receive a secure token number with estimated consultation window.",
   },
   {
-    title: "Track Live Queue",
+    title: "Arrive On Schedule",
     description:
-      "Know your exact position in queue, estimated wait time, and get notified when it's your turn.",
+      "Track live cabin progress from your mobile device. Walk in right when your token is called.",
   },
 ];

@@ -214,22 +214,22 @@ export default function AdminCheckInDeskPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
+            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
               <UserCheck className="h-7 w-7 text-[hsl(var(--primary))]" />
               Front-Desk Check-In &amp; No-Show Desk
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
+            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1 font-sans">
               Manage patient arrival check-ins, grace periods, and automated no-show lifecycle
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 font-sans">
             <Button
               variant="outline"
               size="sm"
               onClick={handleRunSweep}
               disabled={isSweeping}
-              className="text-xs flex items-center gap-1.5 border-[hsl(var(--warning))] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning-light))]"
+              className="text-xs flex items-center gap-1.5 border-[hsl(var(--warning)/0.4)] text-[hsl(var(--warning))] bg-[hsl(var(--warning-light))] font-medium"
             >
               <AlertTriangle className="h-3.5 w-3.5" />
               {isSweeping ? "Sweeping Overdue..." : "Run No-Show Sweep"}
@@ -239,7 +239,7 @@ export default function AdminCheckInDeskPage() {
               variant="outline"
               size="sm"
               onClick={() => setReloadKey((k) => k + 1)}
-              className="text-xs flex items-center gap-1.5"
+              className="text-xs flex items-center gap-1.5 font-medium"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Sync
             </Button>
@@ -247,55 +247,55 @@ export default function AdminCheckInDeskPage() {
         </div>
 
         {/* Live KPI Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 font-sans">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
-              <span className="font-semibold">Total Today</span>
-              <Users className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <span className="font-medium">Total Today</span>
+              <Users className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--foreground))] mt-1 font-mono">{totalCount}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--foreground))] mt-1 font-mono">{totalCount}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Booked slots</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--success))]">
-              <span className="font-semibold">Checked In</span>
+              <span className="font-medium">Checked In</span>
               <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--success))] mt-1 font-mono">{checkedInCount}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--success))] mt-1 font-mono">{checkedInCount}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">In waiting room</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
-            <div className="flex items-center justify-between text-xs text-[hsl(var(--primary))]">
-              <span className="font-semibold">Pending Arrival</span>
-              <Clock className="h-4 w-4 text-[hsl(var(--primary))]" />
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
+            <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
+              <span className="font-medium">Pending Arrival</span>
+              <Clock className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--foreground))] mt-1 font-mono">{pendingCheckInCount}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--foreground))] mt-1 font-mono">{pendingCheckInCount}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Awaiting check-in</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--warning))]">
-              <span className="font-semibold">Grace Period</span>
+              <span className="font-medium">Grace Period</span>
               <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--warning))] mt-1 font-mono">{gracePeriodCount}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--warning))] mt-1 font-mono">{gracePeriodCount}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">&le; 15 min late</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--danger))]">
-              <span className="font-semibold">No-Shows</span>
+              <span className="font-medium">No-Shows</span>
               <RotateCcw className="h-4 w-4 text-[hsl(var(--danger))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--danger))] mt-1 font-mono">{noShowCount}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--danger))] mt-1 font-mono">{noShowCount}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Overdue / Reinstatable</p>
           </div>
         </div>
 
         {/* Filter Controls */}
-        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)] flex flex-wrap items-center gap-3">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)] flex flex-wrap items-center gap-3 font-sans">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             <input
@@ -303,7 +303,7 @@ export default function AdminCheckInDeskPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search token (A-01), patient name, or phone..."
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] pl-9 pr-3 py-2 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
@@ -312,7 +312,7 @@ export default function AdminCheckInDeskPage() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none font-mono"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] font-mono transition-colors"
             />
           </div>
 
@@ -321,7 +321,7 @@ export default function AdminCheckInDeskPage() {
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
               >
                 <option value="">All Hospital Branches</option>
                 {branches.map((b) => (
@@ -334,7 +334,7 @@ export default function AdminCheckInDeskPage() {
           )}
 
           {/* Status Tabs */}
-          <div className="flex items-center gap-1 bg-[hsl(var(--muted)/0.3)] p-1 rounded-[var(--radius-lg)] text-xs">
+          <div className="flex items-center gap-1 bg-[hsl(var(--background))] border border-[hsl(var(--border))] p-1 rounded-[var(--radius-md)] text-xs">
             {[
               { id: "ALL", label: "All" },
               { id: "PENDING", label: `Pending (${pendingCheckInCount})` },
@@ -345,7 +345,7 @@ export default function AdminCheckInDeskPage() {
               <button
                 key={tab.id}
                 onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-[var(--radius-md)] font-bold transition-all ${
+                className={`px-3 py-1 rounded-[var(--radius-md)] font-medium transition-all ${
                   statusFilter === tab.id
                     ? "bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]"
                     : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
@@ -358,11 +358,11 @@ export default function AdminCheckInDeskPage() {
         </div>
 
         {/* Check-in Ledger Table */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] shadow-[var(--shadow-sm)] overflow-hidden">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] shadow-[var(--shadow-sm)] overflow-hidden font-sans">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.2)] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wider text-[11px]">
                   <th className="p-4">Token &amp; Slot</th>
                   <th className="p-4">Patient Information</th>
                   <th className="p-4">Physician</th>
@@ -376,7 +376,7 @@ export default function AdminCheckInDeskPage() {
                   Array.from({ length: 4 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
                       <td colSpan={6} className="p-4">
-                        <div className="h-10 bg-[hsl(var(--muted)/0.2)] rounded" />
+                        <div className="h-10 bg-[hsl(var(--muted))] rounded" />
                       </td>
                     </tr>
                   ))
@@ -395,18 +395,18 @@ export default function AdminCheckInDeskPage() {
                       item.status === "COMPLETED";
 
                     return (
-                      <tr key={item.id} className="hover:bg-[hsl(var(--muted)/0.15)] transition-colors">
+                      <tr key={item.id} className="hover:bg-[hsl(var(--background))] transition-colors">
                         {/* Token & Slot */}
                         <td className="p-4 font-mono">
-                          <span className="font-bold text-base text-[hsl(var(--primary))] block">{item.tokenNumber}</span>
-                          <span className="text-[11px] text-[hsl(var(--muted-foreground))] flex items-center gap-1 mt-0.5">
+                          <span className="font-serif font-normal text-base text-[hsl(var(--primary))] block">{item.tokenNumber}</span>
+                          <span className="text-[11px] text-[hsl(var(--muted-foreground))] flex items-center gap-1 mt-0.5 font-sans">
                             <Clock className="h-3 w-3" /> {item.startTime}
                           </span>
                         </td>
 
                         {/* Patient */}
                         <td className="p-4">
-                          <div className="font-bold text-sm text-[hsl(var(--foreground))]">{item.patientName}</div>
+                          <div className="font-medium text-sm text-[hsl(var(--foreground))]">{item.patientName}</div>
                           <div className="text-[11px] text-[hsl(var(--muted-foreground))] font-mono mt-0.5">
                             {item.patientPhone || "—"}
                           </div>
@@ -414,7 +414,7 @@ export default function AdminCheckInDeskPage() {
 
                         {/* Doctor */}
                         <td className="p-4">
-                          <div className="font-semibold text-[hsl(var(--foreground))]">{item.doctorName}</div>
+                          <div className="font-medium text-[hsl(var(--foreground))]">{item.doctorName}</div>
                           <div className="text-[11px] text-[hsl(var(--primary))]">{item.specialty}</div>
                           <div className="text-[10px] text-[hsl(var(--muted-foreground))]">{item.branchName}</div>
                         </td>
@@ -422,27 +422,27 @@ export default function AdminCheckInDeskPage() {
                         {/* Status / Window Eligibility */}
                         <td className="p-4">
                           {isCheckedIn ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-bold bg-[hsl(var(--success-light))] text-[hsl(var(--success))]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-medium bg-[hsl(var(--success-light))] border border-[hsl(var(--success)/0.3)] text-[hsl(var(--success))]">
                               <CheckCircle2 className="h-3 w-3" /> Checked In
                             </span>
                           ) : item.status === "NO_SHOW" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-bold bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-medium bg-[hsl(var(--danger-light))] border border-[hsl(var(--danger)/0.3)] text-[hsl(var(--danger))]">
                               <AlertTriangle className="h-3 w-3" /> No-Show
                             </span>
                           ) : item.eligibility.status === "GRACE_PERIOD" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-bold bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-medium bg-[hsl(var(--warning-light))] border border-[hsl(var(--warning)/0.3)] text-[hsl(var(--warning))]">
                               <Clock className="h-3 w-3" /> Grace Period Active ({item.eligibility.minutesLate}m late)
                             </span>
                           ) : item.eligibility.status === "TOO_EARLY" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-bold bg-[hsl(var(--muted)/0.4)] text-[hsl(var(--muted-foreground))]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-medium bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))]">
                               <Clock className="h-3 w-3" /> Opens in {item.eligibility.minutesUntilOpen}m
                             </span>
                           ) : item.eligibility.status === "EXPIRED" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-bold bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-medium bg-[hsl(var(--danger-light))] border border-[hsl(var(--danger)/0.3)] text-[hsl(var(--danger))]">
                               <AlertTriangle className="h-3 w-3" /> Grace Expired ({item.eligibility.minutesLate}m)
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-bold bg-[hsl(var(--info-light))] text-[hsl(var(--info))]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-full)] text-[11px] font-medium bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))]">
                               <UserCheck className="h-3 w-3" /> Ready for Check-In
                             </span>
                           )}
@@ -451,7 +451,7 @@ export default function AdminCheckInDeskPage() {
                         {/* Arrival Timestamp */}
                         <td className="p-4 font-mono text-xs text-[hsl(var(--muted-foreground))]">
                           {item.checkedInAt ? (
-                            <span className="font-semibold text-[hsl(var(--foreground))]">
+                            <span className="font-medium text-[hsl(var(--foreground))]">
                               {new Date(item.checkedInAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                             </span>
                           ) : (
@@ -462,7 +462,7 @@ export default function AdminCheckInDeskPage() {
                         {/* Actions */}
                         <td className="p-4 text-right">
                           {isCheckedIn ? (
-                            <span className="text-[11px] font-bold text-[hsl(var(--success))] inline-flex items-center gap-1">
+                            <span className="text-[11px] font-medium text-[hsl(var(--success))] inline-flex items-center gap-1">
                               <ShieldCheck className="h-3.5 w-3.5" /> In Queue
                             </span>
                           ) : item.status === "NO_SHOW" ? (
@@ -473,7 +473,7 @@ export default function AdminCheckInDeskPage() {
                                 setReinstateItem(item);
                                 setReinstateReason("Patient arrived late with valid emergency explanation");
                               }}
-                              className="text-xs border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-light))]"
+                              className="text-xs font-medium"
                             >
                               <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reinstate
                             </Button>
@@ -482,7 +482,7 @@ export default function AdminCheckInDeskPage() {
                               size="sm"
                               onClick={() => handleCheckIn(item)}
                               disabled={checkingInIds[item.id]}
-                              className="text-xs font-bold"
+                              className="text-xs font-medium"
                             >
                               <UserCheck className="h-3.5 w-3.5 mr-1" />
                               {checkingInIds[item.id] ? "Checking In..." : "Check In"}
@@ -506,18 +506,18 @@ export default function AdminCheckInDeskPage() {
         title="Reinstate No-Show Patient"
         description={`Restore Token ${reinstateItem?.tokenNumber} (${reinstateItem?.patientName}) into the active clinical waiting queue.`}
       >
-        <div className="space-y-4 pt-2 text-xs">
-          <div className="p-3 bg-[hsl(var(--muted)/0.3)] rounded-[var(--radius-md)] space-y-1">
+        <div className="space-y-4 pt-2 text-xs font-sans">
+          <div className="p-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-[var(--radius-md)] space-y-1">
             <p>
-              <span className="font-bold">Scheduled Slot:</span> {reinstateItem?.startTime} ({reinstateItem?.date})
+              <span className="font-medium text-[hsl(var(--foreground))]">Scheduled Slot:</span> {reinstateItem?.startTime} ({reinstateItem?.date})
             </p>
             <p>
-              <span className="font-bold">Physician:</span> {reinstateItem?.doctorName} ({reinstateItem?.specialty})
+              <span className="font-medium text-[hsl(var(--foreground))]">Physician:</span> {reinstateItem?.doctorName} ({reinstateItem?.specialty})
             </p>
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">
+            <label className="font-medium block mb-1 text-[hsl(var(--foreground))]">
               Clinical / Administrative Reason for Reinstatement <span className="text-[hsl(var(--danger))]">*</span>
             </label>
             <textarea
@@ -525,7 +525,7 @@ export default function AdminCheckInDeskPage() {
               value={reinstateReason}
               onChange={(e) => setReinstateReason(e.target.value)}
               placeholder="e.g., Traffic delay verified, patient arrived at reception counter"
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
@@ -537,6 +537,7 @@ export default function AdminCheckInDeskPage() {
               size="sm"
               onClick={handleConfirmReinstate}
               disabled={isSubmittingReinstate || !reinstateReason.trim()}
+              className="font-medium"
             >
               {isSubmittingReinstate ? "Reinstating..." : "Confirm Reinstatement"}
             </Button>

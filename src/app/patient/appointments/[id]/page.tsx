@@ -26,7 +26,7 @@ import type { AppointmentDTO } from "@/lib/services/AppointmentService";
 function AppointmentDetailSkeleton() {
   return (
     <div className="space-y-5 animate-pulse">
-      <div className="h-36 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
+      <div className="h-36 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
@@ -163,7 +163,7 @@ export default function AppointmentDetailPage() {
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] pb-12">
       {/* ─── Header ───────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-[var(--shadow-sm)]">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/patient/appointments">
@@ -175,11 +175,11 @@ export default function AppointmentDetailPage() {
               <Calendar className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+              <h1 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
                 Appointment Details
               </h1>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                View and manage your booking
+              <p className="text-xs text-[hsl(var(--muted-foreground))] font-sans">
+                View and manage your clinical consultation
               </p>
             </div>
           </div>
@@ -191,65 +191,65 @@ export default function AppointmentDetailPage() {
         {isLoading ? (
           <AppointmentDetailSkeleton />
         ) : errorCode === "NOT_FOUND" ? (
-          <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-12 text-center max-w-md mx-auto mt-8">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-12 text-center max-w-md mx-auto mt-8">
             <AlertCircle className="h-10 w-10 text-[hsl(var(--danger))] mx-auto mb-4" />
-            <h2 className="text-lg font-bold text-[hsl(var(--foreground))] mb-1">
+            <h2 className="font-serif text-lg font-normal text-[hsl(var(--foreground))] mb-1">
               Appointment Not Found
             </h2>
-            <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6">
+            <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6 font-sans">
               This appointment doesn&apos;t exist or may have been removed.
             </p>
             <Link href="/patient/appointments">
-              <Button size="sm" className="text-xs">
+              <Button size="sm" className="text-xs font-medium">
                 Back to My Appointments
               </Button>
             </Link>
           </div>
         ) : errorCode === "FORBIDDEN" ? (
-          <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--danger-light))] bg-[hsl(var(--card))] p-12 text-center max-w-md mx-auto mt-8">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--danger-light))] bg-[hsl(var(--card))] p-12 text-center max-w-md mx-auto mt-8">
             <ShieldX className="h-10 w-10 text-[hsl(var(--danger))] mx-auto mb-4" />
-            <h2 className="text-lg font-bold text-[hsl(var(--foreground))] mb-1">
+            <h2 className="font-serif text-lg font-normal text-[hsl(var(--foreground))] mb-1">
               Access Denied
             </h2>
-            <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6">
+            <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6 font-sans">
               This appointment doesn&apos;t belong to your account.
             </p>
             <Link href="/patient/appointments">
-              <Button size="sm" className="text-xs">
+              <Button size="sm" className="text-xs font-medium">
                 Back to My Appointments
               </Button>
             </Link>
           </div>
         ) : errorCode === "SERVER_ERROR" ? (
-          <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-12 text-center max-w-md mx-auto mt-8">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-12 text-center max-w-md mx-auto mt-8">
             <AlertCircle className="h-10 w-10 text-[hsl(var(--muted-foreground))] mx-auto mb-4" />
-            <h2 className="text-lg font-bold text-[hsl(var(--foreground))] mb-1">
+            <h2 className="font-serif text-lg font-normal text-[hsl(var(--foreground))] mb-1">
               Something went wrong
             </h2>
-            <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6">
+            <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6 font-sans">
               Could not load appointment details. Please try again.
             </p>
-            <Button size="sm" className="text-xs" onClick={() => window.location.reload()}>
+            <Button size="sm" className="text-xs font-medium" onClick={() => window.location.reload()}>
               Retry
             </Button>
           </div>
         ) : appointment ? (
           <div className="space-y-5">
             {/* ── Doctor / Header Card ── */}
-            <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-md)]">
+            <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[var(--radius-xl)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] font-bold text-lg">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-serif font-normal text-lg">
                     {appointment.doctorName.replace("Dr. ", "").slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <h2 className="text-xl font-extrabold text-[hsl(var(--foreground))]">
+                    <h2 className="font-serif text-xl font-normal text-[hsl(var(--foreground))]">
                       {appointment.doctorName}
                     </h2>
-                    <p className="text-sm font-medium text-[hsl(var(--primary))]">
+                    <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
                       {appointment.doctorSpecialty}
                     </p>
-                    <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
                       {appointment.branchName}
                       {appointment.branchAddress && ` · ${appointment.branchAddress}`}
                     </p>
@@ -263,67 +263,67 @@ export default function AppointmentDetailPage() {
             </div>
 
             {/* ── Details Grid ── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 font-sans">
               {/* Date */}
-              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  <Calendar className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2 shadow-[var(--shadow-sm)]">
+                <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  <Calendar className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
                   Date
                 </div>
-                <span className="text-sm font-bold text-[hsl(var(--foreground))]">{appointment.date}</span>
+                <span className="text-sm font-medium text-[hsl(var(--foreground))]">{appointment.date}</span>
               </div>
 
               {/* Time */}
-              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  <Clock className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2 shadow-[var(--shadow-sm)]">
+                <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  <Clock className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
                   Time
                 </div>
-                <span className="text-sm font-bold text-[hsl(var(--foreground))]">{appointment.startTime}</span>
+                <span className="text-sm font-mono text-[hsl(var(--foreground))]">{appointment.startTime}</span>
               </div>
 
               {/* Token */}
-              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--primary-light))] p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--primary))]">
-                  <Ticket className="h-3.5 w-3.5" />
+              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4 flex flex-col gap-2 shadow-[var(--shadow-sm)]">
+                <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  <Ticket className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
                   Token
                 </div>
-                <span className="text-sm font-bold text-[hsl(var(--primary))] font-mono">{appointment.tokenNumber}</span>
+                <span className="text-sm font-mono font-medium text-[hsl(var(--primary))]">{appointment.tokenNumber}</span>
               </div>
 
               {/* Branch */}
-              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  <MapPin className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2 shadow-[var(--shadow-sm)]">
+                <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  <MapPin className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
                   Branch
                 </div>
-                <span className="text-sm font-semibold text-[hsl(var(--foreground))] leading-snug">{appointment.branchName}</span>
+                <span className="text-sm font-medium text-[hsl(var(--foreground))] leading-snug">{appointment.branchName}</span>
               </div>
 
               {/* Fee */}
-              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  <CreditCard className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2 shadow-[var(--shadow-sm)]">
+                <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  <CreditCard className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
                   Consultation Fee
                 </div>
-                <span className="text-sm font-bold text-[hsl(var(--foreground))]">₹{appointment.fee}</span>
+                <span className="text-sm font-mono text-[hsl(var(--foreground))]">₹{appointment.fee}</span>
               </div>
 
               {/* Queue Position */}
               {appointment.queuePosition != null && (
-                <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                    <Ticket className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+                <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 flex flex-col gap-2 shadow-[var(--shadow-sm)]">
+                  <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                    <Ticket className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
                     Queue Position
                   </div>
-                  <span className="text-sm font-bold text-[hsl(var(--foreground))] font-mono">#{appointment.queuePosition}</span>
+                  <span className="text-sm font-mono font-medium text-[hsl(var(--foreground))]">#{appointment.queuePosition}</span>
                 </div>
               )}
             </div>
 
             {/* Cancellation reason banner */}
             {appointment.cancelReason && (
-              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--danger)/0.3)] bg-[hsl(var(--danger-light))] p-4 text-xs text-[hsl(var(--danger))]">
+              <div className="rounded-[var(--radius-md)] border border-[hsl(var(--danger)/0.3)] bg-[hsl(var(--danger-light))] p-4 text-xs text-[hsl(var(--danger))]">
                 <span className="font-semibold">Cancellation reason: </span>
                 {appointment.cancelReason}
               </div>
@@ -331,7 +331,7 @@ export default function AppointmentDetailPage() {
 
             {/* Checked-in banner */}
             {appointment.checkedInAt && (
-              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success-light))] p-4 text-xs text-[hsl(var(--success))]">
+              <div className="rounded-[var(--radius-md)] border border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success-light))] p-4 text-xs text-[hsl(var(--success))]">
                 Checked in at{" "}
                 {new Date(appointment.checkedInAt).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -349,11 +349,7 @@ export default function AppointmentDetailPage() {
                   href={`/patient/queue/${appointment.doctorId}?token=${appointment.tokenNumber}`}
                   className="flex-1"
                 >
-                  <Button size="sm" className="w-full text-xs flex items-center justify-center gap-1.5 font-bold">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-                    </span>
+                  <Button size="sm" className="w-full text-xs flex items-center justify-center gap-1.5 font-medium">
                     <Radio className="h-3.5 w-3.5" />
                     View Live Queue
                   </Button>
@@ -365,7 +361,7 @@ export default function AppointmentDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 text-xs"
+                  className="flex-1 text-xs font-medium"
                   onClick={() => {
                     setNewDate(appointment.date);
                     setNewTime(appointment.startTime);
@@ -396,11 +392,11 @@ export default function AppointmentDetailPage() {
               )}
             </div>
 
-            {/* Prescription link if prescriptionId exists (forward-compatible) */}
+            {/* Prescription link if prescriptionId exists */}
             {(appointment as AppointmentDTO & { prescriptionId?: string }).prescriptionId && (
               <Link
                 href={`/patient/prescriptions/${(appointment as AppointmentDTO & { prescriptionId?: string }).prescriptionId}`}
-                className="flex items-center gap-2 text-xs font-semibold text-[hsl(var(--primary))] hover:underline"
+                className="flex items-center gap-2 text-xs font-medium text-[hsl(var(--primary))] hover:underline"
               >
                 <FileText className="h-4 w-4" />
                 View Prescription
@@ -419,7 +415,7 @@ export default function AppointmentDetailPage() {
       >
         <div className="space-y-4 pt-2">
           <div>
-            <label className="text-xs font-semibold text-[hsl(var(--foreground))] block mb-1">
+            <label className="text-xs font-medium text-[hsl(var(--foreground))] block mb-1">
               Reason for Cancellation
             </label>
             <textarea
@@ -427,7 +423,7 @@ export default function AppointmentDetailPage() {
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder="e.g., Personal emergency, feeling better, scheduling conflict..."
               rows={3}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -439,7 +435,7 @@ export default function AppointmentDetailPage() {
               size="sm"
               onClick={handleConfirmCancel}
               disabled={isCancelling || cancelReason.trim().length < 3}
-              className="text-xs"
+              className="text-xs font-medium"
             >
               {isCancelling ? "Cancelling..." : "Confirm Cancellation"}
             </Button>
@@ -456,7 +452,7 @@ export default function AppointmentDetailPage() {
       >
         <div className="space-y-4 pt-2">
           <div>
-            <label className="text-xs font-semibold text-[hsl(var(--foreground))] block mb-1">
+            <label className="text-xs font-medium text-[hsl(var(--foreground))] block mb-1">
               New Appointment Date
             </label>
             <input
@@ -464,18 +460,18 @@ export default function AppointmentDetailPage() {
               value={newDate}
               min={new Date().toISOString().slice(0, 10)}
               onChange={(e) => setNewDate(e.target.value)}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[hsl(var(--foreground))] block mb-1">
+            <label className="text-xs font-medium text-[hsl(var(--foreground))] block mb-1">
               New Start Time (HH:mm)
             </label>
             <input
               type="time"
               value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -486,7 +482,7 @@ export default function AppointmentDetailPage() {
               size="sm"
               onClick={handleConfirmReschedule}
               disabled={isRescheduling || !newDate || !newTime}
-              className="text-xs"
+              className="text-xs font-medium"
             >
               {isRescheduling ? "Updating..." : "Confirm New Slot"}
             </Button>

@@ -187,22 +187,22 @@ export default function AdminQueueMonitorPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
+            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
               <Clock className="h-7 w-7 text-[hsl(var(--primary))]" />
               Live Hospital Queue Monitor
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-              Real-time cabin monitoring, patient flow oversight, and priority reordering across all physicians
+            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1 font-sans">
+              Real-time cabin monitoring, patient flow oversight, and priority management across all clinical stations
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 font-sans">
             {branches.length > 0 && (
               <div className="w-52">
                 <select
                   value={selectedBranchId}
                   onChange={(e) => setSelectedBranchId(e.target.value)}
-                  className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--card))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                  className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--card))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                 >
                   <option value="">All Hospital Branches</option>
                   {branches.map((b) => (
@@ -218,7 +218,7 @@ export default function AdminQueueMonitorPage() {
               variant="outline"
               size="sm"
               onClick={() => setReloadKey((k) => k + 1)}
-              className="text-xs flex items-center gap-1.5"
+              className="text-xs flex items-center gap-1.5 font-medium"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Sync
             </Button>
@@ -226,49 +226,49 @@ export default function AdminQueueMonitorPage() {
         </div>
 
         {/* Live Hospital KPI Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 font-sans">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
-              <span className="font-semibold">Physicians Active</span>
-              <Stethoscope className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <span className="font-medium">Physicians Active</span>
+              <Stethoscope className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--foreground))] mt-1 font-mono">{totalDoctorsCount}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--foreground))] mt-1 font-mono">{totalDoctorsCount}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Assigned clinics</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--success))]">
-              <span className="font-semibold">In Consultation</span>
+              <span className="font-medium">In Consultation</span>
               <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--success))] mt-1 font-mono">{activeConsultations}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--success))] mt-1 font-mono">{activeConsultations}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Active cabins</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
-            <div className="flex items-center justify-between text-xs text-[hsl(var(--primary))]">
-              <span className="font-semibold">Total Waiting</span>
-              <Users className="h-4 w-4 text-[hsl(var(--primary))]" />
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
+            <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
+              <span className="font-medium">Total Waiting</span>
+              <Users className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--foreground))] mt-1 font-mono">{totalWaitingPatients}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--foreground))] mt-1 font-mono">{totalWaitingPatients}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Across all departments</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--warning))]">
-              <span className="font-semibold">Break / Delayed</span>
+              <span className="font-medium">Break / Delayed</span>
               <Coffee className="h-4 w-4 text-[hsl(var(--warning))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--warning))] mt-1 font-mono">{onBreakOrDelayed}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--warning))] mt-1 font-mono">{onBreakOrDelayed}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Temporary adjustments</p>
           </div>
 
-          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
-              <span className="font-semibold">Done Today</span>
+              <span className="font-medium">Done Today</span>
               <CheckCircle2 className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             </div>
-            <p className="text-2xl font-extrabold text-[hsl(var(--foreground))] mt-1 font-mono">{totalCompleted}</p>
+            <p className="font-serif text-2xl font-normal text-[hsl(var(--foreground))] mt-1 font-mono">{totalCompleted}</p>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Completed visits</p>
           </div>
         </div>
@@ -277,10 +277,10 @@ export default function AdminQueueMonitorPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-64 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--card-border))] animate-pulse p-6" />
+              <div key={i} className="h-64 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--card-border))] animate-pulse p-6" />
             ))
           ) : doctors.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-xs text-[hsl(var(--muted-foreground))]">
+            <div className="col-span-full py-16 text-center text-xs text-[hsl(var(--muted-foreground))] font-sans">
               No active doctor queues found for the selected branch.
             </div>
           ) : (
@@ -292,32 +292,32 @@ export default function AdminQueueMonitorPage() {
               return (
                 <div
                   key={doc.doctorId}
-                  className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow)] transition-all flex flex-col justify-between"
+                  className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] transition-colors hover:border-[hsl(var(--primary)/0.4)] flex flex-col justify-between"
                 >
                   {/* Doctor Info & Status */}
                   <div>
                     <div className="flex items-start justify-between gap-3 pb-3 border-b border-[hsl(var(--border))]">
                       <div>
-                        <h3 className="font-bold text-base text-[hsl(var(--foreground))]">{doc.doctorName}</h3>
-                        <p className="text-xs font-medium text-[hsl(var(--primary))]">{doc.specialty}</p>
-                        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{doc.branchName}</p>
+                        <h3 className="font-serif text-base font-normal text-[hsl(var(--foreground))]">{doc.doctorName}</h3>
+                        <p className="text-xs font-medium text-[hsl(var(--primary))] font-sans">{doc.specialty}</p>
+                        <p className="text-[11px] text-[hsl(var(--muted-foreground))] font-sans">{doc.branchName}</p>
                       </div>
 
                       <div>
                         {isOnBreak ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase bg-[hsl(var(--warning-light))] text-[hsl(var(--warning))] px-2.5 py-1 rounded-[var(--radius-full)]">
-                            <Coffee className="h-3 w-3" /> On Break ({doc.doctorStatus.delayMinutes}m)
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-[hsl(var(--warning-light))] border border-[hsl(var(--warning)/0.3)] text-[hsl(var(--warning))] px-2.5 py-1 rounded-[var(--radius-full)]">
+                            <Coffee className="h-3 w-3" /> Break ({doc.doctorStatus.delayMinutes}m)
                           </span>
                         ) : isDelayed ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase bg-[hsl(var(--info-light))] text-[hsl(var(--info))] px-2.5 py-1 rounded-[var(--radius-full)]">
-                            <AlertTriangle className="h-3 w-3" /> Delayed ({doc.doctorStatus.delayMinutes}m)
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] px-2.5 py-1 rounded-[var(--radius-full)]">
+                            <AlertTriangle className="h-3 w-3 text-[hsl(var(--warning))]" /> Delayed ({doc.doctorStatus.delayMinutes}m)
                           </span>
                         ) : doc.currentTokenNumber ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase bg-[hsl(var(--success-light))] text-[hsl(var(--success))] px-2.5 py-1 rounded-[var(--radius-full)] animate-pulse">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-[hsl(var(--success-light))] border border-[hsl(var(--success)/0.3)] text-[hsl(var(--success))] px-2.5 py-1 rounded-[var(--radius-full)]">
                             <CheckCircle2 className="h-3 w-3" /> Consulting
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase bg-[hsl(var(--muted)/0.3)] text-[hsl(var(--muted-foreground))] px-2.5 py-1 rounded-[var(--radius-full)]">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] px-2.5 py-1 rounded-[var(--radius-full)]">
                             Idle
                           </span>
                         )}
@@ -325,56 +325,56 @@ export default function AdminQueueMonitorPage() {
                     </div>
 
                     {/* Active Cabin Focus */}
-                    <div className="my-4 p-4 rounded-[var(--radius-xl)] bg-[hsl(var(--primary-light))] border border-[hsl(var(--primary)/0.2)] flex items-center justify-between">
+                    <div className="my-4 p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] uppercase font-semibold text-[hsl(var(--primary))] tracking-wider block">
+                        <span className="text-[10px] uppercase font-medium text-[hsl(var(--muted-foreground))] tracking-wider block font-sans">
                           Current Cabin Token
                         </span>
-                        <span className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--primary))] font-mono block mt-0.5">
+                        <span className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--primary))] font-mono block mt-0.5">
                           {doc.currentTokenNumber || "None"}
                         </span>
-                        <span className="text-xs text-[hsl(var(--foreground))] font-medium truncate block max-w-[160px]">
+                        <span className="text-xs text-[hsl(var(--foreground))] font-medium truncate block max-w-[160px] font-sans">
                           {doc.currentPatientName || "Waiting for call"}
                         </span>
                       </div>
 
                       <div className="text-right font-mono">
-                        <span className="text-[10px] uppercase font-semibold text-[hsl(var(--muted-foreground))] block">
+                        <span className="text-[10px] uppercase font-medium text-[hsl(var(--muted-foreground))] block font-sans">
                           Estimated Wait
                         </span>
-                        <span className="text-xl font-bold text-[hsl(var(--foreground))] block mt-0.5">
+                        <span className="font-serif text-xl font-normal text-[hsl(var(--foreground))] block mt-0.5">
                           ~{doc.estimatedWaitMinutes}m
                         </span>
-                        <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">
+                        <span className="text-[10px] text-[hsl(var(--muted-foreground))] block font-sans">
                           {doc.avgDurationMinutes}m / patient
                         </span>
                       </div>
                     </div>
 
                     {/* Mini Stats Bar */}
-                    <div className="grid grid-cols-3 gap-2 text-center text-xs pb-4">
-                      <div className="p-2 rounded-[var(--radius-md)] bg-[hsl(var(--muted)/0.2)]">
+                    <div className="grid grid-cols-3 gap-2 text-center text-xs pb-4 font-sans">
+                      <div className="p-2 rounded-[var(--radius-md)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
                         <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Waiting</span>
-                        <span className="font-bold text-sm text-[hsl(var(--foreground))] font-mono">{doc.waitingCount}</span>
+                        <span className="font-mono text-sm text-[hsl(var(--foreground))]">{doc.waitingCount}</span>
                       </div>
-                      <div className="p-2 rounded-[var(--radius-md)] bg-[hsl(var(--muted)/0.2)]">
+                      <div className="p-2 rounded-[var(--radius-md)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
                         <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Done</span>
-                        <span className="font-bold text-sm text-[hsl(var(--success))] font-mono">{doc.completedCount}</span>
+                        <span className="font-mono text-sm text-[hsl(var(--success))]">{doc.completedCount}</span>
                       </div>
-                      <div className="p-2 rounded-[var(--radius-md)] bg-[hsl(var(--muted)/0.2)]">
+                      <div className="p-2 rounded-[var(--radius-md)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
                         <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Total</span>
-                        <span className="font-bold text-sm text-[hsl(var(--foreground))] font-mono">{doc.totalToday}</span>
+                        <span className="font-mono text-sm text-[hsl(var(--foreground))]">{doc.totalToday}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions Bar */}
-                  <div className="pt-4 border-t border-[hsl(var(--border))] flex items-center justify-between gap-2">
+                  <div className="pt-4 border-t border-[hsl(var(--border))] flex items-center justify-between gap-2 font-sans">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleOpenReorderModal(doc)}
-                      className="text-xs flex items-center gap-1"
+                      className="text-xs flex items-center gap-1 font-medium"
                     >
                       <ArrowUpDown className="h-3.5 w-3.5" /> Reorder
                     </Button>
@@ -390,7 +390,7 @@ export default function AdminQueueMonitorPage() {
                         size="sm"
                         onClick={() => handleCallNext(doc)}
                         disabled={callingDoctorIds[doc.doctorId] || doc.waitingCount === 0}
-                        className="text-xs flex items-center gap-1 font-bold"
+                        className="text-xs flex items-center gap-1 font-medium"
                       >
                         <PhoneCall className="h-3.5 w-3.5" />
                         {callingDoctorIds[doc.doctorId] ? "Calling..." : "Call Next"}
@@ -411,13 +411,13 @@ export default function AdminQueueMonitorPage() {
         title="Administrative Queue Priority & Reordering"
         description={`Adjust waiting queue sequence for ${selectedDoctorForReorder?.doctorName} (${selectedDoctorForReorder?.specialty}).`}
       >
-        <div className="space-y-4 pt-2 text-xs">
+        <div className="space-y-4 pt-2 text-xs font-sans">
           <div>
-            <label className="font-semibold block mb-1">Select Patient to Reorder</label>
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Select Patient to Reorder</label>
             <select
               value={selectedAppointmentId}
               onChange={(e) => setSelectedAppointmentId(e.target.value)}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             >
               {doctorQueueDetails?.queue
                 .filter((q) => q.status === "WAITING")
@@ -430,14 +430,14 @@ export default function AdminQueueMonitorPage() {
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">New Target Position in Waiting Queue</label>
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">New Target Position in Waiting Queue</label>
             <input
               type="number"
               min={1}
               max={doctorQueueDetails?.waitingCount || 10}
               value={targetPosition}
               onChange={(e) => setTargetPosition(parseInt(e.target.value, 10))}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none font-mono"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] font-mono transition-colors"
             />
             <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-1">
               Position 1 will be next in line to be called into the cabin.
@@ -445,7 +445,7 @@ export default function AdminQueueMonitorPage() {
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
               Reason for Priority Reorder <span className="text-[hsl(var(--danger))]">*</span>
             </label>
             <textarea
@@ -453,7 +453,7 @@ export default function AdminQueueMonitorPage() {
               value={reorderReason}
               onChange={(e) => setReorderReason(e.target.value)}
               placeholder="e.g., Clinical triage priority, urgent vitals reassessment"
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
@@ -465,6 +465,7 @@ export default function AdminQueueMonitorPage() {
               size="sm"
               onClick={handleConfirmReorder}
               disabled={isSubmittingReorder || !reorderReason.trim()}
+              className="font-medium"
             >
               {isSubmittingReorder ? "Reordering..." : "Save Position"}
             </Button>

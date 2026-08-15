@@ -56,7 +56,7 @@ function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 animate-fade-in"
+        className="fixed inset-0 bg-[#181715]/60 animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -64,7 +64,7 @@ function Modal({
       {/* Modal Content */}
       <div
         className={cn(
-          "relative z-10 w-full mx-4 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] shadow-[var(--shadow-xl)] animate-scale-in",
+          "relative z-10 w-full mx-4 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--background))] shadow-[var(--shadow-xl)] animate-fade-in",
           sizeClasses[size],
           className
         )}
@@ -80,7 +80,7 @@ function Modal({
               {title && (
                 <h2
                   id="modal-title"
-                  className="text-lg font-semibold text-[hsl(var(--foreground))]"
+                  className="font-serif text-xl sm:text-2xl font-normal tracking-tight text-[hsl(var(--foreground))]"
                 >
                   {title}
                 </h2>

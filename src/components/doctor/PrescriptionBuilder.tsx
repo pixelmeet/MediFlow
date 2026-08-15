@@ -44,12 +44,12 @@ export function PrescriptionBuilder({ items, onChange }: PrescriptionBuilderProp
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="text-sm font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-            <Pill className="h-4 w-4 text-[hsl(var(--primary))]" />
+          <h4 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+            <Pill className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             Digital Prescription Builder
           </h4>
-          <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
-            Add medications, dosages, frequency, and instructions.
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
+            Add medications, dosages, frequency, and administration instructions.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export function PrescriptionBuilder({ items, onChange }: PrescriptionBuilderProp
           type="button"
           size="sm"
           onClick={handleAddItem}
-          className="text-xs flex items-center gap-1 font-semibold"
+          className="text-xs flex items-center gap-1 font-medium shadow-[var(--shadow-sm)]"
         >
           <Plus className="h-3.5 w-3.5" />
           Add Medicine
@@ -65,33 +65,33 @@ export function PrescriptionBuilder({ items, onChange }: PrescriptionBuilderProp
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-[var(--radius-xl)] border-2 border-dashed border-[hsl(var(--border))] p-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
+        <div className="rounded-[var(--radius-xl)] border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
           <Pill className="h-6 w-6 mx-auto mb-2 text-[hsl(var(--muted-foreground)/0.5)]" />
-          No medications added yet. Click &quot;Add Medicine&quot; above to prescribe drugs.
+          No medications added yet. Click &quot;Add Medicine&quot; to prescribe drugs.
         </div>
       ) : (
         <div className="space-y-3">
           {items.map((item, idx) => (
             <div
               key={idx}
-              className="p-4 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] shadow-[var(--shadow-sm)] space-y-3"
+              className="p-5 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] shadow-[var(--shadow-sm)] space-y-3"
             >
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[hsl(var(--border))] text-xs font-bold text-[hsl(var(--foreground))]">
-                <span>Medicine #{idx + 1}</span>
+              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[hsl(var(--border))] text-xs font-medium text-[hsl(var(--foreground))]">
+                <span className="font-mono">Medicine #{idx + 1}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveItem(idx)}
-                  className="p-1 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--danger))] rounded hover:bg-[hsl(var(--danger-light))]"
+                  className="p-1 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--danger))] rounded hover:bg-[hsl(var(--danger-light))] transition-colors"
                   title="Remove medicine"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-sans">
                 {/* Medicine Name */}
                 <div className="sm:col-span-2">
-                  <label className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] block mb-1">
+                  <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] block mb-1">
                     Medicine Name & Form
                   </label>
                   <input
@@ -99,13 +99,13 @@ export function PrescriptionBuilder({ items, onChange }: PrescriptionBuilderProp
                     value={item.medicineName}
                     onChange={(e) => handleItemChange(idx, "medicineName", e.target.value)}
                     placeholder="e.g., Tab. Amoxicillin, Syrup Paracetamol"
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
 
                 {/* Dosage */}
                 <div>
-                  <label className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] block mb-1">
+                  <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] block mb-1">
                     Dosage
                   </label>
                   <input
@@ -113,13 +113,13 @@ export function PrescriptionBuilder({ items, onChange }: PrescriptionBuilderProp
                     value={item.dosage}
                     onChange={(e) => handleItemChange(idx, "dosage", e.target.value)}
                     placeholder="e.g., 500mg, 1 tablet"
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
 
                 {/* Duration */}
                 <div>
-                  <label className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] block mb-1">
+                  <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] block mb-1">
                     Duration
                   </label>
                   <input
@@ -127,19 +127,19 @@ export function PrescriptionBuilder({ items, onChange }: PrescriptionBuilderProp
                     value={item.duration}
                     onChange={(e) => handleItemChange(idx, "duration", e.target.value)}
                     placeholder="e.g., 5 Days, 1 Month"
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
 
                 {/* Frequency */}
                 <div className="sm:col-span-2">
-                  <label className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] block mb-1">
+                  <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] block mb-1">
                     Frequency
                   </label>
                   <select
                     value={item.frequency}
                     onChange={(e) => handleItemChange(idx, "frequency", e.target.value)}
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   >
                     {FREQUENCY_OPTIONS.map((f) => (
                       <option key={f.value} value={f.value}>
@@ -151,15 +151,15 @@ export function PrescriptionBuilder({ items, onChange }: PrescriptionBuilderProp
 
                 {/* Instructions */}
                 <div className="sm:col-span-2">
-                  <label className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] block mb-1">
-                    Special Instructions / Food Timing
+                  <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] block mb-1">
+                    Special Instructions / Timing
                   </label>
                   <input
                     type="text"
                     value={item.instructions || ""}
                     onChange={(e) => handleItemChange(idx, "instructions", e.target.value)}
-                    placeholder="e.g., After meals with warm water, Before breakfast"
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    placeholder="e.g., After meals with warm water"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
               </div>

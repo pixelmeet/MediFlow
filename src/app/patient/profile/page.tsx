@@ -142,7 +142,7 @@ export default function PatientProfilePage() {
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
       {/* ─── Top Navbar ─────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] shadow-[var(--shadow-sm)]">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/patient/dashboard">
@@ -154,22 +154,22 @@ export default function PatientProfilePage() {
               <User className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
+              <h1 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
                 My Profile
               </h1>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
+              <p className="text-xs text-[hsl(var(--muted-foreground))] font-sans">
                 Manage personal information &amp; security
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 font-sans">
             <NotificationBell />
             <Button
               variant="outline"
               size="sm"
               onClick={logout}
-              className="text-xs flex items-center gap-1.5"
+              className="text-xs flex items-center gap-1.5 font-medium"
             >
               <LogOut className="h-3.5 w-3.5" />
               Sign Out
@@ -182,35 +182,35 @@ export default function PatientProfilePage() {
       <main className="mx-auto max-w-5xl px-4 sm:px-6 py-6 sm:py-8 space-y-8">
         {isLoading ? (
           <div className="space-y-6 animate-pulse">
-            <div className="h-80 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
-            <div className="h-80 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
+            <div className="h-80 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
+            <div className="h-80 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]" />
           </div>
         ) : error ? (
           <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--danger-light))] bg-[hsl(var(--card))] p-8 text-center max-w-md mx-auto">
             <AlertCircle className="h-8 w-8 text-[hsl(var(--danger))] mx-auto mb-2" />
-            <h3 className="font-bold text-sm text-[hsl(var(--foreground))]">{error}</h3>
+            <h3 className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">{error}</h3>
             <Button
               size="sm"
               onClick={() => window.location.reload()}
-              className="mt-4 text-xs"
+              className="mt-4 text-xs font-medium"
             >
               Retry
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 font-sans">
             {/* ── Personal Info Form (7 cols) ── */}
             <div className="lg:col-span-7">
-              <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6">
+              <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b border-[hsl(var(--border))]">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] font-bold text-sm shadow-[var(--shadow-sm)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-serif font-normal text-sm shadow-sm">
                     {name ? name.slice(0, 2).toUpperCase() : "PT"}
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-[hsl(var(--foreground))]">
+                    <h2 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
                       Personal Information
                     </h2>
-                    <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] font-sans">
                       Your identity and contact information for clinic records
                     </p>
                   </div>
@@ -218,7 +218,7 @@ export default function PatientProfilePage() {
 
                 <form onSubmit={handleSaveProfile} className="space-y-4">
                   {saveError && (
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--danger-light))] bg-[hsl(var(--danger)/0.05)] p-3 text-xs text-[hsl(var(--danger))] flex items-start gap-2.5">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--danger)/0.3)] bg-[hsl(var(--danger-light))] p-3 text-xs text-[hsl(var(--danger))] flex items-start gap-2.5">
                       <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                       <span>{saveError}</span>
                     </div>
@@ -226,7 +226,7 @@ export default function PatientProfilePage() {
 
                   {/* Full Name */}
                   <div>
-                    <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                    <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                       Full Name
                     </label>
                     <div className="relative">
@@ -239,7 +239,7 @@ export default function PatientProfilePage() {
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Enter full name"
                         disabled={isSaving}
-                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                       />
                     </div>
                   </div>
@@ -247,7 +247,7 @@ export default function PatientProfilePage() {
                   {/* Contact Info Grid: Email (Read-only) + Phone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                         Email Address
                       </label>
                       <div className="relative">
@@ -258,7 +258,7 @@ export default function PatientProfilePage() {
                           type="email"
                           value={profile?.email || ""}
                           disabled
-                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--muted)/0.3)] text-[hsl(var(--muted-foreground))] cursor-not-allowed"
+                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))] cursor-not-allowed opacity-75"
                         />
                       </div>
                       <span className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1 block">
@@ -267,7 +267,7 @@ export default function PatientProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                         Phone Number
                       </label>
                       <div className="relative">
@@ -280,7 +280,7 @@ export default function PatientProfilePage() {
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="+91 98765 43210"
                           disabled={isSaving}
-                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors"
+                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                         />
                       </div>
                     </div>
@@ -289,7 +289,7 @@ export default function PatientProfilePage() {
                   {/* Medical Stats: Age, Gender, Blood Group */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                     <div>
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                         Age (Years)
                       </label>
                       <div className="relative">
@@ -304,20 +304,20 @@ export default function PatientProfilePage() {
                           min={0}
                           max={120}
                           disabled={isSaving}
-                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors"
+                          className="w-full pl-9 pr-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                         Gender
                       </label>
                       <select
                         value={gender}
                         onChange={(e) => setGender(e.target.value)}
                         disabled={isSaving}
-                        className="w-full px-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors"
+                        className="w-full px-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                       >
                         <option value="">Select gender</option>
                         <option value="MALE">Male</option>
@@ -327,7 +327,7 @@ export default function PatientProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[hsl(var(--foreground))] mb-1.5">
+                      <label className="block text-xs font-medium text-[hsl(var(--foreground))] mb-1.5">
                         Blood Group
                       </label>
                       <div className="relative">
@@ -335,7 +335,7 @@ export default function PatientProfilePage() {
                           value={bloodGroup}
                           onChange={(e) => setBloodGroup(e.target.value)}
                           disabled={isSaving}
-                          className="w-full px-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary))] focus:outline-none transition-colors font-mono"
+                          className="w-full px-3 py-2.5 text-xs rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors font-mono"
                         >
                           <option value="">Select blood group</option>
                           <option value="A+">A+</option>
@@ -356,7 +356,7 @@ export default function PatientProfilePage() {
                       type="submit"
                       size="sm"
                       disabled={isSaving || !name.trim()}
-                      className="text-xs font-bold flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
+                      className="text-xs font-medium flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
                     >
                       <Save className="h-3.5 w-3.5" />
                       {isSaving ? "Saving Changes..." : "Save Profile Details"}

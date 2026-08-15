@@ -42,22 +42,22 @@ export default function AdminOverviewPage() {
         {/* Welcome & Quick Action Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--foreground))] tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight">
               Hospital Operations Overview
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
+            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1 font-sans">
               Live hospital clinical flow, department distribution &amp; doctor capacity utilization
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 font-sans">
             <Link href="/admin/doctors">
-              <Button size="sm" className="text-xs font-bold flex items-center gap-1.5 shadow-[var(--shadow-sm)]">
+              <Button size="sm" className="text-xs font-medium flex items-center gap-1.5 shadow-[var(--shadow-sm)]">
                 <Stethoscope className="h-3.5 w-3.5" /> Manage Doctors
               </Button>
             </Link>
             <Link href="/admin/appointments">
-              <Button variant="outline" size="sm" className="text-xs font-bold flex items-center gap-1.5">
+              <Button variant="outline" size="sm" className="text-xs font-medium flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" /> All Appointments
               </Button>
             </Link>
@@ -69,7 +69,7 @@ export default function AdminOverviewPage() {
           <StatCard
             label="Today's Appointments"
             value={data ? data.stats.totalAppointmentsToday.toString() : "0"}
-            icon={<Calendar className="h-5 w-5 text-[hsl(var(--primary))]" />}
+            icon={<Calendar className="h-5 w-5 text-[hsl(var(--muted-foreground))]" />}
           />
           <StatCard
             label="In Consultation"
@@ -84,20 +84,20 @@ export default function AdminOverviewPage() {
           <StatCard
             label="Revenue Volume"
             value={data ? `₹${data.stats.totalRevenueToday.toLocaleString()}` : "₹0"}
-            icon={<IndianRupee className="h-5 w-5 text-[hsl(var(--info))]" />}
+            icon={<IndianRupee className="h-5 w-5 text-[hsl(var(--muted-foreground))]" />}
           />
         </div>
 
         {/* ─── Two-Column Middle Section ───────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Department Breakdown */}
-          <div className="lg:col-span-1 rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+          <div className="lg:col-span-1 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                 Department Clinical Load
               </h2>
-              <Link href="/admin/departments" className="text-xs font-bold text-[hsl(var(--primary))] hover:underline flex items-center gap-0.5">
+              <Link href="/admin/departments" className="text-xs font-medium text-[hsl(var(--primary))] hover:underline flex items-center gap-0.5 font-sans">
                 View All <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -105,29 +105,29 @@ export default function AdminOverviewPage() {
             {isLoading ? (
               <div className="space-y-3 py-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-14 rounded-[var(--radius-lg)] bg-[hsl(var(--muted)/0.3)] animate-pulse" />
+                  <div key={i} className="h-14 rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] animate-pulse" />
                 ))}
               </div>
             ) : !data || data.departmentBreakdown.length === 0 ? (
-              <div className="text-center py-6 text-xs text-[hsl(var(--muted-foreground))]">
+              <div className="text-center py-6 text-xs text-[hsl(var(--muted-foreground))] font-sans">
                 No active departments found.
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 font-sans">
                 {data.departmentBreakdown.map((dept) => (
                   <div
                     key={dept.id}
-                    className="p-3.5 rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.15)] flex items-center justify-between text-xs"
+                    className="p-3.5 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] flex items-center justify-between text-xs"
                   >
                     <div>
-                      <h3 className="font-bold text-sm text-[hsl(var(--foreground))]">{dept.name}</h3>
+                      <h3 className="font-medium text-sm text-[hsl(var(--foreground))]">{dept.name}</h3>
                       <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
                         {dept.doctorCount} Doctors Assigned
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <span className="font-mono font-bold text-sm text-[hsl(var(--primary))]">
+                      <span className="font-mono font-medium text-sm text-[hsl(var(--foreground))]">
                         {dept.appointmentCount}
                       </span>
                       <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Appointments</span>
@@ -139,13 +139,13 @@ export default function AdminOverviewPage() {
           </div>
 
           {/* Doctor Utilization Bars */}
-          <div className="lg:col-span-2 rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+          <div className="lg:col-span-2 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                 Doctor Shift Capacity &amp; Utilization
               </h2>
-              <Link href="/admin/doctors" className="text-xs font-bold text-[hsl(var(--primary))] hover:underline flex items-center gap-0.5">
+              <Link href="/admin/doctors" className="text-xs font-medium text-[hsl(var(--primary))] hover:underline flex items-center gap-0.5 font-sans">
                 Manage Directory <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -153,27 +153,27 @@ export default function AdminOverviewPage() {
             {isLoading ? (
               <div className="space-y-4 py-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-16 rounded-[var(--radius-lg)] bg-[hsl(var(--muted)/0.3)] animate-pulse" />
+                  <div key={i} className="h-16 rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] animate-pulse" />
                 ))}
               </div>
             ) : !data || data.doctorUtilization.length === 0 ? (
-              <div className="text-center py-6 text-xs text-[hsl(var(--muted-foreground))]">
+              <div className="text-center py-6 text-xs text-[hsl(var(--muted-foreground))] font-sans">
                 No doctor shift data available.
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 font-sans">
                 {data.doctorUtilization.map((doc) => (
                   <div key={doc.id} className="space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between font-bold">
+                    <div className="flex items-center justify-between font-medium">
                       <span className="text-[hsl(var(--foreground))]">
                         {doc.name} <span className="font-normal text-[hsl(var(--muted-foreground))]">• {doc.specialty}</span>
                       </span>
-                      <span className="font-mono text-[hsl(var(--primary))]">
+                      <span className="font-mono text-[hsl(var(--foreground))]">
                         {doc.bookedSlots} / {doc.totalCapacity} Slots ({doc.utilizationPercent}%)
                       </span>
                     </div>
 
-                    <div className="w-full h-2.5 rounded-full bg-[hsl(var(--muted)/0.3)] overflow-hidden">
+                    <div className="w-full h-2 rounded-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
                           doc.utilizationPercent >= 80
@@ -193,22 +193,22 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* ─── Recent Activity Feed ────────────────────────── */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
-          <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2 pb-3 border-b border-[hsl(var(--border))]">
-            <Clock className="h-4 w-4 text-[hsl(var(--primary))]" />
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+          <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2 pb-3 border-b border-[hsl(var(--border))]">
+            <Clock className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             Recent System &amp; Clinical Operations Audit
           </h2>
 
-          <div className="divide-y divide-[hsl(var(--border))]">
+          <div className="divide-y divide-[hsl(var(--border))] font-sans">
             {data?.recentActivity.map((act) => (
               <div key={act.id} className="py-3 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))]">
+                  <span className="text-[10px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))]">
                     {act.type}
                   </span>
-                  <span className="font-semibold text-[hsl(var(--foreground))]">{act.description}</span>
+                  <span className="font-medium text-[hsl(var(--foreground))]">{act.description}</span>
                 </div>
-                <span className="text-[11px] text-[hsl(var(--muted-foreground))]">{act.timestamp}</span>
+                <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))]">{act.timestamp}</span>
               </div>
             ))}
           </div>

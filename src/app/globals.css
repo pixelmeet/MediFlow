@@ -1,80 +1,82 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
 @import "tailwindcss";
 
 /* ─── Design Tokens (CSS Variables) ─────────────────────── */
 :root {
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Newsreader', 'Playfair Display', 'Copernicus', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Primary — Deep Teal (medical-trust) */
-  --primary: 172 66% 36%;
+  /* Primary — Coral (#cc785c) */
+  --primary: 15 53% 58%;
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 172 66% 30%;
-  --primary-light: 172 50% 95%;
+  --primary-hover: 15 46% 45%;
+  --primary-light: 37 39% 94%;
 
   /* Secondary */
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 220 9% 46%;
-  --secondary-hover: 220 14% 90%;
+  --secondary: 48 33% 97%;
+  --secondary-foreground: 60 3% 8%;
+  --secondary-hover: 37 39% 94%;
 
-  /* Backgrounds */
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
+  /* Backgrounds: Warm Canvas (#faf9f5) */
+  --background: 48 33% 97%;
+  --foreground: 60 3% 8%;
+  --muted: 37 39% 94%;
+  --muted-foreground: 45 4% 41%;
 
-  /* Cards & Surfaces */
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-hover: 220 14% 98%;
-  --card-border: 220 13% 91%;
+  /* Cards & Surfaces: Surface Card (#efe9de) */
+  --card: 39 33% 90%;
+  --card-foreground: 60 3% 8%;
+  --card-hover: 38 33% 87%;
+  --card-border: 30 20% 87%;
 
-  /* Borders & Inputs */
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --input-focus: 172 66% 36%;
-  --ring: 172 66% 36%;
+  /* Borders & Inputs: Hairline (#e6dfd8) */
+  --border: 30 20% 87%;
+  --input: 30 20% 87%;
+  --input-focus: 15 53% 58%;
+  --ring: 15 53% 58%;
 
-  /* Semantic Status Colors */
-  --success: 142 71% 45%;
+  /* Semantic Status Colors (Muted Editorial Palette) */
+  --success: 134 39% 54%;
   --success-foreground: 0 0% 100%;
-  --success-light: 142 50% 95%;
+  --success-light: 134 35% 92%;
 
-  --warning: 38 92% 50%;
+  --warning: 43 80% 46%;
   --warning-foreground: 0 0% 100%;
-  --warning-light: 38 80% 95%;
+  --warning-light: 43 80% 92%;
 
-  --danger: 0 84% 60%;
+  --danger: 0 53% 52%;
   --danger-foreground: 0 0% 100%;
-  --danger-light: 0 70% 95%;
+  --danger-light: 0 45% 94%;
 
-  --info: 217 91% 60%;
+  --info: 168 39% 54%;
   --info-foreground: 0 0% 100%;
-  --info-light: 217 70% 95%;
+  --info-light: 168 35% 92%;
 
-  /* Appointment Status Colors */
-  --status-confirmed: 217 91% 60%;
-  --status-checked-in: 172 66% 36%;
-  --status-waiting: 38 92% 50%;
-  --status-in-consultation: 263 70% 58%;
-  --status-completed: 142 71% 45%;
-  --status-cancelled: 0 84% 60%;
-  --status-no-show: 220 9% 46%;
+  /* Appointment Status Colors (Strict Palette) */
+  --status-confirmed: 45 4% 41%;
+  --status-checked-in: 15 53% 58%;
+  --status-waiting: 32 77% 63%;
+  --status-in-consultation: 15 53% 58%;
+  --status-completed: 134 39% 54%;
+  --status-cancelled: 0 53% 52%;
+  --status-no-show: 45 4% 41%;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-  --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
-  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
-  --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
+  /* Shadows (Subtle, non-popping warm shadows) */
+  --shadow-sm: 0 1px 2px 0 hsl(60 3% 8% / 0.04);
+  --shadow: 0 1px 3px 0 hsl(60 3% 8% / 0.06), 0 1px 2px -1px hsl(60 3% 8% / 0.04);
+  --shadow-md: 0 4px 6px -1px hsl(60 3% 8% / 0.06), 0 2px 4px -2px hsl(60 3% 8% / 0.04);
+  --shadow-lg: 0 10px 15px -3px hsl(60 3% 8% / 0.06), 0 4px 6px -4px hsl(60 3% 8% / 0.04);
+  --shadow-xl: 0 20px 25px -5px hsl(60 3% 8% / 0.06), 0 8px 10px -6px hsl(60 3% 8% / 0.04);
 
   /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius: 0.5rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
   /* Transitions */
@@ -89,41 +91,41 @@
 
 /* ─── Dark Mode ─────────────────────────────────────────── */
 .dark {
-  --primary: 172 55% 50%;
-  --primary-foreground: 222 47% 11%;
-  --primary-hover: 172 55% 55%;
-  --primary-light: 172 30% 15%;
+  --primary: 15 53% 58%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 15 46% 45%;
+  --primary-light: 36 7% 14%;
 
-  --secondary: 222 47% 15%;
-  --secondary-foreground: 220 14% 70%;
-  --secondary-hover: 222 47% 20%;
+  --secondary: 40 7% 9%;
+  --secondary-foreground: 48 33% 97%;
+  --secondary-hover: 36 7% 14%;
 
-  --background: 222 47% 7%;
-  --foreground: 210 40% 98%;
-  --muted: 222 47% 12%;
-  --muted-foreground: 215 20% 55%;
+  --background: 40 7% 9%;
+  --foreground: 48 33% 97%;
+  --muted: 45 7% 11%;
+  --muted-foreground: 45 5% 60%;
 
-  --card: 222 47% 10%;
-  --card-foreground: 210 40% 98%;
-  --card-hover: 222 47% 13%;
-  --card-border: 222 47% 18%;
+  --card: 36 7% 14%;
+  --card-foreground: 48 33% 97%;
+  --card-hover: 45 7% 11%;
+  --card-border: 45 7% 20%;
 
-  --border: 222 47% 18%;
-  --input: 222 47% 18%;
-  --input-focus: 172 55% 50%;
-  --ring: 172 55% 50%;
+  --border: 45 7% 20%;
+  --input: 45 7% 20%;
+  --input-focus: 15 53% 58%;
+  --ring: 15 53% 58%;
 
-  --success: 142 60% 50%;
-  --success-light: 142 30% 15%;
+  --success: 134 39% 54%;
+  --success-light: 134 30% 15%;
 
-  --warning: 38 80% 55%;
-  --warning-light: 38 40% 15%;
+  --warning: 43 80% 46%;
+  --warning-light: 43 40% 15%;
 
-  --danger: 0 72% 55%;
+  --danger: 0 53% 52%;
   --danger-light: 0 40% 15%;
 
-  --info: 217 80% 60%;
-  --info-light: 217 40% 15%;
+  --info: 168 39% 54%;
+  --info-light: 168 40% 15%;
 
   --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
   --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.3), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
@@ -149,6 +151,45 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Display serif typography */
+.font-display,
+.font-serif-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+.display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 6vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+  font-weight: 400;
+}
+
+.display-lg {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  font-weight: 400;
+}
+
+.display-md {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  font-weight: 400;
+}
+
+.display-sm {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  font-weight: 400;
+}
+
 /* Tabular numerals for schedules/tokens */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
@@ -172,15 +213,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: hsl(var(--muted-foreground) / 0.25);
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--muted-foreground) / 0.4);
 }
 
-/* ─── Animations ────────────────────────────────────────── */
+/* ─── Clean Transitions & Essential Animations ─────────── */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -189,7 +230,7 @@ body {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -200,7 +241,7 @@ body {
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateX(12px);
   }
   to {
     opacity: 1;
@@ -211,43 +252,11 @@ body {
 @keyframes slideInDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes pulse-live {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes countDown {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
   }
 }
 
@@ -272,36 +281,13 @@ body {
   animation: slideInDown var(--transition-base) ease-out;
 }
 
-.animate-pulse-live {
-  animation: pulse-live 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    hsl(var(--muted)) 25%,
-    hsl(var(--muted-foreground) / 0.08) 50%,
-    hsl(var(--muted)) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-.animate-count-down {
-  animation: countDown 300ms ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn var(--transition-base) ease-out;
-}
-
 .animate-spin {
   animation: spin 1s linear infinite;
 }
 
 /* ─── Button Press Micro-interaction ────────────────────── */
 .press-scale {
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
 
 .press-scale:active {
@@ -317,14 +303,5 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-
-  .animate-shimmer {
-    animation: none;
-    background: hsl(var(--muted));
-  }
-
-  .animate-pulse-live {
-    animation: none;
   }
 }

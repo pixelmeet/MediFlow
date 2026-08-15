@@ -78,7 +78,7 @@ function ToastContainer({
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full"
+      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full font-sans"
       aria-live="polite"
       aria-label="Notifications"
     >
@@ -92,10 +92,10 @@ function ToastContainer({
 // ─── Toast Item ──────────────────────────────────────────
 
 const toastIcons: Record<ToastType, React.ReactNode> = {
-  success: <CheckCircle className="h-5 w-5" />,
-  error: <AlertCircle className="h-5 w-5" />,
-  warning: <AlertTriangle className="h-5 w-5" />,
-  info: <Info className="h-5 w-5" />,
+  success: <CheckCircle className="h-4 w-4" />,
+  error: <AlertCircle className="h-4 w-4" />,
+  warning: <AlertTriangle className="h-4 w-4" />,
+  info: <Info className="h-4 w-4" />,
 };
 
 const toastStyles: Record<ToastType, string> = {
@@ -115,21 +115,21 @@ function ToastItem({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 rounded-[var(--radius-lg)] border p-4 shadow-[var(--shadow-lg)] animate-slide-in-right",
+        "flex items-start gap-3 rounded-[var(--radius-lg)] border p-4 shadow-[var(--shadow-md)] bg-[hsl(var(--card))]",
         toastStyles[toast.type]
       )}
       role="alert"
     >
       <div className="shrink-0 mt-0.5">{toastIcons[toast.type]}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold">{toast.title}</p>
+        <p className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">{toast.title}</p>
         {toast.description && (
-          <p className="mt-0.5 text-xs opacity-80">{toast.description}</p>
+          <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">{toast.description}</p>
         )}
       </div>
       <button
         onClick={() => onRemove(toast.id)}
-        className="shrink-0 rounded-full p-0.5 hover:bg-black/10 transition-colors"
+        className="shrink-0 rounded-full p-0.5 hover:bg-black/10 transition-colors text-[hsl(var(--muted-foreground))]"
         aria-label="Dismiss notification"
       >
         <X className="h-4 w-4" />

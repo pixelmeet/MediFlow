@@ -223,9 +223,9 @@ export default function DoctorConsultationPage() {
       <div className="min-h-screen bg-[hsl(var(--background))] flex items-center justify-center p-4">
         <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center max-w-md">
           <AlertCircle className="h-8 w-8 text-[hsl(var(--danger))] mx-auto mb-2" />
-          <h2 className="text-base font-bold text-[hsl(var(--foreground))]">Consultation Not Found</h2>
+          <h2 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">Consultation Not Found</h2>
           <Link href="/doctor/dashboard">
-            <Button size="sm" className="mt-4 text-xs">
+            <Button size="sm" className="mt-4 text-xs font-medium">
               Back to Doctor Dashboard
             </Button>
           </Link>
@@ -235,9 +235,9 @@ export default function DoctorConsultationPage() {
   }
 
   return (
-    <div className="bg-[hsl(var(--background))] pb-24">
+    <div className="bg-[hsl(var(--background))] pb-24 font-sans">
       {/* ─── Header / Action Bar ──────────────────────────── */}
-      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)] backdrop-blur-sm">
+      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link href="/doctor/dashboard">
@@ -249,9 +249,9 @@ export default function DoctorConsultationPage() {
               <Stethoscope className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                Consultation: <span className="text-[hsl(var(--primary))]">{details.patient.name}</span>
-                <span className="font-mono bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] text-xs px-2 py-0.5 rounded font-bold">
+              <h1 className="font-serif text-base sm:text-lg font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                Consultation: <span className="text-[hsl(var(--foreground))]">{details.patient.name}</span>
+                <span className="font-mono bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] text-xs px-2 py-0.5 rounded-[var(--radius-md)]">
                   Token {details.tokenNumber}
                 </span>
               </h1>
@@ -263,7 +263,7 @@ export default function DoctorConsultationPage() {
 
           <div className="flex items-center gap-3">
             {lastSavedTime && (
-              <span className="hidden sm:inline text-[11px] text-[hsl(var(--muted-foreground))]">
+              <span className="hidden sm:inline text-[11px] font-mono text-[hsl(var(--muted-foreground))]">
                 Autosaved at {lastSavedTime}
               </span>
             )}
@@ -272,7 +272,7 @@ export default function DoctorConsultationPage() {
               size="sm"
               onClick={handleManualSaveDraft}
               disabled={isSavingDraft}
-              className="text-xs flex items-center gap-1.5"
+              className="text-xs flex items-center gap-1.5 font-medium"
             >
               <Save className="h-3.5 w-3.5" />
               {isSavingDraft ? "Saving..." : "Save Draft"}
@@ -281,7 +281,7 @@ export default function DoctorConsultationPage() {
               size="sm"
               onClick={handleCompleteConsultation}
               disabled={isCompleting || !diagnosis.trim()}
-              className="text-xs flex items-center gap-1.5 font-bold shadow-[var(--shadow-sm)]"
+              className="text-xs flex items-center gap-1.5 font-medium shadow-[var(--shadow-sm)]"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
               {isCompleting ? "Finishing..." : "Complete Consultation"}
@@ -305,30 +305,30 @@ export default function DoctorConsultationPage() {
           {/* Right Column: Active Clinical Form & Prescription */}
           <div className="lg:col-span-2 space-y-6">
             {/* Clinical Notes Card */}
-            <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
-              <h3 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[hsl(var(--primary))]" />
-                Clinical Examination & Findings
+            <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+              <h3 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <FileText className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                Clinical Examination &amp; Findings
               </h3>
 
               <div className="space-y-4 text-xs">
                 {/* Chief Complaints */}
                 <div>
-                  <label className="font-semibold text-[hsl(var(--foreground))] block mb-1">
-                    Chief Complaints & Symptoms
+                  <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
+                    Chief Complaints &amp; Symptoms
                   </label>
                   <textarea
                     rows={2}
                     value={complaints}
                     onChange={(e) => setComplaints(e.target.value)}
                     placeholder="e.g., Shortness of breath on exertion, chest heaviness for 3 days..."
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
 
                 {/* Examination Notes / Vitals */}
                 <div>
-                  <label className="font-semibold text-[hsl(var(--foreground))] block mb-1">
+                  <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
                     Physical Examination Findings / Vitals
                   </label>
                   <textarea
@@ -336,13 +336,13 @@ export default function DoctorConsultationPage() {
                     value={examinationNotes}
                     onChange={(e) => setExaminationNotes(e.target.value)}
                     placeholder="e.g., BP: 130/85 mmHg, Pulse: 78 bpm, Chest: Bilateral clear..."
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
 
                 {/* Primary Diagnosis (Required) */}
                 <div>
-                  <label className="font-semibold text-[hsl(var(--foreground))] block mb-1">
+                  <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
                     Formal Diagnosis <span className="text-[hsl(var(--danger))]">*</span>
                   </label>
                   <input
@@ -350,14 +350,14 @@ export default function DoctorConsultationPage() {
                     value={diagnosis}
                     onChange={(e) => setDiagnosis(e.target.value)}
                     placeholder="e.g., Stable Angina Pectoris, Essential Hypertension, Acute Bronchitis"
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs font-bold text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] placeholder:font-normal focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs font-medium text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] placeholder:font-normal focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
               </div>
             </div>
 
             {/* Prescription Builder Card */}
-            <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)]">
+            <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)]">
               <PrescriptionBuilder
                 items={prescriptionItems}
                 onChange={setPrescriptionItems}
@@ -365,28 +365,28 @@ export default function DoctorConsultationPage() {
             </div>
 
             {/* General Advice & Follow-Up Date */}
-            <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
-              <h3 className="text-sm font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-[hsl(var(--primary))]" />
-                Advice & Follow-Up Schedule
+            <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+              <h3 className="font-serif text-sm font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                Advice &amp; Follow-Up Schedule
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="font-semibold text-[hsl(var(--foreground))] block mb-1">
-                    Special Advice & Dietary Recommendations
+                  <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
+                    Special Advice &amp; Dietary Recommendations
                   </label>
                   <textarea
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g., Low sodium diet, 30 min daily brisk walk, return if pain increases"
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-[hsl(var(--foreground))] block mb-1">
+                  <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
                     Recommended Follow-Up Date
                   </label>
                   <input
@@ -394,7 +394,7 @@ export default function DoctorConsultationPage() {
                     value={followUpDate}
                     min={new Date().toISOString().slice(0, 10)}
                     onChange={(e) => setFollowUpDate(e.target.value)}
-                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                    className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                   />
                   <span className="text-[11px] text-[hsl(var(--muted-foreground))] mt-1 block">
                     Patient will receive a reminder before this date.

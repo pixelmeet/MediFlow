@@ -273,19 +273,19 @@ export default function DoctorSchedulePage() {
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[hsl(var(--background))] p-4">
         <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center max-w-md shadow-[var(--shadow-sm)]">
           <ShieldAlert className="h-10 w-10 text-[hsl(var(--danger))] mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-[hsl(var(--foreground))] mb-1">
+          <h2 className="font-serif text-lg font-normal text-[hsl(var(--foreground))] mb-1">
             Unable to load your doctor profile
           </h2>
-          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6">
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-6 font-sans">
             Please ensure you are signed in with an active Doctor account or contact administration.
           </p>
           <div className="flex items-center justify-center gap-3">
             <Link href="/doctor/dashboard">
-              <Button size="sm" variant="outline" className="text-xs">
+              <Button size="sm" variant="outline" className="text-xs font-medium">
                 Back to Dashboard
               </Button>
             </Link>
-            <Button size="sm" onClick={logout} className="text-xs">
+            <Button size="sm" onClick={logout} className="text-xs font-medium">
               Sign Out
             </Button>
           </div>
@@ -312,7 +312,7 @@ export default function DoctorSchedulePage() {
   return (
     <div className="bg-[hsl(var(--background))] pb-16">
       {/* ─── Header / Action Bar ──────────────────────────── */}
-      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)] backdrop-blur-sm">
+      <div className="border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/doctor/dashboard">
@@ -321,11 +321,11 @@ export default function DoctorSchedulePage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-base sm:text-lg font-bold text-[hsl(var(--foreground))]">
-                Schedule & Availability Management
+              <h1 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">
+                Schedule &amp; Availability Management
               </h1>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                Configure working hours, break windows, slot durations & holidays
+              <p className="text-xs text-[hsl(var(--muted-foreground))] font-sans">
+                Configure working hours, break windows, slot durations &amp; holidays
               </p>
             </div>
           </div>
@@ -334,7 +334,7 @@ export default function DoctorSchedulePage() {
             size="sm"
             onClick={handleSaveSchedule}
             disabled={isSaving}
-            className="text-xs flex items-center gap-1.5 font-bold shadow-[var(--shadow-sm)]"
+            className="text-xs flex items-center gap-1.5 font-medium shadow-[var(--shadow-sm)]"
           >
             <Save className="h-3.5 w-3.5" />
             {isSaving ? "Saving Changes..." : "Save Schedule"}
@@ -345,28 +345,28 @@ export default function DoctorSchedulePage() {
       {/* ─── Main Content ─────────────────────────────────── */}
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 space-y-8">
         {/* Top Setting: Consultation Duration */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)]">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-sm font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <Clock className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                 Appointment Consultation Duration
               </h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
                 The scheduling engine divides your working day into discrete slots based on this duration.
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 font-mono text-xs">
               {[15, 20, 30, 45].map((dur) => (
                 <button
                   key={dur}
                   type="button"
                   onClick={() => setAppointmentDuration(dur)}
-                  className={`px-3.5 py-1.5 rounded-[var(--radius-lg)] text-xs font-bold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-[var(--radius-md)] text-xs font-medium transition-all ${
                     appointmentDuration === dur
-                      ? "bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)] scale-105"
-                      : "bg-[hsl(var(--muted)/0.3)] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted)/0.5)]"
+                      ? "bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]"
+                      : "bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary)/0.4)]"
                   }`}
                 >
                   {dur} Minutes
@@ -377,29 +377,29 @@ export default function DoctorSchedulePage() {
         </div>
 
         {/* Weekly Working Hours Matrix */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
             <div>
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-[hsl(var(--primary))]" />
-                Weekly Working Hours & Breaks
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                Weekly Working Hours &amp; Breaks
               </h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
                 Configure your shift hours and daily lunch/break intervals for each day of the week.
               </p>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 font-sans">
             {orderedSchedules.map((day) => {
               const dayName = DAY_NAMES[day.dayOfWeek];
               return (
                 <div
                   key={day.dayOfWeek}
-                  className={`p-4 rounded-[var(--radius-xl)] border transition-all ${
+                  className={`p-4 rounded-[var(--radius-lg)] border transition-all ${
                     day.isWorkingDay
-                      ? "bg-[hsl(var(--card))] border-[hsl(var(--card-border))]"
-                      : "bg-[hsl(var(--muted)/0.15)] border-dashed border-[hsl(var(--border))] opacity-70"
+                      ? "bg-[hsl(var(--background))] border-[hsl(var(--border))]"
+                      : "bg-[hsl(var(--muted))] border-dashed border-[hsl(var(--border))] opacity-70"
                   }`}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -414,7 +414,7 @@ export default function DoctorSchedulePage() {
                       />
                       <label
                         htmlFor={`toggle-${day.dayOfWeek}`}
-                        className={`text-sm font-bold cursor-pointer ${
+                        className={`text-sm font-medium cursor-pointer ${
                           day.isWorkingDay
                             ? "text-[hsl(var(--foreground))]"
                             : "text-[hsl(var(--muted-foreground))]"
@@ -427,8 +427,8 @@ export default function DoctorSchedulePage() {
                     {day.isWorkingDay ? (
                       <div className="flex flex-wrap items-center gap-4 text-xs">
                         {/* Working Hours */}
-                        <div className="flex items-center gap-2 bg-[hsl(var(--muted)/0.2)] p-2 rounded-[var(--radius-md)]">
-                          <span className="font-semibold text-[hsl(var(--muted-foreground))]">
+                        <div className="flex items-center gap-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-2 rounded-[var(--radius-md)]">
+                          <span className="font-medium text-[hsl(var(--muted-foreground))]">
                             Shift:
                           </span>
                           <input
@@ -437,7 +437,7 @@ export default function DoctorSchedulePage() {
                             onChange={(e) =>
                               handleTimeChange(day.dayOfWeek, "startTime", e.target.value)
                             }
-                            className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
+                            className="bg-[hsl(var(--background))] border border-[hsl(var(--input))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
                           />
                           <span>to</span>
                           <input
@@ -446,13 +446,13 @@ export default function DoctorSchedulePage() {
                             onChange={(e) =>
                               handleTimeChange(day.dayOfWeek, "endTime", e.target.value)
                             }
-                            className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
+                            className="bg-[hsl(var(--background))] border border-[hsl(var(--input))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
                           />
                         </div>
 
                         {/* Break Window */}
-                        <div className="flex items-center gap-2 bg-[hsl(var(--warning-light)/0.5)] p-2 rounded-[var(--radius-md)] border border-[hsl(var(--warning)/0.2)]">
-                          <span className="font-semibold text-[hsl(var(--warning))]">
+                        <div className="flex items-center gap-2 bg-[hsl(var(--warning-light))] p-2 rounded-[var(--radius-md)] border border-[hsl(var(--warning)/0.3)]">
+                          <span className="font-medium text-[hsl(var(--warning))]">
                             Break:
                           </span>
                           <input
@@ -461,7 +461,7 @@ export default function DoctorSchedulePage() {
                             onChange={(e) =>
                               handleTimeChange(day.dayOfWeek, "breakStart", e.target.value)
                             }
-                            className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
+                            className="bg-[hsl(var(--background))] border border-[hsl(var(--input))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
                           />
                           <span>to</span>
                           <input
@@ -470,12 +470,12 @@ export default function DoctorSchedulePage() {
                             onChange={(e) =>
                               handleTimeChange(day.dayOfWeek, "breakEnd", e.target.value)
                             }
-                            className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
+                            className="bg-[hsl(var(--background))] border border-[hsl(var(--input))] rounded px-2 py-1 font-mono text-xs text-[hsl(var(--foreground))]"
                           />
                         </div>
                       </div>
                     ) : (
-                      <span className="text-xs font-semibold text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted)/0.3)] px-3 py-1.5 rounded-[var(--radius-full)]">
+                      <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-3 py-1.5 rounded-[var(--radius-full)]">
                         Clinic Closed / Day Off
                       </span>
                     )}
@@ -487,15 +487,15 @@ export default function DoctorSchedulePage() {
         </div>
 
         {/* Blocked Slots & Holidays Section */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
             <div>
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4 text-[hsl(var(--danger))]" />
-                Blocked Slots & Scheduled Holidays
+                Blocked Slots &amp; Scheduled Leaves
               </h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
-                Block whole dates or custom hour intervals for vacations, conferences, or leave.
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
+                Block whole dates or custom hour intervals for vacations, conferences, or emergency leaves.
               </p>
             </div>
 
@@ -503,29 +503,29 @@ export default function DoctorSchedulePage() {
               size="sm"
               variant="outline"
               onClick={() => setIsAddBlockedOpen(true)}
-              className="text-xs flex items-center gap-1 border-[hsl(var(--primary))] text-[hsl(var(--primary))]"
+              className="text-xs flex items-center gap-1 font-medium"
             >
               <Plus className="h-3.5 w-3.5" />
-              Add Blocked Slot / Leave
+              Add Blocked Slot
             </Button>
           </div>
 
           {blockedSlots.length === 0 ? (
-            <div className="text-center py-6 text-xs text-[hsl(var(--muted-foreground))]">
+            <div className="text-center py-6 text-xs text-[hsl(var(--muted-foreground))] font-sans">
               No upcoming blocked dates or leaves scheduled.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-sans">
               {blockedSlots.map((slot) => (
                 <div
                   key={slot.id}
-                  className="rounded-[var(--radius-xl)] border border-[hsl(var(--danger)/0.2)] bg-[hsl(var(--danger-light)/0.3)] p-4 flex items-center justify-between text-xs"
+                  className="rounded-[var(--radius-lg)] border border-[hsl(var(--danger)/0.3)] bg-[hsl(var(--danger-light))] p-4 flex items-center justify-between text-xs"
                 >
                   <div>
-                    <div className="font-bold text-[hsl(var(--foreground))]">
+                    <div className="font-medium text-[hsl(var(--foreground))]">
                       {slot.date}
                     </div>
-                    <div className="text-[hsl(var(--muted-foreground))] mt-0.5">
+                    <div className="text-[hsl(var(--muted-foreground))] mt-0.5 font-mono">
                       {slot.isFullDay
                         ? "Full Day Off"
                         : `${slot.startTime} - ${slot.endTime}`}
@@ -538,7 +538,7 @@ export default function DoctorSchedulePage() {
                   <button
                     type="button"
                     onClick={() => handleDeleteBlockedSlot(slot.id)}
-                    className="p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--danger))] rounded hover:bg-[hsl(var(--danger-light))]"
+                    className="p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--danger))] rounded hover:bg-[hsl(var(--danger-light))] transition-colors"
                     title="Remove blocked slot"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -550,20 +550,20 @@ export default function DoctorSchedulePage() {
         </div>
 
         {/* Live Patient Slot Grid Simulation */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[hsl(var(--border))]">
             <div>
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[hsl(var(--primary))]" />
                 Live Patient Booking Slot Simulation
               </h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-sans">
                 Simulate exactly how patients see your computed slot matrix for any given date.
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-[hsl(var(--muted-foreground))] font-semibold">
+            <div className="flex items-center gap-2 font-sans">
+              <span className="text-xs text-[hsl(var(--muted-foreground))] font-medium">
                 Preview Date:
               </span>
               <input
@@ -571,7 +571,7 @@ export default function DoctorSchedulePage() {
                 value={previewDate}
                 min={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setPreviewDate(e.target.value)}
-                className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-[var(--radius-md)] px-2.5 py-1 text-xs font-mono text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                className="bg-[hsl(var(--background))] border border-[hsl(var(--input))] rounded-[var(--radius-md)] px-2.5 py-1 text-xs font-mono text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
               />
             </div>
           </div>
@@ -591,9 +591,9 @@ export default function DoctorSchedulePage() {
         title="Block Slots / Leave"
         description="Block full dates or custom hour intervals from patient booking."
       >
-        <div className="space-y-4 pt-2">
+        <div className="space-y-4 pt-2 font-sans text-xs">
           <div>
-            <label className="text-xs font-semibold text-[hsl(var(--foreground))] block mb-1">
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
               Date to Block
             </label>
             <input
@@ -601,7 +601,7 @@ export default function DoctorSchedulePage() {
               value={blockDate}
               min={new Date().toISOString().slice(0, 10)}
               onChange={(e) => setBlockDate(e.target.value)}
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
@@ -615,7 +615,7 @@ export default function DoctorSchedulePage() {
             />
             <label
               htmlFor="fullDayCheckbox"
-              className="text-xs font-semibold text-[hsl(var(--foreground))] cursor-pointer"
+              className="font-medium text-[hsl(var(--foreground))] cursor-pointer"
             >
               Block Entire Day (Full Day Off / Holiday)
             </label>
@@ -624,32 +624,32 @@ export default function DoctorSchedulePage() {
           {!isFullDay && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[hsl(var(--foreground))] block mb-1">
+                <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
                   Start Time
                 </label>
                 <input
                   type="time"
                   value={blockStartTime}
                   onChange={(e) => setBlockStartTime(e.target.value)}
-                  className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                  className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[hsl(var(--foreground))] block mb-1">
+                <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
                   End Time
                 </label>
                 <input
                   type="time"
                   value={blockEndTime}
                   onChange={(e) => setBlockEndTime(e.target.value)}
-                  className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                  className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="text-xs font-semibold text-[hsl(var(--foreground))] block mb-1">
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">
               Reason for Leave / Block
             </label>
             <input
@@ -657,7 +657,7 @@ export default function DoctorSchedulePage() {
               value={blockReason}
               onChange={(e) => setBlockReason(e.target.value)}
               placeholder="e.g., Medical Conference, Vacation, Personal Leave"
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
@@ -674,7 +674,7 @@ export default function DoctorSchedulePage() {
               size="sm"
               onClick={handleAddBlockedSlot}
               disabled={isAddingBlocked || !blockDate}
-              className="text-xs"
+              className="text-xs font-medium"
             >
               {isAddingBlocked ? "Saving..." : "Add Blocked Slot"}
             </Button>

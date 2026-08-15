@@ -95,27 +95,27 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full max-w-lg mx-auto py-8 animate-fade-in-up">
-      <div className="text-center mb-6">
-        <Link href="/" className="inline-flex items-center gap-2 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] shadow-[var(--shadow-sm)]">
-            <Activity className="h-5 w-5 text-white" />
+      <div className="text-center mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary))] text-white shadow-[var(--shadow-sm)]">
+            <Activity className="h-5 w-5" />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-[hsl(var(--foreground))]">
+          <span className="font-serif text-2xl font-normal tracking-tight text-[hsl(var(--foreground))]">
             MediFlow
           </span>
         </Link>
-        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">
+        <h1 className="font-serif text-3xl font-normal tracking-tight text-[hsl(var(--foreground))]">
           Create Patient Account
         </h1>
-        <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+        <p className="mt-1.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
           Register to book doctor appointments & receive live queue alerts
         </p>
       </div>
 
-      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-md)]">
+      <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-[var(--shadow-sm)]">
         {errorMessage && (
           <div
-            className="mb-4 flex items-start gap-2 rounded-[var(--radius)] bg-[hsl(var(--danger-light))] p-3 text-xs font-medium text-[hsl(var(--danger))]"
+            className="mb-4 flex items-start gap-2 rounded-[var(--radius)] bg-[hsl(var(--danger-light))] p-3 text-xs font-medium text-[hsl(var(--danger))] border border-[hsl(var(--danger)/0.3)]"
             role="alert"
           >
             <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
@@ -204,7 +204,7 @@ export default function RegisterPage() {
                 value={formData.gender}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="flex h-10 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--input-focus))]"
+                className="flex h-10 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
               >
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
@@ -221,7 +221,7 @@ export default function RegisterPage() {
                 value={formData.bloodGroup}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="flex h-10 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--input-focus))]"
+                className="flex h-10 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
               >
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
@@ -247,11 +247,11 @@ export default function RegisterPage() {
         </form>
       </div>
 
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="mt-6 text-center text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
         Already have an account?{" "}
         <Link
           href="/auth/login"
-          className="font-semibold text-[hsl(var(--primary))] hover:underline"
+          className="font-medium text-[hsl(var(--primary))] hover:underline active:underline"
         >
           Sign in
         </Link>

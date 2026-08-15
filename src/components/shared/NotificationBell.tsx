@@ -159,13 +159,13 @@ export function NotificationBell() {
           setIsOpen(!isOpen);
           if (!isOpen) fetchNotifications();
         }}
-        className="relative flex h-9 w-9 items-center justify-center rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--muted)/0.5)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+        className="relative flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] transition-colors hover:border-[hsl(var(--primary)/0.4)] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)]"
         aria-label="Notifications"
         aria-expanded={isOpen}
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[hsl(var(--danger))] px-1 text-[10px] font-bold text-white shadow-sm animate-pulse">
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[hsl(var(--primary))] px-1 text-[10px] font-mono font-medium text-white shadow-sm">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -173,13 +173,13 @@ export function NotificationBell() {
 
       {/* Dropdown Drawer */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-[var(--shadow-xl)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] shadow-[var(--shadow-md)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 font-sans">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] px-4 py-3">
+          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-[hsl(var(--foreground))]">Notifications</span>
+              <span className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">Notifications</span>
               {unreadCount > 0 && (
-                <span className="rounded-full bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] px-2 py-0.5 text-[10px] font-bold">
+                <span className="rounded-full bg-[hsl(var(--primary-light))] border border-[hsl(var(--primary)/0.3)] text-[hsl(var(--primary))] px-2 py-0.5 text-[10px] font-mono">
                   {unreadCount} new
                 </span>
               )}
@@ -190,7 +190,7 @@ export function NotificationBell() {
                   variant="ghost"
                   size="sm"
                   onClick={handleMarkAllRead}
-                  className="text-[11px] h-7 px-2 text-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                  className="text-[11px] h-7 px-2 text-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] font-medium"
                 >
                   <CheckCheck className="h-3 w-3 mr-1" />
                   Mark all read
@@ -215,7 +215,7 @@ export function NotificationBell() {
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
                 <Bell className="h-8 w-8 text-[hsl(var(--muted-foreground)/0.4)] mx-auto mb-2" />
-                <p className="text-xs font-semibold text-[hsl(var(--foreground))]">No notifications yet</p>
+                <p className="font-serif text-sm font-normal text-[hsl(var(--foreground))]">No notifications yet</p>
                 <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
                   You&apos;ll be notified about your appointments, queue turns, and prescriptions here.
                 </p>
@@ -225,18 +225,18 @@ export function NotificationBell() {
                 <div
                   key={n.id}
                   className={`p-3.5 flex items-start gap-3 transition-colors ${
-                    !n.isRead ? "bg-[hsl(var(--primary)/0.04)]" : "hover:bg-[hsl(var(--muted)/0.2)]"
+                    !n.isRead ? "bg-[hsl(var(--primary)/0.04)]" : "hover:bg-[hsl(var(--background))]"
                   }`}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--muted)/0.5)] mt-0.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] mt-0.5">
                     {getIcon(n.type)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
-                      <p className={`text-xs font-bold truncate ${!n.isRead ? "text-[hsl(var(--foreground))]" : "text-[hsl(var(--muted-foreground))]"}`}>
+                      <p className={`text-xs font-medium truncate ${!n.isRead ? "text-[hsl(var(--foreground))]" : "text-[hsl(var(--muted-foreground))]"}`}>
                         {n.title}
                       </p>
-                      <span className="text-[10px] text-[hsl(var(--muted-foreground))] shrink-0 font-medium">
+                      <span className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] shrink-0">
                         {formatTimeAgo(n.createdAt)}
                       </span>
                     </div>

@@ -60,19 +60,19 @@ function DailyTrendTooltip({ active, payload }: CustomTooltipProps) {
   })();
 
   return (
-    <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-lg)] space-y-2 text-xs min-w-[190px]">
-      <div className="border-b border-[hsl(var(--border))] pb-1.5 font-bold text-[hsl(var(--foreground))] flex items-center justify-between">
+    <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-3.5 shadow-[var(--shadow-md)] space-y-2 text-xs min-w-[190px] font-sans">
+      <div className="border-b border-[hsl(var(--border))] pb-1.5 font-serif font-normal text-[hsl(var(--foreground))] flex items-center justify-between">
         <span>{formattedDate}</span>
-        <span className="text-[10px] text-[hsl(var(--muted-foreground))]">Daily Report</span>
+        <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-sans">Daily Report</span>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 font-sans">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1.5 font-medium text-[hsl(var(--muted-foreground))]">
             <span className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />
             Total Bookings
           </span>
-          <span className="font-bold font-mono text-[hsl(var(--foreground))]">{item.total}</span>
+          <span className="font-mono font-medium text-[hsl(var(--foreground))]">{item.total}</span>
         </div>
 
         <div className="flex items-center justify-between">
@@ -80,7 +80,7 @@ function DailyTrendTooltip({ active, payload }: CustomTooltipProps) {
             <span className="h-2 w-2 rounded-full bg-[hsl(var(--success))]" />
             Completed
           </span>
-          <span className="font-bold font-mono text-[hsl(var(--success))]">{item.completed}</span>
+          <span className="font-mono font-medium text-[hsl(var(--success))]">{item.completed}</span>
         </div>
 
         <div className="flex items-center justify-between">
@@ -88,10 +88,10 @@ function DailyTrendTooltip({ active, payload }: CustomTooltipProps) {
             <span className="h-2 w-2 rounded-full bg-[hsl(var(--danger))]" />
             Cancelled
           </span>
-          <span className="font-bold font-mono text-[hsl(var(--danger))]">{item.cancelled}</span>
+          <span className="font-mono font-medium text-[hsl(var(--danger))]">{item.cancelled}</span>
         </div>
 
-        <div className="pt-1.5 border-t border-[hsl(var(--border))] flex items-center justify-between font-bold">
+        <div className="pt-1.5 border-t border-[hsl(var(--border))] flex items-center justify-between font-medium">
           <span className="text-[hsl(var(--foreground))]">Est. Revenue</span>
           <span className="text-[hsl(var(--primary))] font-mono">₹{item.revenue.toLocaleString()}</span>
         </div>
@@ -178,21 +178,21 @@ export default function AdminAnalyticsPage() {
         {/* Header with Date Range Filter and Export */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2">
+            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2">
               <BarChart3 className="h-7 w-7 text-[hsl(var(--primary))]" />
               Hospital Analytics &amp; Intelligence
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
+            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1 font-sans">
               Comprehensive patient wait metrics, doctor schedule utilization, and clinical revenue volume
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5 font-sans">
             {/* Time Filter Buttons */}
-            <div className="flex items-center rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1 shadow-[var(--shadow-sm)]">
+            <div className="flex items-center rounded-[var(--radius-md)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1 shadow-[var(--shadow-sm)]">
               <button
                 onClick={() => setRange("today")}
-                className={`px-3 py-1 text-xs font-bold rounded-[var(--radius-md)] transition-colors ${
+                className={`px-3 py-1 text-xs font-medium rounded-[var(--radius-md)] transition-colors ${
                   range === "today"
                     ? "bg-[hsl(var(--primary))] text-white shadow-sm"
                     : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
@@ -202,7 +202,7 @@ export default function AdminAnalyticsPage() {
               </button>
               <button
                 onClick={() => setRange("7days")}
-                className={`px-3 py-1 text-xs font-bold rounded-[var(--radius-md)] transition-colors ${
+                className={`px-3 py-1 text-xs font-medium rounded-[var(--radius-md)] transition-colors ${
                   range === "7days"
                     ? "bg-[hsl(var(--primary))] text-white shadow-sm"
                     : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
@@ -212,7 +212,7 @@ export default function AdminAnalyticsPage() {
               </button>
               <button
                 onClick={() => setRange("30days")}
-                className={`px-3 py-1 text-xs font-bold rounded-[var(--radius-md)] transition-colors ${
+                className={`px-3 py-1 text-xs font-medium rounded-[var(--radius-md)] transition-colors ${
                   range === "30days"
                     ? "bg-[hsl(var(--primary))] text-white shadow-sm"
                     : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
@@ -227,7 +227,7 @@ export default function AdminAnalyticsPage() {
               size="sm"
               onClick={handleExportCsv}
               disabled={isLoading || !data}
-              className="text-xs font-bold flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
+              className="text-xs font-medium flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
             >
               <Download className="h-3.5 w-3.5" />
               Export CSV
@@ -240,7 +240,7 @@ export default function AdminAnalyticsPage() {
           <StatCard
             label="Total Appointments"
             value={data ? data.kpis.totalAppointments.toString() : "0"}
-            icon={<Calendar className="h-5 w-5 text-[hsl(var(--primary))]" />}
+            icon={<Calendar className="h-5 w-5 text-[hsl(var(--muted-foreground))]" />}
           />
           <StatCard
             label="Avg. Wait Time"
@@ -255,59 +255,59 @@ export default function AdminAnalyticsPage() {
           <StatCard
             label="Gross Revenue"
             value={data ? `₹${data.financials.totalRevenue.toLocaleString()}` : "₹0"}
-            icon={<IndianRupee className="h-5 w-5 text-[hsl(var(--info))]" />}
+            icon={<IndianRupee className="h-5 w-5 text-[hsl(var(--muted-foreground))]" />}
           />
         </div>
 
         {/* ─── Secondary Efficiency & Flow Metrics ────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
           <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)] flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-[hsl(var(--muted-foreground))]">Completed Rate</p>
-              <h4 className="text-lg font-extrabold text-[hsl(var(--success))] mt-0.5">
+              <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Completed Rate</p>
+              <h4 className="font-serif text-lg font-normal text-[hsl(var(--success))] mt-0.5 font-mono">
                 {data ? `${data.kpis.completionRate}%` : "0%"}
               </h4>
               <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
                 {data ? `${data.kpis.completedCount} visits finalized` : ""}
               </p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-[hsl(var(--success-light))] flex items-center justify-center text-[hsl(var(--success))]">
+            <div className="h-10 w-10 rounded-full bg-[hsl(var(--success-light))] border border-[hsl(var(--success)/0.3)] flex items-center justify-center text-[hsl(var(--success))]">
               <CheckCircle2 className="h-5 w-5" />
             </div>
           </div>
 
           <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)] flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-[hsl(var(--muted-foreground))]">No-Show Rate</p>
-              <h4 className="text-lg font-extrabold text-[hsl(var(--danger))] mt-0.5">
+              <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">No-Show Rate</p>
+              <h4 className="font-serif text-lg font-normal text-[hsl(var(--danger))] mt-0.5 font-mono">
                 {data ? `${data.kpis.noShowRate}%` : "0%"}
               </h4>
               <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
                 {data ? `${data.kpis.noShowCount} missed check-ins` : ""}
               </p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-[hsl(var(--danger-light))] flex items-center justify-center text-[hsl(var(--danger))]">
+            <div className="h-10 w-10 rounded-full bg-[hsl(var(--danger-light))] border border-[hsl(var(--danger)/0.3)] flex items-center justify-center text-[hsl(var(--danger))]">
               <AlertTriangle className="h-5 w-5" />
             </div>
           </div>
 
           <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)] flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-[hsl(var(--muted-foreground))]">Avg. Consult Time</p>
-              <h4 className="text-lg font-extrabold text-[hsl(var(--foreground))] mt-0.5">
+              <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Avg. Consult Time</p>
+              <h4 className="font-serif text-lg font-normal text-[hsl(var(--foreground))] mt-0.5 font-mono">
                 {data ? `${data.kpis.avgConsultationMinutes} min` : "0 min"}
               </h4>
               <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Per patient consultation</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-[hsl(var(--primary-light))] flex items-center justify-center text-[hsl(var(--primary))]">
+            <div className="h-10 w-10 rounded-full bg-[hsl(var(--muted))] border border-[hsl(var(--border))] flex items-center justify-center text-[hsl(var(--foreground))]">
               <Activity className="h-5 w-5" />
             </div>
           </div>
 
           <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-sm)] flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-[hsl(var(--muted-foreground))]">Online Payment Share</p>
-              <h4 className="text-lg font-extrabold text-[hsl(var(--info))] mt-0.5">
+              <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Online Payment Share</p>
+              <h4 className="font-serif text-lg font-normal text-[hsl(var(--foreground))] mt-0.5 font-mono">
                 {data && data.financials.totalRevenue > 0
                   ? `${Math.round((data.financials.paidOnlineRevenue / data.financials.totalRevenue) * 100)}%`
                   : "0%"}
@@ -316,18 +316,18 @@ export default function AdminAnalyticsPage() {
                 {data ? `₹${data.financials.paidOnlineRevenue.toLocaleString()} online` : ""}
               </p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-[hsl(var(--info-light))] flex items-center justify-center text-[hsl(var(--info))]">
+            <div className="h-10 w-10 rounded-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] flex items-center justify-center text-[hsl(var(--foreground))]">
               <TrendingUp className="h-5 w-5" />
             </div>
           </div>
         </div>
 
-        {/* ─── Fix 25a: Appointment Volume & Daily Trends Chart ─────────── */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+        {/* ─── Appointment Volume & Daily Trends Chart ─────────── */}
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4 font-sans">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[hsl(var(--border))]">
             <div>
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                 Appointment Trends &amp; Daily Trajectory
               </h2>
               <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
@@ -353,9 +353,9 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {!data?.dailyTrends || data.dailyTrends.length < 3 ? (
-            <div className="py-12 text-center text-xs text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted)/0.15)] rounded-[var(--radius-xl)] border border-dashed border-[hsl(var(--border))] flex flex-col items-center justify-center gap-1.5">
+            <div className="py-12 text-center text-xs text-[hsl(var(--muted-foreground))] bg-[hsl(var(--background))] rounded-[var(--radius-lg)] border border-dashed border-[hsl(var(--border))] flex flex-col items-center justify-center gap-1.5">
               <BarChart3 className="h-8 w-8 text-[hsl(var(--muted-foreground)/0.5)] mb-1" />
-              <span className="font-semibold text-sm text-[hsl(var(--foreground))]">Insufficient data for trend visualization</span>
+              <span className="font-serif font-normal text-sm text-[hsl(var(--foreground))]">Insufficient data for trend visualization</span>
               <span>At least 3 days of appointment data are required to render meaningful trends. Select a wider date range (e.g. 7 or 30 days).</span>
             </div>
           ) : (
@@ -431,15 +431,15 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* ─── Two Column Breakdown Section ──────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 font-sans">
           {/* Department Volume & Revenue Breakdown */}
-          <div className="lg:col-span-1 rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+          <div className="lg:col-span-1 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                 Department Load
               </h2>
-              <span className="text-xs font-bold text-[hsl(var(--muted-foreground))]">
+              <span className="text-xs font-mono text-[hsl(var(--muted-foreground))]">
                 {data?.departmentBreakdown.length || 0} Depts
               </span>
             </div>
@@ -455,14 +455,14 @@ export default function AdminAnalyticsPage() {
                   return (
                     <div key={dept.departmentId} className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-[hsl(var(--foreground))]">{dept.departmentName}</span>
+                        <span className="font-medium text-[hsl(var(--foreground))]">{dept.departmentName}</span>
                         <div className="text-right">
-                          <span className="font-bold text-[hsl(var(--foreground))]">{dept.appointmentCount} visits</span>
-                          <span className="text-[10px] text-[hsl(var(--muted-foreground))] ml-1.5">(₹{dept.revenue.toLocaleString()})</span>
+                          <span className="font-mono text-[hsl(var(--foreground))]">{dept.appointmentCount} visits</span>
+                          <span className="text-[10px] text-[hsl(var(--muted-foreground))] ml-1.5 font-mono">(₹{dept.revenue.toLocaleString()})</span>
                         </div>
                       </div>
 
-                      <div className="h-2 w-full rounded-full bg-[hsl(var(--muted)/0.5)] overflow-hidden">
+                      <div className="h-2 w-full rounded-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] overflow-hidden">
                         <div
                           className="h-full rounded-full bg-[hsl(var(--primary))] transition-all duration-300"
                           style={{ width: `${Math.max(8, percent)}%` }}
@@ -480,10 +480,10 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Peak Hourly Traffic Heatmap / Distribution */}
-          <div className="lg:col-span-2 rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+          <div className="lg:col-span-2 rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
-              <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
+              <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+                <Clock className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                 Peak Booking &amp; Traffic Hours
               </h2>
               <span className="text-xs text-[hsl(var(--muted-foreground))]">Hospital Daily Operating Schedule</span>
@@ -499,17 +499,17 @@ export default function AdminAnalyticsPage() {
                     return (
                       <div
                         key={slot.hour}
-                        className={`p-3 rounded-[var(--radius-lg)] border text-center transition-all ${
+                        className={`p-3 rounded-[var(--radius-md)] border text-center transition-all ${
                           slot.count > 0
-                            ? "border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary-light))]"
-                            : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.2)]"
+                            ? "border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--background))]"
+                            : "border-[hsl(var(--border))] bg-[hsl(var(--background))]"
                         }`}
                       >
-                        <span className="text-xs font-mono font-bold text-[hsl(var(--foreground))] block">
+                        <span className="text-xs font-mono font-medium text-[hsl(var(--foreground))] block">
                           {slot.hour}
                         </span>
-                        <span className="text-sm font-extrabold text-[hsl(var(--primary))] mt-1 block">
-                          {slot.count} <span className="text-[10px] font-normal text-[hsl(var(--muted-foreground))]">pts</span>
+                        <span className="text-sm font-mono text-[hsl(var(--primary))] mt-1 block">
+                          {slot.count} <span className="text-[10px] text-[hsl(var(--muted-foreground))]">pts</span>
                         </span>
                         <div className="mt-1.5 h-1 w-full bg-[hsl(var(--muted))] rounded-full overflow-hidden">
                           <div
@@ -531,39 +531,39 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* ─── Financial Reconciliation Overview ───────────────── */}
-        <div className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4">
+        <div className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4 font-sans">
           <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
-            <h2 className="text-base font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-              <IndianRupee className="h-4 w-4 text-[hsl(var(--success))]" />
+            <h2 className="font-serif text-base font-normal text-[hsl(var(--foreground))] flex items-center gap-2">
+              <IndianRupee className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
               Revenue Reconciliation &amp; Refunds
             </h2>
-            <span className="text-xs font-mono font-bold text-[hsl(var(--foreground))]">
+            <span className="text-xs font-mono text-[hsl(var(--foreground))]">
               Net: ₹{data ? (data.financials.totalRevenue - data.financials.refundedAmount).toLocaleString() : "0"}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] block">Collected Online</span>
-              <p className="text-base font-extrabold text-[hsl(var(--foreground))] mt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 font-mono">
+            <div className="p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+              <span className="text-[11px] font-sans font-medium text-[hsl(var(--muted-foreground))] block">Collected Online</span>
+              <p className="text-base text-[hsl(var(--foreground))] mt-1">
                 ₹{data ? data.financials.paidOnlineRevenue.toLocaleString() : "0"}
               </p>
             </div>
-            <div className="p-4 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] block">Pay at Clinic</span>
-              <p className="text-base font-extrabold text-[hsl(var(--foreground))] mt-1">
+            <div className="p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+              <span className="text-[11px] font-sans font-medium text-[hsl(var(--muted-foreground))] block">Pay at Clinic</span>
+              <p className="text-base text-[hsl(var(--foreground))] mt-1">
                 ₹{data ? data.financials.payAtClinicRevenue.toLocaleString() : "0"}
               </p>
             </div>
-            <div className="p-4 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-              <span className="text-[11px] font-bold text-[hsl(var(--danger))] block">Refunds Processed</span>
-              <p className="text-base font-extrabold text-[hsl(var(--danger))] mt-1">
+            <div className="p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+              <span className="text-[11px] font-sans font-medium text-[hsl(var(--danger))] block">Refunds Processed</span>
+              <p className="text-base text-[hsl(var(--danger))] mt-1">
                 ₹{data ? data.financials.refundedAmount.toLocaleString() : "0"}
               </p>
             </div>
-            <div className="p-4 rounded-[var(--radius-xl)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
-              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] block">Avg. Ticket Value</span>
-              <p className="text-base font-extrabold text-[hsl(var(--foreground))] mt-1">
+            <div className="p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--background))] border border-[hsl(var(--border))]">
+              <span className="text-[11px] font-sans font-medium text-[hsl(var(--muted-foreground))] block">Avg. Ticket Value</span>
+              <p className="text-base text-[hsl(var(--foreground))] mt-1">
                 ₹{data ? data.financials.avgTicketValue.toLocaleString() : "0"}
               </p>
             </div>

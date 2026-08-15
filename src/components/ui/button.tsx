@@ -9,19 +9,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] shadow-[var(--shadow-sm)]",
+          "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary-hover))] active:bg-[hsl(var(--primary-hover))] shadow-[var(--shadow-sm)]",
         destructive:
-          "bg-[hsl(var(--danger))] text-[hsl(var(--danger-foreground))] hover:bg-[hsl(var(--danger))/0.9] shadow-[var(--shadow-sm)]",
+          "bg-[hsl(var(--danger))] text-[hsl(var(--danger-foreground))] hover:opacity-90 active:opacity-95 shadow-[var(--shadow-sm)]",
         outline:
           "border border-[hsl(var(--border))] bg-transparent hover:bg-[hsl(var(--secondary))] text-[hsl(var(--foreground))]",
         secondary:
-          "bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--secondary-hover))]",
+          "border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--secondary-hover))] active:bg-[hsl(var(--secondary-hover))]",
         ghost:
           "hover:bg-[hsl(var(--secondary))] text-[hsl(var(--foreground))]",
         link:
-          "text-[hsl(var(--primary))] underline-offset-4 hover:underline",
+          "text-[hsl(var(--primary))] underline-offset-4 hover:underline active:underline",
         success:
-          "bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] hover:bg-[hsl(var(--success))/0.9] shadow-[var(--shadow-sm)]",
+          "bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] hover:opacity-90 active:opacity-95 shadow-[var(--shadow-sm)]",
       },
       size: {
         default: "h-10 px-4 py-2",

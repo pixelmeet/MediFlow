@@ -238,12 +238,6 @@ export default function AdminBranchesPage() {
           description: json.error?.message || "Could not remove branch.",
         });
       }
-    } catch {
-      addToast({
-        type: "error",
-        title: "Network Error",
-        description: "An unexpected error occurred while deleting branch.",
-      });
     } finally {
       setIsDeleting(false);
     }
@@ -257,11 +251,11 @@ export default function AdminBranchesPage() {
         {/* Header & Add CTA */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
+            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
               <MapPin className="h-7 w-7 text-[hsl(var(--primary))]" />
               Hospital Clinics &amp; Branches
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
+            <p className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))] mt-1 font-sans">
               Manage hospital physical campuses, clinical policies, check-in grace windows, and timezones
             </p>
           </div>
@@ -269,42 +263,42 @@ export default function AdminBranchesPage() {
           <Button
             onClick={handleOpenAdd}
             size="sm"
-            className="text-xs font-bold flex items-center gap-1.5 shadow-[var(--shadow-sm)]"
+            className="text-xs font-medium flex items-center gap-1.5 shadow-[var(--shadow-sm)] font-sans"
           >
             <Plus className="h-4 w-4" /> Add Branch
           </Button>
         </div>
 
         {/* Branches Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-sans">
           {isLoading ? (
             Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={i}
-                className="h-56 rounded-[var(--radius-2xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))] animate-pulse"
+                className="h-56 rounded-[var(--radius-xl)] bg-[hsl(var(--card))] border border-[hsl(var(--border))] animate-pulse"
               />
             ))
           ) : branches.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-xs text-[hsl(var(--muted-foreground))] bg-[hsl(var(--card))] rounded-[var(--radius-2xl)] border border-[hsl(var(--border))]">
+            <div className="col-span-full py-12 text-center text-xs text-[hsl(var(--muted-foreground))] bg-[hsl(var(--card))] rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))]">
               No hospital branches found. Click &quot;Add Branch&quot; to create one.
             </div>
           ) : (
             branches.map((b) => (
               <div
                 key={b.id}
-                className="rounded-[var(--radius-2xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4 hover:shadow-[var(--shadow-md)] transition-shadow"
+                className="rounded-[var(--radius-xl)] border border-[hsl(var(--card-border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] space-y-4 hover:border-[hsl(var(--primary)/0.4)] transition-colors"
               >
                 {/* Card Top: Icon, Status Badge & Action Buttons */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary-light))] text-[hsl(var(--primary))] font-bold">
-                      <MapPin className="h-6 w-6" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-serif font-normal">
+                      <MapPin className="h-5 w-5" />
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold uppercase bg-[hsl(var(--success-light))] text-[hsl(var(--success))] px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                      <span className="text-[10px] font-mono uppercase bg-[hsl(var(--success-light))] border border-[hsl(var(--success)/0.3)] text-[hsl(var(--success))] px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                         <ShieldCheck className="h-3 w-3" /> Operational
                       </span>
-                      <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] ml-2 inline-flex items-center gap-1">
+                      <span className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] ml-2 inline-flex items-center gap-1">
                         <Building2 className="h-3 w-3" /> {b.departmentCount} {b.departmentCount === 1 ? "Dept" : "Depts"}
                       </span>
                     </div>
@@ -335,7 +329,7 @@ export default function AdminBranchesPage() {
 
                 {/* Branch Details */}
                 <div>
-                  <h3 className="font-bold text-lg text-[hsl(var(--foreground))]">{b.name}</h3>
+                  <h3 className="font-serif text-lg font-normal text-[hsl(var(--foreground))]">{b.name}</h3>
                   <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
                     {b.address || "Medical District Campus"}
                   </p>
@@ -343,27 +337,27 @@ export default function AdminBranchesPage() {
 
                 {/* Branch Policies */}
                 <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[hsl(var(--border))] text-xs">
-                  <div className="bg-[hsl(var(--muted)/0.15)] p-2.5 rounded-[var(--radius-md)] text-center">
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold block flex items-center justify-center gap-1">
+                  <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] p-2.5 rounded-[var(--radius-md)] text-center">
+                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium block flex items-center justify-center gap-1">
                       <Globe className="h-2.5 w-2.5" /> Timezone
                     </span>
-                    <strong className="text-xs text-[hsl(var(--foreground))] block truncate mt-0.5">
+                    <strong className="text-xs font-mono font-medium text-[hsl(var(--foreground))] block truncate mt-0.5">
                       {b.timezone}
                     </strong>
                   </div>
-                  <div className="bg-[hsl(var(--muted)/0.15)] p-2.5 rounded-[var(--radius-md)] text-center">
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold block flex items-center justify-center gap-1">
+                  <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] p-2.5 rounded-[var(--radius-md)] text-center">
+                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium block flex items-center justify-center gap-1">
                       <Clock className="h-2.5 w-2.5" /> Grace Period
                     </span>
                     <strong className="text-xs text-[hsl(var(--primary))] font-mono block mt-0.5">
                       {b.gracePeriodMin} mins
                     </strong>
                   </div>
-                  <div className="bg-[hsl(var(--muted)/0.15)] p-2.5 rounded-[var(--radius-md)] text-center">
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-semibold block">
+                  <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] p-2.5 rounded-[var(--radius-md)] text-center">
+                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium block">
                       Reschedule Cutoff
                     </span>
-                    <strong className="text-xs text-[hsl(var(--foreground))] font-mono block mt-0.5">
+                    <strong className="text-xs font-mono font-medium text-[hsl(var(--foreground))] block mt-0.5">
                       {b.rescheduleCutoffHrs} hrs prior
                     </strong>
                   </div>
@@ -384,36 +378,36 @@ export default function AdminBranchesPage() {
         title={isAddOpen ? "Add Hospital Branch" : `Edit ${editingBranch?.name}`}
         description="Configure hospital physical campus details, address, timezone, and patient scheduling policies."
       >
-        <div className="space-y-4 pt-2 text-xs">
+        <div className="space-y-4 pt-2 text-xs font-sans">
           <div>
-            <label className="font-semibold block mb-1">Branch Name *</label>
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Branch Name *</label>
             <input
               type="text"
               value={branchName}
               onChange={(e) => setBranchName(e.target.value)}
               placeholder="e.g. Central Hospital - Main Branch"
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">Campus Address / Location</label>
+            <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Campus Address / Location</label>
             <input
               type="text"
               value={branchAddress}
               onChange={(e) => setBranchAddress(e.target.value)}
               placeholder="e.g. 108 Health Boulevard, Medical District, Mumbai"
-              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+              className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="font-semibold block mb-1">Timezone</label>
+              <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Timezone</label>
               <select
                 value={branchTimezone}
                 onChange={(e) => setBranchTimezone(e.target.value)}
-                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors"
               >
                 <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
                 <option value="UTC">UTC</option>
@@ -426,14 +420,14 @@ export default function AdminBranchesPage() {
             </div>
 
             <div>
-              <label className="font-semibold block mb-1">Grace Period (Min)</label>
+              <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Grace Period (Min)</label>
               <input
                 type="number"
                 value={gracePeriodMin}
                 onChange={(e) => setGracePeriodMin(Number(e.target.value))}
                 min={5}
                 max={60}
-                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] font-mono transition-colors"
               />
               <span className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5 block">
                 Late check-in window
@@ -441,14 +435,14 @@ export default function AdminBranchesPage() {
             </div>
 
             <div>
-              <label className="font-semibold block mb-1">Reschedule Cutoff (Hrs)</label>
+              <label className="font-medium text-[hsl(var(--foreground))] block mb-1">Reschedule Cutoff (Hrs)</label>
               <input
                 type="number"
                 value={rescheduleCutoffHrs}
                 onChange={(e) => setRescheduleCutoffHrs(Number(e.target.value))}
                 min={0}
                 max={48}
-                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none"
+                className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2.5 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] font-mono transition-colors"
               />
               <span className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5 block">
                 Min hrs before slot
@@ -471,6 +465,7 @@ export default function AdminBranchesPage() {
               size="sm"
               onClick={isAddOpen ? handleCreateBranch : handleUpdateBranch}
               disabled={isSubmitting || !branchName.trim()}
+              className="font-medium"
             >
               {isSubmitting ? "Saving..." : isAddOpen ? "Create Branch" : "Save Changes"}
             </Button>
@@ -489,14 +484,14 @@ export default function AdminBranchesPage() {
         title="Deactivate Hospital Branch"
         description={`Remove ${deletingBranch?.name} from active hospital operations.`}
       >
-        <div className="space-y-4 pt-2 text-xs">
+        <div className="space-y-4 pt-2 text-xs font-sans">
           {conflictMessage ? (
             /* Conflict details box */
             <div className="space-y-3">
-              <div className="p-3.5 rounded-[var(--radius-md)] bg-[hsl(var(--danger-light)/0.5)] border border-[hsl(var(--danger)/0.3)] text-[hsl(var(--danger))] flex items-start gap-2.5">
+              <div className="p-3.5 rounded-[var(--radius-md)] bg-[hsl(var(--danger-light))] border border-[hsl(var(--danger)/0.3)] text-[hsl(var(--danger))] flex items-start gap-2.5">
                 <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="block font-bold text-sm">Cannot Deactivate Branch (Active Records Found)</strong>
+                  <strong className="block font-medium text-sm">Cannot Deactivate Branch (Active Records Found)</strong>
                   <p className="text-xs text-[hsl(var(--foreground))] mt-1">
                     {conflictMessage}
                   </p>
@@ -504,8 +499,8 @@ export default function AdminBranchesPage() {
               </div>
 
               {conflictDetails && (
-                <div className="p-3 rounded-[var(--radius-md)] bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] space-y-1.5">
-                  <span className="font-bold text-[hsl(var(--foreground))] block">Linked Entities to Resolve:</span>
+                <div className="p-3 rounded-[var(--radius-md)] bg-[hsl(var(--background))] border border-[hsl(var(--border))] space-y-1.5">
+                  <span className="font-medium text-[hsl(var(--foreground))] block">Linked Entities to Resolve:</span>
                   <ul className="list-disc list-inside text-xs text-[hsl(var(--muted-foreground))] space-y-1">
                     {conflictDetails.departmentsCount > 0 && (
                       <li>
@@ -546,10 +541,10 @@ export default function AdminBranchesPage() {
           ) : (
             /* Standard confirmation prompt */
             <div className="space-y-4">
-              <div className="p-3 rounded-[var(--radius-md)] bg-[hsl(var(--warning-light)/0.5)] border border-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))] flex items-start gap-2">
+              <div className="p-3 rounded-[var(--radius-md)] bg-[hsl(var(--warning-light))] border border-[hsl(var(--warning)/0.3)] text-[hsl(var(--warning))] flex items-start gap-2">
                 <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="block font-bold">Branch Deactivation Guard</strong>
+                  <strong className="block font-medium">Branch Deactivation Guard</strong>
                   <span className="text-[11px] text-[hsl(var(--foreground))]">
                     Deactivating this branch will prevent new bookings. The system will ensure no active departments, physicians, or upcoming appointments remain linked.
                   </span>
@@ -572,7 +567,7 @@ export default function AdminBranchesPage() {
                   size="sm"
                   onClick={handleDeleteBranch}
                   disabled={isDeleting}
-                  className="bg-[hsl(var(--danger))] hover:bg-[hsl(var(--danger)/0.9)] text-white"
+                  className="bg-[hsl(var(--danger))] hover:bg-[hsl(var(--danger)/0.9)] text-white font-medium"
                 >
                   {isDeleting ? "Checking & Deactivating..." : "Confirm Deactivation"}
                 </Button>

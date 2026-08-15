@@ -113,7 +113,7 @@ export function ChangePasswordCard({ className = "", onSuccess }: ChangePassword
           <KeyRound className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-[hsl(var(--foreground))]">
+          <h2 className="font-serif text-xl font-normal tracking-tight text-[hsl(var(--foreground))]">
             Security & Password
           </h2>
           <p className="text-xs text-[hsl(var(--muted-foreground))]">
