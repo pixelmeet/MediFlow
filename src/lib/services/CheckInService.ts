@@ -2,6 +2,7 @@ import { AppointmentStatus } from "@prisma/client";
 import { prisma } from "../db";
 import { ALLOW_MEMORY_FALLBACK } from "../auth/config";
 import { NotificationService } from "./NotificationService";
+import { formatTime } from "../utils";
 
 
 export interface CheckInEligibility {
@@ -563,19 +564,22 @@ export class CheckInService {
   }
 
   /**
-   * Dispatch automated checkin reminders (24h and 1h windows) for upcoming appointments
+   * Dispatch automated checkin reminders (day_before and same_day windows) for upcoming appointments.
+   * Redesigned for daily cron execution:
+   * - "day_before": fires for confirmed/checked-in appointments scheduled for tomorrow.
+   * - "same_day": fires for confirmed/checked-in appointments scheduled for today.
    */
   static async sendDueReminders(): Promise<{ sent24h: number; sent1h: number }> {
     const now = new Date();
-    // Query appointments within relevant upcoming window (next 36 hours)
-    const searchStart = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-    const searchEnd = new Date(now.getTime() + 36 * 60 * 60 * 1000);
+    const today = new Date(now);
+    const tomorrow = new Date(now);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
 
-    const startDateStr = searchStart.toISOString().slice(0, 10);
-    const endDateStr = searchEnd.toISOString().slice(0, 10);
+    const todayStr = today.toISOString().slice(0, 10);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
 
-    const dateGte = new Date(`${startDateStr}T00:00:00.000Z`);
-    const dateLte = new Date(`${endDateStr}T23:59:59.999Z`);
+    const dateGte = new Date(`${todayStr}T00:00:00.000Z`);
+    const dateLte = new Date(`${tomorrowStr}T23:59:59.999Z`);
 
     try {
       const appointments = await prisma.appointment.findMany({
@@ -627,6 +631,8 @@ export class CheckInService {
         }
       }
 
+      // Legacy property names maintained for route API response contract compatibility:
+      // sent24h tracks "day_before" reminders, sent1h tracks "same_day" reminders.
       let sent24h = 0;
       let sent1h = 0;
 
@@ -636,25 +642,21 @@ export class CheckInService {
             ? apt.date.toISOString().slice(0, 10)
             : String(apt.date).slice(0, 10);
 
-        const [hoursStr, minsStr] = apt.startTime.split(":");
-        const slotTime = new Date(`${dateStr}T${hoursStr.padStart(2, "0")}:${minsStr.padStart(2, "0")}:00.000Z`);
+        const formattedTime = formatTime(apt.startTime);
 
-        const diffMs = slotTime.getTime() - now.getTime();
-        const diffHours = diffMs / (1000 * 60 * 60);
-
-        // 24-hour reminder window (23.5 - 24.5 hours away)
-        if (diffHours >= 23.5 && diffHours <= 24.5) {
-          const key = `${apt.id}_24h`;
+        // "day_before" reminder: appointment is tomorrow
+        if (dateStr === tomorrowStr) {
+          const key = `${apt.id}_day_before`;
           if (!sentReminderKeys.has(key)) {
             await NotificationService.createNotification({
               userId: apt.patient.userId,
               type: "checkin_reminder",
               title: "Appointment Reminder (Tomorrow)",
-              message: `Reminder: You have an appointment with ${apt.doctor.name} scheduled for ${dateStr} at ${apt.startTime}.`,
+              message: `Reminder: You have an appointment with ${apt.doctor.name} tomorrow at ${formattedTime}.`,
               channel: "push",
               payload: {
                 appointmentId: apt.id,
-                reminderWindow: "24h",
+                reminderWindow: "day_before",
                 doctorId: apt.doctorId,
                 doctorName: apt.doctor.name,
                 date: dateStr,
@@ -666,19 +668,19 @@ export class CheckInService {
           }
         }
 
-        // 1-hour reminder window (0.5 - 1.5 hours away)
-        if (diffHours >= 0.5 && diffHours <= 1.5) {
-          const key = `${apt.id}_1h`;
+        // "same_day" reminder: appointment is today
+        if (dateStr === todayStr) {
+          const key = `${apt.id}_same_day`;
           if (!sentReminderKeys.has(key)) {
             await NotificationService.createNotification({
               userId: apt.patient.userId,
               type: "checkin_reminder",
-              title: "Appointment Reminder (in 1 Hour)",
-              message: `Reminder: Your appointment with ${apt.doctor.name} is in 1 hour at ${apt.startTime}. Please proceed with check-in.`,
+              title: "Appointment Reminder (Today)",
+              message: `Reminder: You have an appointment with ${apt.doctor.name} today at ${formattedTime}. Please arrive on time for check-in.`,
               channel: "push",
               payload: {
                 appointmentId: apt.id,
-                reminderWindow: "1h",
+                reminderWindow: "same_day",
                 doctorId: apt.doctorId,
                 doctorName: apt.doctor.name,
                 date: dateStr,

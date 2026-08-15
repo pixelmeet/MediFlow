@@ -29,7 +29,7 @@ async function handleReminders(request: Request) {
 
     return NextResponse.json(
       successResponse(result, {
-        message: `Reminder dispatch completed: ${result.sent24h} (24h window) and ${result.sent1h} (1h window) reminders dispatched.`,
+        message: `Reminder dispatch completed: ${result.sent24h} (day-before) and ${result.sent1h} (same-day) reminders dispatched.`,
       })
     );
   } catch (error) {
