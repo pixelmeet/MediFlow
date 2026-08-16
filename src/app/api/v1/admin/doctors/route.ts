@@ -67,8 +67,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       successResponse(
-        { doctorId: result.doctorId },
-        { message: "Doctor registered successfully with default schedule." }
+        { doctorId: result.doctorId, activationSent: result.activationSent },
+        { message: "Doctor registered successfully with default schedule. Activation link generated." }
       ),
       { status: 201 }
     );

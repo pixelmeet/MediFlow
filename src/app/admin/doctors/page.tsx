@@ -136,7 +136,7 @@ export default function AdminDoctorsPage() {
         addToast({
           type: "success",
           title: "Doctor Registered",
-          description: "New doctor profile created with default schedule.",
+          description: "New doctor profile created — activation link sent.",
         });
         setIsAddOpen(false);
         setReloadKey((k) => k + 1);

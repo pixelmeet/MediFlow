@@ -1,4 +1,5 @@
 import { prisma } from "../db";
+import { AuthService } from "./AuthService";
 import type { AppointmentStatus, Prisma } from "@prisma/client";
 import type {
   CreateDoctorAdminInput,
@@ -255,18 +256,35 @@ export class AdminService {
   }
 
   /**
-   * Create a new Doctor profile and linked User record
+   * Create a new Doctor profile and linked User record (unactivated, with activation link generated)
    */
   static async createDoctor(
     input: CreateDoctorAdminInput
-  ): Promise<{ success: boolean; doctorId?: string; error?: string }> {
+  ): Promise<{ success: boolean; doctorId?: string; activationSent?: boolean; error?: string }> {
     try {
-      const created = await prisma.$transaction(async (tx) => {
-        // 1. Create or find User
+      // Check for duplicate email or phone before proceeding
+      const existing = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: input.email.toLowerCase() },
+            ...(input.phone ? [{ phone: input.phone }] : []),
+          ],
+        },
+      });
+
+      if (existing) {
+        if (existing.email?.toLowerCase() === input.email.toLowerCase()) {
+          return { success: false, error: "A user with this email address already exists" };
+        }
+        return { success: false, error: "A user with this phone number already exists" };
+      }
+
+      const { doctor, user } = await prisma.$transaction(async (tx) => {
+        // 1. Create User (passwordHash left null until account activation)
         const user = await tx.user.create({
           data: {
-            email: input.email,
-            phone: input.phone,
+            email: input.email.toLowerCase(),
+            phone: input.phone || null,
             role: "DOCTOR",
             isVerified: true,
             isActive: true,
@@ -303,10 +321,20 @@ export class AdminService {
           });
         }
 
-        return doctor;
+        return { doctor, user };
       });
 
-      return { success: true, doctorId: created.id };
+      // 4. Generate and store activation token after successful transaction commit
+      const activationResult = await AuthService.generateActivationToken(
+        user.id,
+        user.email || user.phone || input.email
+      );
+
+      return {
+        success: true,
+        doctorId: doctor.id,
+        activationSent: activationResult.success,
+      };
     } catch (dbError) {
       console.error("Database error creating doctor:", dbError);
       return { success: false, error: "Database error creating doctor" };

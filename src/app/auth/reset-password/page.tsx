@@ -34,6 +34,7 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
+  const isActivation = searchParams.get("mode") === "activate";
 
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
@@ -76,12 +77,16 @@ function ResetPasswordContent() {
     setErrorMessage(null);
 
     if (!token) {
-      setErrorMessage("Missing or invalid reset token. Please request a new password reset link.");
+      setErrorMessage(
+        isActivation
+          ? "Missing or invalid activation token. Please request a new activation link."
+          : "Missing or invalid reset token. Please request a new password reset link."
+      );
       return;
     }
 
     if (!allRulesPassed) {
-      setErrorMessage("Please ensure your new password satisfies all complexity requirements.");
+      setErrorMessage("Please ensure your password satisfies all complexity requirements.");
       return;
     }
 
@@ -102,7 +107,10 @@ function ResetPasswordContent() {
 
       if (!res.ok) {
         setErrorMessage(
-          data.error?.message || "Failed to reset password. The link may have expired."
+          data.error?.message ||
+            (isActivation
+              ? "Failed to activate account. The link may have expired."
+              : "Failed to reset password. The link may have expired.")
         );
         return;
       }
@@ -128,11 +136,21 @@ function ResetPasswordContent() {
           </span>
         </Link>
         <h1 className="font-serif text-3xl font-normal tracking-tight text-[hsl(var(--foreground))]">
-          {isSuccess ? "Password updated!" : "Create new password"}
+          {isSuccess
+            ? isActivation
+              ? "Account activated!"
+              : "Password updated!"
+            : isActivation
+            ? "Set your password"
+            : "Create new password"}
         </h1>
         <p className="mt-1.5 text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
           {isSuccess
-            ? "Your password has been changed successfully"
+            ? isActivation
+              ? "Your account is activated and your password has been set"
+              : "Your password has been changed successfully"
+            : isActivation
+            ? "Choose a secure password to activate your MediFlow account"
             : "Choose a strong password for your MediFlow account"}
         </p>
       </div>
@@ -146,18 +164,29 @@ function ResetPasswordContent() {
             </div>
             <div className="space-y-1">
               <h2 className="font-serif text-xl font-normal text-[hsl(var(--foreground))]">
-                Invalid Reset Link
+                {isActivation ? "Invalid Activation Link" : "Invalid Reset Link"}
               </h2>
               <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                This password reset link is missing a security token or has expired.
+                {isActivation
+                  ? "This activation link is missing a security token or has expired."
+                  : "This password reset link is missing a security token or has expired."}
               </p>
             </div>
-            <Link
-              href="/auth/forgot-password"
-              className={buttonVariants({ size: "lg", className: "w-full mt-2" })}
-            >
-              Request New Reset Link
-            </Link>
+            {isActivation ? (
+              <Link
+                href="/auth/login"
+                className={buttonVariants({ size: "lg", className: "w-full mt-2" })}
+              >
+                Go to Sign In
+              </Link>
+            ) : (
+              <Link
+                href="/auth/forgot-password"
+                className={buttonVariants({ size: "lg", className: "w-full mt-2" })}
+              >
+                Request New Reset Link
+              </Link>
+            )}
           </div>
         ) : isSuccess ? (
           <div className="space-y-5 text-center">
@@ -166,7 +195,9 @@ function ResetPasswordContent() {
             </div>
             <div className="space-y-1">
               <p className="text-sm text-[hsl(var(--foreground))]">
-                Your password has been successfully reset. All previous active sessions have been signed out for security.
+                {isActivation
+                  ? "Your password has been set and your account is now active. You can now sign in to your dashboard."
+                  : "Your password has been successfully reset. All previous active sessions have been signed out for security."}
               </p>
               <p className="text-xs text-[hsl(var(--muted-foreground))] pt-2">
                 Redirecting to sign in page in <strong className="text-[hsl(var(--primary))] font-mono">{redirectCountdown}s</strong>...
@@ -189,7 +220,7 @@ function ResetPasswordContent() {
                 <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p>{errorMessage}</p>
-                  {errorMessage.includes("expired") && (
+                  {errorMessage.includes("expired") && !isActivation && (
                     <Link
                       href="/auth/forgot-password"
                       className="mt-1 inline-block underline font-semibold"
@@ -201,19 +232,19 @@ function ResetPasswordContent() {
               </div>
             )}
 
-            {/* New Password */}
+            {/* Password */}
             <div className="space-y-1.5">
               <label
                 htmlFor="password"
                 className="text-sm font-medium text-[hsl(var(--foreground))]"
               >
-                New Password
+                {isActivation ? "Password" : "New Password"}
               </label>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter new password"
+                  placeholder={isActivation ? "Enter password" : "Enter new password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
@@ -237,13 +268,13 @@ function ResetPasswordContent() {
                 htmlFor="confirmPassword"
                 className="text-sm font-medium text-[hsl(var(--foreground))]"
               >
-                Confirm New Password
+                {isActivation ? "Confirm Password" : "Confirm New Password"}
               </label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Re-enter new password"
+                  placeholder={isActivation ? "Re-enter password" : "Re-enter new password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={isLoading}
@@ -300,7 +331,7 @@ function ResetPasswordContent() {
               disabled={!allRulesPassed || !passwordsMatch}
             >
               <Lock className="h-4 w-4" />
-              Reset Password
+              {isActivation ? "Set Password & Activate" : "Reset Password"}
             </Button>
           </form>
         )}

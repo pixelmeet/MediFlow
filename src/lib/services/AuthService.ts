@@ -182,9 +182,18 @@ export class AuthService {
           };
         }
 
-        const passwordMatch = user.passwordHash
-          ? await bcrypt.compare(input.password, user.passwordHash)
-          : false;
+        // Accounts without password set (e.g. unactivated doctor accounts) fail immediately
+        if (!user.passwordHash) {
+          return {
+            success: false,
+            error: {
+              code: "INVALID_CREDENTIALS",
+              message: "Invalid email/phone or password.",
+            },
+          };
+        }
+
+        const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
 
         if (!passwordMatch) {
           const newFailedCount = user.failedLogins + 1;
@@ -544,6 +553,52 @@ export class AuthService {
           code: "SERVICE_UNAVAILABLE",
           message: "We're having trouble reaching the database. Please try again in a moment.",
         },
+      };
+    }
+  }
+
+  /**
+   * Generate and store an account activation token for an unactivated account (e.g. doctor created by admin).
+   * Uses PasswordResetToken table with a 7-day expiration.
+   * Logs dev-mode link to console following the established [DEV ...] convention.
+   */
+  static async generateActivationToken(
+    userId: string,
+    recipient: string
+  ): Promise<{ success: boolean; token?: string }> {
+    try {
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = hashToken(rawToken);
+      // 7 days expiration for account activation
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      // Invalidate any existing unused reset/activation tokens for this user
+      await prisma.passwordResetToken.deleteMany({
+        where: { userId },
+      });
+
+      // Store hashed activation token
+      await prisma.passwordResetToken.create({
+        data: {
+          userId,
+          tokenHash,
+          expiresAt,
+        },
+      });
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const activationUrl = `${appUrl}/auth/reset-password?token=${rawToken}&mode=activate`;
+
+      console.log(`[DEV ACCOUNT ACTIVATION] Recipient: ${recipient} | Activation Link: ${activationUrl} | Token: ${rawToken}`);
+
+      return {
+        success: true,
+        token: rawToken,
+      };
+    } catch (err) {
+      console.error("Error generating activation token:", err);
+      return {
+        success: false,
       };
     }
   }
