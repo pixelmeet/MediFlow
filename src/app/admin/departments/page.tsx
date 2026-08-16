@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Building2, Plus, Users, MapPin } from "lucide-react";
-import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -107,10 +106,7 @@ export default function AdminDepartmentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
-      <AdminNavigation />
-
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-16">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[hsl(var(--foreground))] tracking-tight flex items-center gap-2.5">
@@ -174,7 +170,6 @@ export default function AdminDepartmentsPage() {
             ))
           )}
         </div>
-      </main>
 
       {/* Add Department Modal */}
       <Modal
@@ -220,6 +215,6 @@ export default function AdminDepartmentsPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </main>
   );
 }

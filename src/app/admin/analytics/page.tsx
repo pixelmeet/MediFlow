@@ -23,7 +23,6 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { StatCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import type { AnalyticsSummaryDTO } from "@/lib/services/AnalyticsService";
@@ -171,10 +170,7 @@ export default function AdminAnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
-      <AdminNavigation />
-
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-16">
         {/* Header with Date Range Filter and Export */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -570,6 +566,5 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
       </main>
-    </div>
   );
 }

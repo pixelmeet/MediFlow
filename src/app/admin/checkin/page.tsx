@@ -12,7 +12,6 @@ import {
   Users,
   ShieldCheck,
 } from "lucide-react";
-import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -207,10 +206,7 @@ export default function AdminCheckInDeskPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
-      <AdminNavigation />
-
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-16">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -497,7 +493,6 @@ export default function AdminCheckInDeskPage() {
             </table>
           </div>
         </div>
-      </main>
 
       {/* Reinstate Modal */}
       <Modal
@@ -544,6 +539,6 @@ export default function AdminCheckInDeskPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </main>
   );
 }

@@ -12,7 +12,6 @@ import {
   Clock,
   Globe,
 } from "lucide-react";
-import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -244,10 +243,7 @@ export default function AdminBranchesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
-      <AdminNavigation />
-
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-16">
         {/* Header & Add CTA */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -366,7 +362,6 @@ export default function AdminBranchesPage() {
             ))
           )}
         </div>
-      </main>
 
       {/* Add / Edit Branch Modal */}
       <Modal
@@ -576,6 +571,6 @@ export default function AdminBranchesPage() {
           )}
         </div>
       </Modal>
-    </div>
+    </main>
   );
 }

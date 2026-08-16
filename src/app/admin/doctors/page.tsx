@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Stethoscope, Plus, Search, Edit, Trash2, ShieldAlert, Eye, EyeOff, Sparkles } from "lucide-react";
-import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -250,10 +249,7 @@ export default function AdminDoctorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
-      <AdminNavigation />
-
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-16">
         {/* Page Title & Add CTA */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -389,7 +385,6 @@ export default function AdminDoctorsPage() {
             </table>
           </div>
         </div>
-      </main>
 
       {/* Add / Edit Doctor Modal */}
       <Modal
@@ -671,6 +666,6 @@ export default function AdminDoctorsPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </main>
   );
 }

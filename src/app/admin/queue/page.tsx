@@ -13,7 +13,6 @@ import {
   Coffee,
   AlertTriangle,
 } from "lucide-react";
-import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
@@ -180,10 +179,7 @@ export default function AdminQueueMonitorPage() {
   const totalCompleted = doctors.reduce((sum, d) => sum + d.completedCount, 0);
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] pb-16">
-      <AdminNavigation />
-
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-16">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -402,7 +398,6 @@ export default function AdminQueueMonitorPage() {
             })
           )}
         </div>
-      </main>
 
       {/* Priority Reorder Modal */}
       <Modal
@@ -472,6 +467,6 @@ export default function AdminQueueMonitorPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </main>
   );
 }
