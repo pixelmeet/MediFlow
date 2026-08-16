@@ -18,7 +18,7 @@ const prisma = new PrismaClient({ adapter });
 function parseArgs(args: string[]): Record<string, string> {
   const result: Record<string, string> = {};
 
-  // Fallback to npm_config environment variables (when arguments are passed directly via npm run)
+  // Check npm_config environment variables (when arguments are passed directly via npm run)
   if (process.env.npm_config_email) result.email = process.env.npm_config_email;
   if (process.env.npm_config_name) result.name = process.env.npm_config_name;
   if (process.env.npm_config_phone) result.phone = process.env.npm_config_phone;
@@ -76,13 +76,17 @@ function generateSecurePassword(length: number = 20): string {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const email = args.email;
-  const name = args.name;
-  const phone = args.phone;
+
+  // Determine if explicit CLI arguments were provided or if falling back to env vars
+  const isExplicitCli = Boolean(args.email || args.name);
+  const email = args.email || process.env.DEFAULT_ADMIN_EMAIL;
+  const name = args.name || process.env.DEFAULT_ADMIN_NAME;
+  const phone = args.phone || process.env.DEFAULT_ADMIN_PHONE;
 
   if (!email || !name) {
-    console.error("\nUsage: npm run create-admin -- --email=<email> --name=<name> [--phone=<phone>]");
-    console.error("Example: npm run create-admin -- --email=admin@hospital.com --name=\"System Administrator\" --phone=\"+919876543210\"\n");
+    console.error("\nUsage: npm run create-admin [-- --email=<email> --name=<name> [--phone=<phone>]]");
+    console.error("Or define DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD, and DEFAULT_ADMIN_NAME in your .env file.\n");
+    console.error("Example: npm run create-admin -- --email=admin@hospital.com --name=\"System Administrator\"\n");
     process.exit(1);
   }
 
@@ -90,7 +94,15 @@ async function main() {
   const normalizedPhone = phone ? phone.trim() : null;
   const normalizedName = name.trim();
 
-  // Check if a user with this email or phone already exists
+  // Determine password: use DEFAULT_ADMIN_PASSWORD if set, otherwise generate random password
+  const envPassword = process.env.DEFAULT_ADMIN_PASSWORD;
+  const isEnvPassword = Boolean(envPassword && envPassword.trim().length > 0);
+  const rawPassword = isEnvPassword ? envPassword!.trim() : generateSecurePassword(20);
+
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(rawPassword, salt);
+
+  // Check if user already exists
   const existingUser = await prisma.user.findFirst({
     where: {
       OR: [
@@ -98,9 +110,48 @@ async function main() {
         ...(normalizedPhone ? [{ phone: normalizedPhone }] : []),
       ],
     },
+    include: {
+      admin: true,
+    },
   });
 
   if (existingUser) {
+    // If running via the env-var default path, make it safely idempotent
+    if (!isExplicitCli) {
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: existingUser.id },
+          data: {
+            passwordHash,
+            failedLogins: 0,
+            lockedUntil: null,
+            isActive: true,
+            isVerified: true,
+            role: "ADMIN",
+          },
+        });
+
+        await tx.admin.upsert({
+          where: { userId: existingUser.id },
+          update: { name: normalizedName },
+          create: { userId: existingUser.id, name: normalizedName },
+        });
+      });
+
+      console.log("\n=======================================================");
+      console.log(" Admin Account Synchronized Successfully (Idempotent)");
+      console.log("=======================================================");
+      console.log(`User ID:  ${existingUser.id}`);
+      console.log(`Name:     ${normalizedName}`);
+      console.log(`Email:    ${existingUser.email}`);
+      console.log(`Role:     ADMIN`);
+      console.log("-------------------------------------------------------");
+      console.log("Password synchronized with DEFAULT_ADMIN_PASSWORD.");
+      console.log("=======================================================\n");
+      return;
+    }
+
+    // Explicit CLI-args path: fail cleanly on duplicate collision
     if (existingUser.email?.toLowerCase() === normalizedEmail) {
       console.error(`\nError: A user account with email "${normalizedEmail}" already exists. Aborting.\n`);
     } else {
@@ -109,10 +160,7 @@ async function main() {
     process.exit(1);
   }
 
-  const rawPassword = generateSecurePassword(20);
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(rawPassword, salt);
-
+  // Create new User and Admin profile
   const adminUser = await prisma.user.create({
     data: {
       email: normalizedEmail,
@@ -144,10 +192,14 @@ async function main() {
   }
   console.log(`Role:     ${adminUser.role}`);
   console.log("-------------------------------------------------------");
-  console.log("Generated Password:");
-  console.log(`\n  ${rawPassword}\n`);
-  console.log("-------------------------------------------------------");
-  console.log("⚠️  SAVE THIS PASSWORD — it will not be shown again.");
+  if (isEnvPassword) {
+    console.log("Password configured via DEFAULT_ADMIN_PASSWORD.");
+  } else {
+    console.log("Generated Password:");
+    console.log(`\n  ${rawPassword}\n`);
+    console.log("-------------------------------------------------------");
+    console.log("⚠️  SAVE THIS PASSWORD — it will not be shown again.");
+  }
   console.log("=======================================================\n");
 }
 

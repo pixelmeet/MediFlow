@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Stethoscope, Plus, Search, Edit, Trash2, ShieldAlert } from "lucide-react";
+import { Stethoscope, Plus, Search, Edit, Trash2, ShieldAlert, Eye, EyeOff, Sparkles } from "lucide-react";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -31,6 +31,8 @@ export default function AdminDoctorsPage() {
   // Form fields
   const [docName, setDocName] = React.useState("");
   const [docEmail, setDocEmail] = React.useState("");
+  const [docPassword, setDocPassword] = React.useState("");
+  const [showDocPassword, setShowDocPassword] = React.useState(false);
   const [docPhone, setDocPhone] = React.useState("");
   const [docSpecialty, setDocSpecialty] = React.useState("");
   const [docQual, setDocQual] = React.useState("MBBS, MD");
@@ -81,9 +83,28 @@ export default function AdminDoctorsPage() {
     };
   }, [searchQuery, selectedDepartment, reloadKey, docDeptId]);
 
+  const generateStrongPassword = () => {
+    const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const lower = "abcdefghijkmnopqrstuvwxyz";
+    const numbers = "23456789";
+    const symbols = "!@#$%^&*";
+    const all = upper + lower + numbers + symbols;
+    let pwd = "";
+    pwd += upper[Math.floor(Math.random() * upper.length)];
+    pwd += lower[Math.floor(Math.random() * lower.length)];
+    pwd += numbers[Math.floor(Math.random() * numbers.length)];
+    pwd += symbols[Math.floor(Math.random() * symbols.length)];
+    for (let i = 4; i < 14; i++) {
+      pwd += all[Math.floor(Math.random() * all.length)];
+    }
+    return pwd.split("").sort(() => 0.5 - Math.random()).join("");
+  };
+
   const handleOpenAdd = () => {
     setDocName("");
     setDocEmail("");
+    setDocPassword("");
+    setShowDocPassword(false);
     setDocPhone("+91 ");
     setDocSpecialty("Cardiology");
     setDocQual("MBBS, MD");
@@ -109,7 +130,7 @@ export default function AdminDoctorsPage() {
   };
 
   const handleCreateDoctor = async () => {
-    if (!docName || !docEmail || !docSpecialty || !docDeptId) return;
+    if (!docName || !docEmail || !docPassword || !docSpecialty || !docDeptId) return;
     setIsSubmitting(true);
 
     try {
@@ -119,6 +140,7 @@ export default function AdminDoctorsPage() {
         body: JSON.stringify({
           name: docName,
           email: docEmail,
+          password: docPassword,
           phone: docPhone,
           specialty: docSpecialty,
           qualifications: docQual,
@@ -136,7 +158,7 @@ export default function AdminDoctorsPage() {
         addToast({
           type: "success",
           title: "Doctor Registered",
-          description: "New doctor profile created — activation link sent.",
+          description: "Doctor account created. Share the password you set with them directly — they can change it anytime from their profile.",
         });
         setIsAddOpen(false);
         setReloadKey((k) => k + 1);
@@ -491,6 +513,49 @@ export default function AdminDoctorsPage() {
             </div>
           </div>
 
+          {isAddOpen && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-medium text-[hsl(var(--foreground))] block">
+                  Initial Password <span className="text-[hsl(var(--danger))]">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const generated = generateStrongPassword();
+                    setDocPassword(generated);
+                    setShowDocPassword(true);
+                  }}
+                  className="text-[11px] text-[hsl(var(--primary))] hover:underline flex items-center gap-1 font-medium"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Generate Strong Password
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={showDocPassword ? "text" : "password"}
+                  value={docPassword}
+                  onChange={(e) => setDocPassword(e.target.value)}
+                  placeholder="Min 8 chars (e.g. Doctor@2026!)"
+                  className="w-full rounded-[var(--radius-md)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] p-2 pr-9 text-xs text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-1.5 focus-visible:ring-[hsl(var(--input-focus)/0.4)] focus-visible:border-[hsl(var(--input-focus))] transition-colors font-mono"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDocPassword(!showDocPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                  aria-label={showDocPassword ? "Hide password" : "Show password"}
+                >
+                  {showDocPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+              <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">
+                Must contain 8+ characters, uppercase, number, and special character.
+              </p>
+            </div>
+          )}
+
           <div className="flex justify-end gap-2 pt-3 border-t border-[hsl(var(--border))]">
             <Button
               variant="outline"
@@ -505,7 +570,7 @@ export default function AdminDoctorsPage() {
             <Button
               size="sm"
               onClick={isAddOpen ? handleCreateDoctor : handleUpdateDoctor}
-              disabled={isSubmitting || !docName || !docEmail}
+              disabled={isSubmitting || !docName || !docEmail || (isAddOpen && !docPassword)}
               className="font-medium"
             >
               {isSubmitting ? "Saving..." : isAddOpen ? "Register Doctor" : "Save Changes"}

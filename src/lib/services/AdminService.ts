@@ -1,5 +1,5 @@
+import bcrypt from "bcryptjs";
 import { prisma } from "../db";
-import { AuthService } from "./AuthService";
 import type { AppointmentStatus, Prisma } from "@prisma/client";
 import type {
   CreateDoctorAdminInput,
@@ -256,11 +256,11 @@ export class AdminService {
   }
 
   /**
-   * Create a new Doctor profile and linked User record (unactivated, with activation link generated)
+   * Create a new Doctor profile and linked User record with an initial password
    */
   static async createDoctor(
     input: CreateDoctorAdminInput
-  ): Promise<{ success: boolean; doctorId?: string; activationSent?: boolean; error?: string }> {
+  ): Promise<{ success: boolean; doctorId?: string; error?: string }> {
     try {
       // Check for duplicate email or phone before proceeding
       const existing = await prisma.user.findFirst({
@@ -279,12 +279,16 @@ export class AdminService {
         return { success: false, error: "A user with this phone number already exists" };
       }
 
-      const { doctor, user } = await prisma.$transaction(async (tx) => {
-        // 1. Create User (passwordHash left null until account activation)
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(input.password, salt);
+
+      const created = await prisma.$transaction(async (tx) => {
+        // 1. Create User with initial passwordHash
         const user = await tx.user.create({
           data: {
             email: input.email.toLowerCase(),
             phone: input.phone || null,
+            passwordHash,
             role: "DOCTOR",
             isVerified: true,
             isActive: true,
@@ -321,19 +325,12 @@ export class AdminService {
           });
         }
 
-        return { doctor, user };
+        return doctor;
       });
-
-      // 4. Generate and store activation token after successful transaction commit
-      const activationResult = await AuthService.generateActivationToken(
-        user.id,
-        user.email || user.phone || input.email
-      );
 
       return {
         success: true,
-        doctorId: doctor.id,
-        activationSent: activationResult.success,
+        doctorId: created.id,
       };
     } catch (dbError) {
       console.error("Database error creating doctor:", dbError);
