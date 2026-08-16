@@ -8,10 +8,10 @@
   --font-display: 'Newsreader', 'Playfair Display', 'Copernicus', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Primary — Coral (#cc785c) */
-  --primary: 15 53% 58%;
+  /* Primary — Terracotta */
+  --primary: 15 53% 44%;
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 15 46% 45%;
+  --primary-hover: 15 46% 35%;
   --primary-light: 37 39% 94%;
 
   /* Secondary */
@@ -91,9 +91,9 @@
 
 /* ─── Dark Mode ─────────────────────────────────────────── */
 .dark {
-  --primary: 15 53% 58%;
+  --primary: 15 53% 44%;
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 15 46% 45%;
+  --primary-hover: 15 46% 35%;
   --primary-light: 36 7% 14%;
 
   --secondary: 40 7% 9%;
